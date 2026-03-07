@@ -5,12 +5,15 @@ import { routing, type AppLocale } from "@/i18n/routing";
 
 type LocaleSwitcherProps = {
   currentLocale: AppLocale;
+  path?: string;
 };
 
 export async function LocaleSwitcher({
   currentLocale,
+  path = "/",
 }: LocaleSwitcherProps) {
   const t = await getTranslations("LocaleSwitcher");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   return (
     <nav
@@ -23,7 +26,7 @@ export async function LocaleSwitcher({
         return (
           <Link
             key={locale}
-            href={`/${locale}`}
+            href={`/${locale}${normalizedPath === "/" ? "" : normalizedPath}`}
             className={[
               "rounded-full px-3 py-2 transition",
               isActive

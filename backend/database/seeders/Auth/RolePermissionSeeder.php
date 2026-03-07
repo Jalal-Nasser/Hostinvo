@@ -15,6 +15,8 @@ class RolePermissionSeeder extends Seeder
     {
         $permissions = [
             'dashboard.view' => ['Dashboard View', 'Access the authenticated dashboard.'],
+            'clients.view' => ['Clients View', 'View tenant client records and related details.'],
+            'clients.manage' => ['Clients Manage', 'Create, update, and archive tenant client records.'],
             'tenant.view' => ['Tenant View', 'View tenant profile and tenant-scoped configuration.'],
             'tenant.manage' => ['Tenant Manage', 'Update tenant-level settings and administration preferences.'],
             'users.view' => ['Users View', 'View tenant users and membership data.'],
@@ -40,6 +42,8 @@ class RolePermissionSeeder extends Seeder
             Role::SUPER_ADMIN => array_keys($permissions),
             Role::TENANT_OWNER => [
                 'dashboard.view',
+                'clients.view',
+                'clients.manage',
                 'tenant.view',
                 'tenant.manage',
                 'users.view',
@@ -50,6 +54,8 @@ class RolePermissionSeeder extends Seeder
             ],
             Role::TENANT_ADMIN => [
                 'dashboard.view',
+                'clients.view',
+                'clients.manage',
                 'tenant.view',
                 'users.view',
                 'users.manage',
@@ -58,11 +64,13 @@ class RolePermissionSeeder extends Seeder
             ],
             Role::SUPPORT_AGENT => [
                 'dashboard.view',
+                'clients.view',
                 'support.access',
                 'client.portal.access',
             ],
             Role::BILLING_MANAGER => [
                 'dashboard.view',
+                'clients.view',
                 'billing.access',
                 'client.portal.access',
             ],
