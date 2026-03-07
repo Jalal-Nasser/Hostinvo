@@ -25,10 +25,6 @@ export const metadata: Metadata = {
     "Hostinvo foundation scaffold for a multi-tenant SaaS hosting automation platform.",
 };
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
 export default async function LocaleLayout({
   children,
   params,

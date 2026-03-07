@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
+import { localePath } from "@/lib/auth";
 
 const services = [
   "app",
@@ -60,7 +62,7 @@ export default async function LocaleHomePage({
         </header>
 
         <section className="glass-card p-4 md:p-6">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {badges.map((badge) => (
               <span
                 key={badge}
@@ -69,6 +71,20 @@ export default async function LocaleHomePage({
                 {badge}
               </span>
             ))}
+
+            <Link
+              href={localePath(locale, "/auth/login")}
+              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
+            >
+              {t("loginCta")}
+            </Link>
+
+            <Link
+              href={localePath(locale, "/dashboard")}
+              className="rounded-full border border-line bg-white/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            >
+              {t("dashboardCta")}
+            </Link>
           </div>
         </section>
 

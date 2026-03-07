@@ -7,9 +7,9 @@ use App\Models\Tenant;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-trait BelongsToTenant
+trait TenantAware
 {
-    public static function bootBelongsToTenant(): void
+    public static function bootTenantAware(): void
     {
         static::addGlobalScope(new TenantScope());
 

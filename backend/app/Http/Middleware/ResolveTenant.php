@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Tenant;
+use App\Contracts\Repositories\Auth\TenantRepositoryInterface;
 use App\Support\Tenancy\CurrentTenant;
 use Closure;
 use Illuminate\Http\Request;
@@ -10,6 +10,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ResolveTenant
 {
+    public function __construct(
+        private readonly TenantRepositoryInterface $tenants,
+    ) {
+    }
+
     /**
      * Handle an incoming request.
      */
@@ -27,7 +32,7 @@ class ResolveTenant
 
         $tenant = $user->relationLoaded('tenant')
             ? $user->tenant
-            : Tenant::query()->find($user->tenant_id);
+            : $this->tenants->findById($user->tenant_id);
 
         $currentTenant->set($tenant);
         app()->instance('tenant', $tenant);

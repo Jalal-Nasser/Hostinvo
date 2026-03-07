@@ -2,16 +2,27 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasRoles;
+use App\Models\Concerns\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuids, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use HasRoles;
+    use HasUuids;
+    use Notifiable;
+    use SoftDeletes;
+    use TenantAware;
 
     public $incrementing = false;
 
@@ -27,6 +38,8 @@ class User extends Authenticatable
         'name',
         'email',
         'locale',
+        'is_active',
+        'last_login_at',
         'password',
     ];
 
@@ -49,6 +62,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -56,5 +71,17 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_users')
+            ->withPivot(['role_id', 'is_primary', 'joined_at'])
+            ->withTimestamps();
+    }
+
+    public function tenantUsers(): HasMany
+    {
+        return $this->hasMany(TenantUser::class);
     }
 }

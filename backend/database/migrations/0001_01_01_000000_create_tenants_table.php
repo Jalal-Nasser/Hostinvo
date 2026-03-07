@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('primary_domain')->nullable();
+            $table->string('primary_domain')->nullable()->unique();
             $table->string('default_locale', 5)->default('en');
             $table->string('default_currency', 3)->default('USD');
             $table->string('timezone')->default('UTC');
