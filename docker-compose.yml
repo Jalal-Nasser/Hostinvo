@@ -1,0 +1,108 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - hostinvo
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - "${APP_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      - app
+    networks:
+      - hostinvo
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${FORWARD_DB_PORT:-54320}:5432"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-hostinvo}"
+      POSTGRES_USER: "${POSTGRES_USER:-hostinvo}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-hostinvo}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hostinvo} -d ${POSTGRES_DB:-hostinvo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - hostinvo
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${FORWARD_REDIS_PORT:-63790}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - hostinvo
+
+  queue-worker:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    working_dir: /var/www/backend
+    command: ["php", "artisan", "queue:work", "redis", "--queue=default", "--sleep=1", "--tries=3", "--timeout=120"]
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    networks:
+      - hostinvo
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    working_dir: /var/www/backend
+    command: ["/bin/sh", "-lc", "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"]
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      app:
+        condition: service_started
+    networks:
+      - hostinvo
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "${FORWARD_MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+    networks:
+      - hostinvo
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  hostinvo:
+    driver: bridge

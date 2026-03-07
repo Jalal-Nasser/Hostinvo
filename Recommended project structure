@@ -1,0 +1,15 @@
+hostinvo
+│
+├── docs
+│   ├── hostinvo_ai_development_plan.md
+│   ├── SYSTEM_ARCHITECTURE.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── DOCKER_SETUP.md
+│   ├── PROVISIONING_ENGINE.md
+│   └── MODULE_ROADMAP.md
+│
+├── backend
+│
+├── frontend
+│
+└── docker

@@ -1,0 +1,28 @@
+{
+  "Home": {
+    "phase": "المرحلة 1",
+    "title": "الهيكل الأساسي لمنصة استضافة متعددة المستأجرين",
+    "description": "تم تجهيز Laravel 11 وNext.js 14 App Router وPostgreSQL 16 وRedis 7 وDocker Desktop بدون تنفيذ وحدات الأعمال قبل مرحلتها.",
+    "backendTitle": "أساس الخلفية",
+    "backendDescription": "تم إعداد Laravel للعمل مع PostgreSQL وRedis للتخزين المؤقت والجلسات والمهام، مع بنية `/api/v1` وتمهيد العزل متعدد المستأجرين.",
+    "frontendTitle": "أساس الواجهة",
+    "frontendDescription": "تبدأ واجهة Next.js بتوجيه للغتين الإنجليزية والعربية، مع `next-intl` وتبديل اتجاه الصفحة بالكامل إلى RTL عند العربية.",
+    "servicesTitle": "خدمات Docker للتطوير",
+    "servicesDescription": "ملف compose يشغل البنية المحلية المطلوبة لمرحلة التأسيس.",
+    "deliverablesTitle": "مخرجات المرحلة 1",
+    "deliverable1": "هيكل مستودع يشمل backend وfrontend وdocker وdocs وscripts",
+    "deliverable2": "هيكل Laravel 11 مع تمهيد للعزل متعدد المستأجرين",
+    "deliverable3": "هيكل Next.js 14 App Router مع دعم اللغات وRTL",
+    "deliverable4": "خدمات PHP وNginx وPostgreSQL وRedis وworker وscheduler وMailpit عبر Docker",
+    "deliverable5": "قوالب بيئة للتشغيل الخلفي والواجهة وcompose",
+    "badge1": "Laravel 11",
+    "badge2": "Next.js 14",
+    "badge3": "PostgreSQL 16",
+    "badge4": "Redis 7",
+    "badge5": "Docker Desktop",
+    "badge6": "الإنجليزية + العربية"
+  },
+  "LocaleSwitcher": {
+    "label": "اللغة"
+  }
+}
