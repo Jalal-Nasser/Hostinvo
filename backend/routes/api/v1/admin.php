@@ -1,12 +1,18 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\ClientController;
+use App\Http\Controllers\Api\V1\Admin\OrderCheckoutController;
+use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductGroupController;
 use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('clients', ClientController::class);
+Route::post('orders/review', [OrderCheckoutController::class, 'review'])->name('orders.review');
+Route::post('orders/place', [OrderCheckoutController::class, 'place'])->name('orders.place');
+Route::post('orders/{order}/place', [OrderController::class, 'place'])->name('orders.place-existing');
+Route::apiResource('orders', OrderController::class);
 Route::apiResource('product-groups', ProductGroupController::class);
 Route::apiResource('products', ProductController::class);
 Route::get('products/{product}/pricing', [ProductPricingController::class, 'show'])->name('products.pricing.show');

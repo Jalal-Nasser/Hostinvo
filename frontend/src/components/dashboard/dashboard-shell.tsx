@@ -62,6 +62,22 @@ export async function DashboardShell({
       label: t("newProductLink"),
       active: currentPath === "/dashboard/products/new",
     },
+    {
+      href: localePath(locale, "/dashboard/orders"),
+      label: t("ordersLink"),
+      active:
+        currentPath === "/dashboard/orders" ||
+        (currentPath.startsWith("/dashboard/orders/") &&
+          currentPath !== "/dashboard/orders/new" &&
+          currentPath !== "/dashboard/orders/checkout-review"),
+    },
+    {
+      href: localePath(locale, "/dashboard/orders/new"),
+      label: t("newOrderLink"),
+      active:
+        currentPath === "/dashboard/orders/new" ||
+        currentPath === "/dashboard/orders/checkout-review",
+    },
   ];
 
   return (

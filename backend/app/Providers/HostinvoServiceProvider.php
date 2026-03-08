@@ -7,11 +7,13 @@ use App\Contracts\Repositories\Auth\UserRepositoryInterface;
 use App\Contracts\Repositories\Catalog\ProductGroupRepositoryInterface;
 use App\Contracts\Repositories\Catalog\ProductRepositoryInterface;
 use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
+use App\Contracts\Repositories\Orders\OrderRepositoryInterface;
 use App\Repositories\Auth\EloquentTenantRepository;
 use App\Repositories\Auth\EloquentUserRepository;
 use App\Repositories\Catalog\EloquentProductGroupRepository;
 use App\Repositories\Catalog\EloquentProductRepository;
 use App\Repositories\Clients\EloquentClientRepository;
+use App\Repositories\Orders\EloquentOrderRepository;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,5 +30,6 @@ class HostinvoServiceProvider extends ServiceProvider
         $this->app->bind(ProductGroupRepositoryInterface::class, EloquentProductGroupRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
         $this->app->bind(ClientRepositoryInterface::class, EloquentClientRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
     }
 }

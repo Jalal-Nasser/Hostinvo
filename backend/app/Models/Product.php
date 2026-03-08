@@ -67,4 +67,9 @@ class Product extends Model
     {
         return $this->hasMany(ConfigurableOption::class)->orderBy('display_order');
     }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class)->latest();
+    }
 }

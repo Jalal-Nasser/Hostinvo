@@ -79,4 +79,9 @@ class Client extends Model
     {
         return $this->hasMany(ClientActivityLog::class)->latest();
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class)->latest();
+    }
 }

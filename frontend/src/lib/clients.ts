@@ -108,6 +108,7 @@ export async function fetchClientsFromCookies(
   filters: {
     search?: string;
     status?: string;
+    per_page?: string;
     page?: string;
   } = {},
 ): Promise<PaginatedClientResponse | null> {
