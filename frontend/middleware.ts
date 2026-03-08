@@ -32,7 +32,10 @@ export default function middleware(request: NextRequest) {
   const localizedPath = stripLocale(request.nextUrl.pathname, locale);
   const hasSession = request.cookies.has(sessionCookieName);
   const isProtected =
-    localizedPath === "/dashboard" || localizedPath.startsWith("/dashboard/");
+    localizedPath === "/dashboard" ||
+    localizedPath.startsWith("/dashboard/") ||
+    localizedPath === "/portal" ||
+    localizedPath.startsWith("/portal/");
 
   if (isProtected && !hasSession) {
     return NextResponse.redirect(new URL(`/${locale}/auth/login`, request.url));

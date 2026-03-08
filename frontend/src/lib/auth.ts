@@ -25,6 +25,8 @@ export type AuthenticatedUser = {
   }>;
 };
 
+export type WorkspaceMode = "admin" | "portal";
+
 export const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
 
@@ -61,4 +63,45 @@ export async function getAuthenticatedUserFromCookies(
   const payload = (await response.json()) as { data: AuthenticatedUser };
 
   return payload.data;
+}
+
+export function hasPermission(
+  user: AuthenticatedUser | null,
+  permission: string,
+): boolean {
+  if (!user) {
+    return false;
+  }
+
+  return user.permissions.some((item) => item.name === permission);
+}
+
+export function hasAnyPermission(
+  user: AuthenticatedUser | null,
+  permissions: string[],
+): boolean {
+  return permissions.some((permission) => hasPermission(user, permission));
+}
+
+export function canAccessAdminWorkspace(user: AuthenticatedUser | null): boolean {
+  return hasPermission(user, "dashboard.view");
+}
+
+export function canAccessClientPortal(user: AuthenticatedUser | null): boolean {
+  return hasPermission(user, "client.portal.access");
+}
+
+export function defaultWorkspacePath(
+  locale: string,
+  user: AuthenticatedUser | null,
+): string {
+  if (canAccessAdminWorkspace(user)) {
+    return localePath(locale, "/dashboard");
+  }
+
+  if (canAccessClientPortal(user)) {
+    return localePath(locale, "/portal");
+  }
+
+  return localePath(locale, "/dashboard");
 }
