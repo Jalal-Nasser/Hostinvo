@@ -49,6 +49,12 @@ class DomainPolicy
 
     private function portalOwnsDomain(User $user, Domain $domain): bool
     {
+        // Use the already-loaded relationship to avoid a redundant DB query
+        // on every authorization check (viewPortal and managePortalContacts).
+        if ($domain->relationLoaded('client')) {
+            return $domain->client?->user_id === $user->id;
+        }
+
         return $domain->client()->where('user_id', $user->id)->exists();
     }
 }

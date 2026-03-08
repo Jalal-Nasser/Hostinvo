@@ -12,6 +12,11 @@ class DomainContact extends Model
     use HasFactory;
     use TenantAware;
 
+    // BIGSERIAL PK — explicit declarations match the project pattern.
+    public $incrementing = true;
+
+    protected $keyType = 'int';
+
     public const TYPE_REGISTRANT = 'registrant';
     public const TYPE_ADMIN = 'admin';
     public const TYPE_TECH = 'tech';

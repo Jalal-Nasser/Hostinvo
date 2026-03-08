@@ -11,7 +11,6 @@ class DomainContactResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'tenant_id' => $this->tenant_id,
             'domain_id' => $this->domain_id,
             'type' => $this->type,
             'first_name' => $this->first_name,

@@ -11,7 +11,6 @@ class DomainRenewalResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'tenant_id' => $this->tenant_id,
             'domain_id' => $this->domain_id,
             'years' => $this->years,
             'price' => $this->price,

@@ -11,7 +11,6 @@ class RegistrarLogResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'tenant_id' => $this->tenant_id,
             'domain_id' => $this->domain_id,
             'operation' => $this->operation,
             'status' => $this->status,

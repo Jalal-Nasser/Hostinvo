@@ -16,9 +16,12 @@ class DomainRenewal extends Model
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_FAILED = 'failed';
 
+    // Append-only log table — no updated_at column exists in the schema.
     public $timestamps = false;
 
-    public const UPDATED_AT = null;
+    public $incrementing = true;
+
+    protected $keyType = 'int';
 
     protected $fillable = [
         'tenant_id',

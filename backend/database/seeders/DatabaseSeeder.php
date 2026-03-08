@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             Auth\RolePermissionSeeder::class,
             Auth\SuperAdminSeeder::class,
+            NotificationTemplateSeeder::class,
         ]);
     }
 }
