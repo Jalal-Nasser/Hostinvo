@@ -44,6 +44,24 @@ export async function DashboardShell({
       label: t("newClientLink"),
       active: currentPath === "/dashboard/clients/new",
     },
+    {
+      href: localePath(locale, "/dashboard/product-groups"),
+      label: t("productGroupsLink"),
+      active: currentPath === "/dashboard/product-groups",
+    },
+    {
+      href: localePath(locale, "/dashboard/products"),
+      label: t("productsLink"),
+      active:
+        currentPath === "/dashboard/products" ||
+        (currentPath.startsWith("/dashboard/products/") &&
+          currentPath !== "/dashboard/products/new"),
+    },
+    {
+      href: localePath(locale, "/dashboard/products/new"),
+      label: t("newProductLink"),
+      active: currentPath === "/dashboard/products/new",
+    },
   ];
 
   return (
