@@ -2,6 +2,7 @@
 
 namespace App\Provisioning\Contracts;
 
+use App\Models\Server;
 use App\Provisioning\Data\ProvisioningContext;
 use App\Provisioning\Data\ProvisioningResult;
 
@@ -10,6 +11,8 @@ interface ProvisioningDriverInterface
     public function code(): string;
 
     public function label(): string;
+
+    public function testConnection(Server $server): array;
 
     public function createAccount(ProvisioningContext $context): ProvisioningResult;
 

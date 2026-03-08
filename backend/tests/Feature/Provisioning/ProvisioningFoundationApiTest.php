@@ -11,6 +11,7 @@ use App\Models\TenantUser;
 use App\Models\User;
 use Database\Seeders\Auth\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -21,6 +22,20 @@ class ProvisioningFoundationApiTest extends TestCase
     public function test_tenant_admin_can_create_foundation_records_and_dispatch_provisioning(): void
     {
         $this->seed(RolePermissionSeeder::class);
+        Http::fake([
+            '*' => Http::response([
+                'metadata' => [
+                    'result' => 1,
+                    'reason' => 'OK',
+                    'command' => 'createacct',
+                ],
+                'data' => [
+                    'user' => 'customer1',
+                    'domain' => 'customer.example.test',
+                    'ip' => '127.0.0.1',
+                ],
+            ], 200),
+        ]);
 
         $tenant = Tenant::query()->create([
             'name' => 'Provisioning Tenant',
@@ -155,7 +170,8 @@ class ProvisioningFoundationApiTest extends TestCase
         $this->assertDatabaseHas('services', [
             'id' => $serviceId,
             'status' => 'active',
-            'provisioning_state' => 'placeholder',
+            'provisioning_state' => 'synced',
+            'username' => 'customer1',
         ]);
 
         $this->getJson('/api/v1/admin/services')

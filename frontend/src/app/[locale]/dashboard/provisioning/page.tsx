@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ProvisioningJobRetryButton } from "@/components/provisioning/provisioning-job-retry-button";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchProvisioningJobsFromCookies } from "@/lib/provisioning";
@@ -36,12 +37,20 @@ export default async function ProvisioningPage({
   return (
     <DashboardShell
       actions={
-        <Link
-          href={localePath(params.locale, "/dashboard/services")}
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-        >
-          {t("servicesTitle")}
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={localePath(params.locale, "/dashboard/servers")}
+            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          >
+            {t("serversTitle")}
+          </Link>
+          <Link
+            href={localePath(params.locale, "/dashboard/services")}
+            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          >
+            {t("servicesTitle")}
+          </Link>
+        </div>
       }
       currentPath="/dashboard/provisioning"
       description={t("jobsDescription")}
@@ -147,6 +156,15 @@ export default async function ProvisioningPage({
                       >
                         {t("viewServiceButton")}
                       </Link>
+                    ) : null}
+                    {job.status === "failed" ? (
+                      <ProvisioningJobRetryButton
+                        jobId={job.id}
+                        buttonLabel={t("retryJobButton")}
+                        runningLabel={t("retryingJob")}
+                        successLabel={t("retryJobSuccess")}
+                        errorLabel={t("retryJobError")}
+                      />
                     ) : null}
                   </div>
                 </div>

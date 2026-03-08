@@ -2,6 +2,7 @@
 
 namespace App\Provisioning\Drivers\Plesk;
 
+use App\Models\Server;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
 use App\Provisioning\Data\ProvisioningContext;
 use App\Provisioning\Data\ProvisioningResult;
@@ -16,6 +17,18 @@ class PleskDriver implements ProvisioningDriverInterface
     public function label(): string
     {
         return 'Plesk';
+    }
+
+    public function testConnection(Server $server): array
+    {
+        return [
+            'driver' => $this->code(),
+            'label' => $this->label(),
+            'successful' => true,
+            'message' => 'Plesk placeholder driver did not perform a live API connection test.',
+            'placeholder' => true,
+            'server_id' => $server->id,
+        ];
     }
 
     public function createAccount(ProvisioningContext $context): ProvisioningResult

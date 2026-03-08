@@ -57,6 +57,10 @@ class EloquentServerRepository implements ServerRepositoryInterface
                 'packages.product',
                 'services.client',
                 'services.product',
+                'provisioningJobs' => fn ($query) => $query->latest('requested_at')->limit(10),
+                'provisioningJobs.service',
+                'provisioningLogs' => fn ($query) => $query->latest('occurred_at')->limit(20),
+                'provisioningLogs.service',
             ])
             ->withCount(['packages', 'services'])
             ->find($id);

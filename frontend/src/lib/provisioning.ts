@@ -96,6 +96,67 @@ export type ProvisioningJobRecord = {
   updated_at: string;
 };
 
+export type ServerRecord = {
+  id: string;
+  tenant_id: string;
+  server_group_id: string | null;
+  name: string;
+  hostname: string;
+  panel_type: ServerPanelType;
+  api_endpoint: string | null;
+  api_port: number | null;
+  status: ServerStatus;
+  verify_ssl: boolean;
+  max_accounts: number | null;
+  current_accounts: number;
+  username: string | null;
+  has_credentials: boolean;
+  last_tested_at: string | null;
+  notes: string | null;
+  packages_count?: number;
+  services_count?: number;
+  group?: {
+    id: string;
+    name: string;
+    status: string;
+  } | null;
+  packages?: Array<{
+    id: string;
+    product_id: string;
+    panel_package_name: string;
+    display_name: string | null;
+    is_default: boolean;
+    metadata?: Record<string, unknown> | null;
+    product?: {
+      id: string;
+      name: string;
+      slug: string;
+      type: string;
+    } | null;
+  }>;
+  services?: Array<{
+    id: string;
+    reference_number: string;
+    status: ServiceStatus;
+    provisioning_state: ProvisioningState;
+    domain: string | null;
+  }>;
+  provisioning_jobs?: ProvisioningJobRecord[];
+  provisioning_logs?: ProvisioningLogRecord[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServerConnectionTestRecord = {
+  driver: string;
+  label: string;
+  successful: boolean;
+  message: string;
+  version?: string | null;
+  tested_at?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
 export type ServiceRecord = {
   id: string;
   tenant_id: string;
@@ -227,6 +288,61 @@ export async function fetchServicesFromCookies(
   return (await response.json()) as PaginatedResponse<ServiceRecord>;
 }
 
+export async function fetchServersFromCookies(
+  cookieHeader: string,
+  filters: {
+    search?: string;
+    status?: string;
+    panel_type?: string;
+    server_group_id?: string;
+    per_page?: string;
+    page?: string;
+  } = {},
+): Promise<PaginatedResponse<ServerRecord> | null> {
+  const url = new URL(`${apiBaseUrl}/admin/servers`);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      Cookie: cookieHeader,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as PaginatedResponse<ServerRecord>;
+}
+
+export async function fetchServerFromCookies(
+  cookieHeader: string,
+  serverId: string,
+): Promise<ServerRecord | null> {
+  const response = await fetch(`${apiBaseUrl}/admin/servers/${serverId}`, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      Cookie: cookieHeader,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { data: ServerRecord };
+
+  return payload.data;
+}
+
 export async function fetchServiceFromCookies(
   cookieHeader: string,
   serviceId: string,
@@ -287,6 +403,7 @@ export async function dispatchProvisioningOperation(
   serviceId: string,
   operation: ProvisioningOperation,
   payload: Record<string, unknown> = {},
+  xsrfToken?: string | null,
 ): Promise<ProvisioningJobRecord> {
   const response = await fetch(`${apiBaseUrl}/admin/services/${serviceId}/operations/${operation}`, {
     method: "POST",
@@ -294,6 +411,8 @@ export async function dispatchProvisioningOperation(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
     },
     body: JSON.stringify({ payload }),
   });

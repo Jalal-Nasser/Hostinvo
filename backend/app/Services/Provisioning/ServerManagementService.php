@@ -5,9 +5,13 @@ namespace App\Services\Provisioning;
 use App\Contracts\Repositories\Catalog\ProductRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServerGroupRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServerRepositoryInterface;
+use App\Models\ProvisioningLog;
 use App\Models\Server;
 use App\Models\ServerGroup;
 use App\Models\User;
+use App\Provisioning\Exceptions\ProvisioningException;
+use App\Provisioning\ProvisioningDriverManager;
+use App\Provisioning\ProvisioningLogger;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +23,8 @@ class ServerManagementService
         private readonly ServerGroupRepositoryInterface $serverGroups,
         private readonly ServerRepositoryInterface $servers,
         private readonly ProductRepositoryInterface $products,
+        private readonly ProvisioningDriverManager $drivers,
+        private readonly ProvisioningLogger $logger,
     ) {
     }
 
@@ -89,7 +95,7 @@ class ServerManagementService
     public function updateServer(Server $server, array $payload): Server
     {
         return DB::transaction(function () use ($server, $payload): Server {
-            $attributes = $this->buildServerAttributes($payload, $server->tenant_id);
+            $attributes = $this->buildServerAttributes($payload, $server->tenant_id, $server);
             $this->servers->update($server, $attributes);
 
             if (array_key_exists('packages', $payload)) {
@@ -120,7 +126,49 @@ class ServerManagementService
         });
     }
 
-    private function buildServerAttributes(array $payload, string $tenantId): array
+    public function testServerConnection(Server $server, User $actor): array
+    {
+        try {
+            $result = $this->drivers->forServer($server)->testConnection($server);
+            $testedAt = now();
+
+            $this->servers->update($server, [
+                'last_tested_at' => $testedAt,
+            ]);
+
+            $this->logger->recordServerEvent(
+                server: $server,
+                operation: 'test_connection',
+                status: ProvisioningLog::STATUS_COMPLETED,
+                message: $result['message'] ?? __('provisioning.server_connection_tested'),
+                requestPayload: [
+                    'actor_user_id' => $actor->id,
+                ],
+                responsePayload: $result,
+            );
+
+            return array_merge($result, [
+                'tested_at' => $testedAt->toIso8601String(),
+            ]);
+        } catch (ProvisioningException $exception) {
+            $this->logger->recordServerEvent(
+                server: $server,
+                operation: 'test_connection',
+                status: ProvisioningLog::STATUS_FAILED,
+                message: $exception->getMessage(),
+                requestPayload: [
+                    'actor_user_id' => $actor->id,
+                ],
+                responsePayload: $exception->responsePayload(),
+            );
+
+            throw ValidationException::withMessages([
+                'server' => [$exception->getMessage()],
+            ]);
+        }
+    }
+
+    private function buildServerAttributes(array $payload, string $tenantId, ?Server $server = null): array
     {
         $serverGroupId = $payload['server_group_id'] ?? null;
 
@@ -134,6 +182,9 @@ class ServerManagementService
             }
         }
 
+        $existingCredentials = (array) ($server?->credentials ?? []);
+        $incomingCredentials = Arr::only($payload['credentials'] ?? [], ['api_token', 'api_key', 'api_secret', 'notes']);
+
         return [
             'tenant_id' => $tenantId,
             'server_group_id' => $serverGroupId,
@@ -146,8 +197,11 @@ class ServerManagementService
             'verify_ssl' => (bool) ($payload['verify_ssl'] ?? true),
             'max_accounts' => $payload['max_accounts'] ?? 0,
             'current_accounts' => $payload['current_accounts'] ?? 0,
-            'username' => $payload['username'] ?? null,
-            'credentials' => Arr::only($payload['credentials'] ?? [], ['api_token', 'api_key', 'api_secret', 'notes']),
+            'username' => $payload['username'] ?? $server?->username,
+            'credentials' => array_filter(
+                array_merge($existingCredentials, $incomingCredentials),
+                static fn (mixed $value): bool => $value !== null && $value !== ''
+            ),
             'last_tested_at' => $payload['last_tested_at'] ?? null,
             'notes' => $payload['notes'] ?? null,
         ];

@@ -11,6 +11,7 @@ readonly class ProvisioningResult
         public array $requestPayload = [],
         public array $responsePayload = [],
         public array $serviceAttributes = [],
+        public array $operationPayload = [],
     ) {
     }
 
@@ -18,7 +19,8 @@ readonly class ProvisioningResult
         string $message,
         array $requestPayload = [],
         array $responsePayload = [],
-        array $serviceAttributes = []
+        array $serviceAttributes = [],
+        array $operationPayload = [],
     ): self {
         return new self(
             successful: true,
@@ -27,6 +29,7 @@ readonly class ProvisioningResult
             requestPayload: $requestPayload,
             responsePayload: $responsePayload,
             serviceAttributes: $serviceAttributes,
+            operationPayload: $operationPayload,
         );
     }
 
@@ -34,7 +37,8 @@ readonly class ProvisioningResult
         string $message,
         array $requestPayload = [],
         array $responsePayload = [],
-        array $serviceAttributes = []
+        array $serviceAttributes = [],
+        array $operationPayload = [],
     ): self {
         return new self(
             successful: true,
@@ -43,6 +47,7 @@ readonly class ProvisioningResult
             requestPayload: $requestPayload,
             responsePayload: $responsePayload,
             serviceAttributes: $serviceAttributes,
+            operationPayload: $operationPayload,
         );
     }
 
@@ -50,7 +55,8 @@ readonly class ProvisioningResult
         string $message,
         array $requestPayload = [],
         array $responsePayload = [],
-        array $serviceAttributes = []
+        array $serviceAttributes = [],
+        array $operationPayload = [],
     ): self {
         return new self(
             successful: false,
@@ -59,6 +65,7 @@ readonly class ProvisioningResult
             requestPayload: $requestPayload,
             responsePayload: $responsePayload,
             serviceAttributes: $serviceAttributes,
+            operationPayload: $operationPayload,
         );
     }
 }

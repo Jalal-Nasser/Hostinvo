@@ -17,4 +17,10 @@ class ProvisioningJobPolicy
         return $user->tenant_id === $job->tenant_id
             && $user->hasPermissionTo(['provisioning.view', 'provisioning.manage']);
     }
+
+    public function retry(User $user, ProvisioningJob $job): bool
+    {
+        return $user->tenant_id === $job->tenant_id
+            && $user->hasPermissionTo('provisioning.manage');
+    }
 }

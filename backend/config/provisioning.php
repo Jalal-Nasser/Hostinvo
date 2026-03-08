@@ -6,6 +6,14 @@ return [
         'backoff' => [60, 300, 900],
     ],
 
+    'cpanel' => [
+        'default_port' => env('HOSTINVO_CPANEL_DEFAULT_PORT', 2087),
+        'timeout' => env('HOSTINVO_CPANEL_TIMEOUT', 30),
+        'connect_timeout' => env('HOSTINVO_CPANEL_CONNECT_TIMEOUT', 10),
+        'retry_times' => env('HOSTINVO_CPANEL_RETRY_TIMES', 3),
+        'retry_sleep_ms' => env('HOSTINVO_CPANEL_RETRY_SLEEP_MS', 500),
+    ],
+
     'drivers' => [
         'cpanel' => \App\Provisioning\Drivers\Cpanel\CpanelDriver::class,
         'plesk' => \App\Provisioning\Drivers\Plesk\PleskDriver::class,

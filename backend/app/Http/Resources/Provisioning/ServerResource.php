@@ -34,6 +34,8 @@ class ServerResource extends JsonResource
                 'status' => $this->group->status,
             ] : null),
             'packages' => ServerPackageResource::collection($this->whenLoaded('packages')),
+            'provisioning_jobs' => ProvisioningJobResource::collection($this->whenLoaded('provisioningJobs')),
+            'provisioning_logs' => ProvisioningLogResource::collection($this->whenLoaded('provisioningLogs')),
             'services' => $this->whenLoaded('services', fn () => $this->services->map(fn ($service) => [
                 'id' => $service->id,
                 'reference_number' => $service->reference_number,

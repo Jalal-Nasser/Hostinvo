@@ -9,6 +9,12 @@ trait HasServerPayloadRules
 {
     public function serverPayloadRules(): array
     {
+        $existingServer = $this->route('server');
+        $requiresCpanelUsername = fn () => $this->input('panel_type') === Server::PANEL_CPANEL
+            && ($this->isMethod('post') || blank($existingServer?->username));
+        $requiresCpanelToken = fn () => $this->input('panel_type') === Server::PANEL_CPANEL
+            && ($this->isMethod('post') || blank($existingServer?->credentials['api_token'] ?? null));
+
         return [
             'server_group_id' => ['nullable', 'uuid'],
             'name' => ['required', 'string', 'max:255'],
@@ -20,9 +26,19 @@ trait HasServerPayloadRules
             'verify_ssl' => ['nullable', 'boolean'],
             'max_accounts' => ['nullable', 'integer', 'min:0'],
             'current_accounts' => ['nullable', 'integer', 'min:0'],
-            'username' => ['nullable', 'string', 'max:255'],
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf($requiresCpanelUsername),
+            ],
             'credentials' => ['nullable', 'array'],
-            'credentials.api_token' => ['nullable', 'string', 'max:2048'],
+            'credentials.api_token' => [
+                'nullable',
+                'string',
+                'max:2048',
+                Rule::requiredIf($requiresCpanelToken),
+            ],
             'credentials.api_key' => ['nullable', 'string', 'max:2048'],
             'credentials.api_secret' => ['nullable', 'string', 'max:2048'],
             'credentials.notes' => ['nullable', 'string'],

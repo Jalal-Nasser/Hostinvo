@@ -16,6 +16,7 @@ use App\Models\Service;
 use App\Models\ServiceSuspension;
 use App\Models\User;
 use App\Provisioning\Data\ProvisioningContext;
+use App\Provisioning\Exceptions\ProvisioningException;
 use App\Provisioning\ProvisioningDriverManager;
 use App\Provisioning\ProvisioningJobDispatcher;
 use App\Provisioning\ProvisioningLogger;
@@ -119,7 +120,7 @@ class ProvisioningService
         }
 
         return DB::transaction(function () use ($service, $operation, $actor, $payload): ProvisioningJob {
-            [$server, $serverPackage] = $this->resolveTargetInfrastructure($service);
+            [$server, $serverPackage] = $this->resolveTargetInfrastructure($service, $payload);
 
             $serviceAttributes = [
                 'server_id' => $server?->id,
@@ -192,7 +193,7 @@ class ProvisioningService
             $job->payload ?? [],
         );
 
-        [$server, $serverPackage] = $this->resolveTargetInfrastructure($service);
+        [$server, $serverPackage] = $this->resolveTargetInfrastructure($service, $job->payload ?? []);
         $driver = $this->drivers->forServer($server);
         $context = new ProvisioningContext(
             service: $service,
@@ -202,7 +203,39 @@ class ProvisioningService
             payload: $job->payload ?? [],
         );
 
-        $result = $this->executeDriverOperation($driver, $job->operation, $context);
+        try {
+            $result = $this->executeDriverOperation($driver, $job->operation, $context);
+        } catch (ProvisioningException $exception) {
+            $this->jobs->update($job, [
+                'attempts' => max($attempts, 1),
+                'error_message' => $exception->getMessage(),
+                'result_payload' => $exception->responsePayload() === [] ? $job->result_payload : $exception->responsePayload(),
+            ]);
+
+            $this->logger->record(
+                $job,
+                ProvisioningLog::STATUS_FAILED,
+                $exception->getMessage(),
+                $exception->requestPayload(),
+                $exception->responsePayload(),
+            );
+
+            throw $exception;
+        } catch (Throwable $exception) {
+            $this->jobs->update($job, [
+                'attempts' => max($attempts, 1),
+                'error_message' => $exception->getMessage(),
+            ]);
+
+            $this->logger->record(
+                $job,
+                ProvisioningLog::STATUS_FAILED,
+                $exception->getMessage(),
+                $job->payload ?? [],
+            );
+
+            throw $exception;
+        }
 
         if (! $result->successful) {
             $this->markQueuedJobFailed($jobId, $result->message, $result->requestPayload, $result->responsePayload, false);
@@ -229,7 +262,7 @@ class ProvisioningService
                 server: $server,
                 serverPackage: $serverPackage,
                 operation: $job->operation,
-                payload: $job->payload ?? [],
+                payload: array_merge($job->payload ?? [], $result->operationPayload),
             );
 
             $serviceAttributes = array_merge($serviceAttributes, $result->serviceAttributes);
@@ -295,6 +328,37 @@ class ProvisioningService
                 $responsePayload,
             );
         });
+    }
+
+    public function retryFailedJob(ProvisioningJob $job, User $actor): ProvisioningJob
+    {
+        if ($job->tenant_id !== $actor->tenant_id || $job->status !== ProvisioningJob::STATUS_FAILED) {
+            throw ValidationException::withMessages([
+                'provisioning_job' => ['Only failed provisioning jobs from the active tenant can be retried.'],
+            ]);
+        }
+
+        $service = $this->services->findById($job->service_id);
+
+        if (! $service || $service->tenant_id !== $actor->tenant_id) {
+            throw ValidationException::withMessages([
+                'service' => ['The provisioning service record could not be found for retry.'],
+            ]);
+        }
+
+        $this->logger->record(
+            $job,
+            ProvisioningLog::STATUS_QUEUED,
+            __('provisioning.server_connection_retry_dispatched'),
+            ['retry_requested_by' => $actor->id],
+        );
+
+        return $this->dispatchOperation(
+            service: $service,
+            operation: $job->operation,
+            actor: $actor,
+            payload: $job->payload ?? [],
+        );
     }
 
     private function buildServiceAttributes(
@@ -400,9 +464,27 @@ class ProvisioningService
         ];
     }
 
-    private function resolveTargetInfrastructure(Service $service): array
+    private function resolveTargetInfrastructure(Service $service, array $payload = []): array
     {
         $service = $this->getServiceForDisplay($service);
+
+        if (filled($payload['server_package_id'] ?? null)) {
+            $serverPackage = \App\Models\ServerPackage::query()
+                ->with('server')
+                ->find($payload['server_package_id']);
+
+            if (! $serverPackage || $serverPackage->tenant_id !== $service->tenant_id || $serverPackage->product_id !== $service->product_id) {
+                throw ValidationException::withMessages([
+                    'server_package_id' => ['The selected server package is invalid for the current tenant.'],
+                ]);
+            }
+
+            $server = $serverPackage->server;
+            $this->serverSelector->assertActiveServer($server);
+
+            return [$server, $serverPackage];
+        }
+
         $server = $this->serverSelector->resolveServerForService($service);
         $serverPackage = $this->serverSelector->resolvePackageForService($service);
 
@@ -449,7 +531,7 @@ class ProvisioningService
         ];
 
         return match ($operation) {
-            ProvisioningJob::OPERATION_CREATE_ACCOUNT => $this->applyCreateAccountState($service, $server, $attributes),
+            ProvisioningJob::OPERATION_CREATE_ACCOUNT => $this->applyCreateAccountState($service, $server, $attributes, $payload),
             ProvisioningJob::OPERATION_SUSPEND_ACCOUNT => $this->applySuspendState($service, $attributes),
             ProvisioningJob::OPERATION_UNSUSPEND_ACCOUNT => $this->applyUnsuspendState($service, $attributes),
             ProvisioningJob::OPERATION_TERMINATE_ACCOUNT => $this->applyTerminateState($service, $server, $attributes),
@@ -458,30 +540,34 @@ class ProvisioningService
             ]),
             ProvisioningJob::OPERATION_RESET_PASSWORD => $this->applyResetPasswordState($service, $attributes, $payload),
             ProvisioningJob::OPERATION_SYNC_USAGE => $this->applyUsageSyncState($service, $attributes, $payload),
-            ProvisioningJob::OPERATION_SYNC_SERVICE_STATUS => array_merge($attributes, [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-                'last_synced_at' => now(),
-            ]),
+            ProvisioningJob::OPERATION_SYNC_SERVICE_STATUS => $this->applyStatusSyncState($service, $attributes, $payload),
             default => $attributes,
         };
     }
 
-    private function applyCreateAccountState(Service $service, Server $server, array $attributes): array
+    private function applyCreateAccountState(Service $service, Server $server, array $attributes, array $payload): array
     {
         if (! in_array($service->status, [Service::STATUS_ACTIVE, Service::STATUS_SUSPENDED, Service::STATUS_TERMINATED], true)) {
             $server->increment('current_accounts');
         }
 
+        $username = $payload['username'] ?? $service->username;
+        $password = $payload['password'] ?? null;
+        $existingCredentials = (array) ($service->credentials?->credentials ?? []);
+
         $service->credentials()->updateOrCreate(
             ['service_id' => $service->id],
             [
                 'tenant_id' => $service->tenant_id,
+                'credentials' => array_filter(array_merge($existingCredentials, [
+                    'username' => $username,
+                    'password' => $password,
+                ]), static fn (mixed $value): bool => filled($value)),
                 'control_panel_url' => $server->api_endpoint,
                 'access_url' => filled($service->domain)
                     ? sprintf('https://%s', $service->domain)
                     : null,
                 'metadata' => [
-                    'placeholder' => true,
                     'driver' => $server->panel_type,
                 ],
             ]
@@ -491,7 +577,8 @@ class ProvisioningService
             'status' => Service::STATUS_ACTIVE,
             'provisioning_state' => Service::PROVISIONING_PLACEHOLDER,
             'activated_at' => $service->activated_at ?? now(),
-            'external_reference' => $service->external_reference ?: Str::upper($server->panel_type . '-' . Str::random(10)),
+            'external_reference' => $service->external_reference ?: ($username ?: Str::upper($server->panel_type . '-' . Str::random(10))),
+            'username' => $username,
         ]);
     }
 
@@ -502,7 +589,7 @@ class ProvisioningService
             'user_id' => null,
             'reason' => 'Suspended by provisioning foundation operation.',
             'suspended_at' => now(),
-            'metadata' => ['placeholder' => true],
+            'metadata' => ['driver' => optional($service->server)->panel_type],
         ]);
 
         return array_merge($attributes, [
@@ -552,12 +639,16 @@ class ProvisioningService
             ['service_id' => $service->id],
             [
                 'tenant_id' => $service->tenant_id,
-                'credentials' => [
-                    'password' => $password,
-                ],
+                'credentials' => array_filter(array_merge(
+                    (array) ($service->credentials?->credentials ?? []),
+                    [
+                        'username' => $service->username,
+                        'password' => $password,
+                    ],
+                ), static fn (mixed $value): bool => filled($value)),
                 'metadata' => [
-                    'placeholder' => true,
                     'updated_at' => now()->toIso8601String(),
+                    'driver' => optional($service->server)->panel_type,
                 ],
             ]
         );
@@ -581,7 +672,7 @@ class ProvisioningService
                 'databases_used' => (int) ($payload['databases_used'] ?? 0),
                 'last_synced_at' => now(),
                 'metadata' => [
-                    'placeholder' => true,
+                    'driver' => optional($service->server)->panel_type,
                 ],
             ]
         );
@@ -589,6 +680,50 @@ class ProvisioningService
         return array_merge($attributes, [
             'provisioning_state' => Service::PROVISIONING_SYNCED,
             'last_synced_at' => now(),
+        ]);
+    }
+
+    private function applyStatusSyncState(Service $service, array $attributes, array $payload): array
+    {
+        $status = $payload['service_status'] ?? $service->status;
+
+        if (! in_array($status, Service::statuses(), true)) {
+            $status = $service->status;
+        }
+
+        if ($status === Service::STATUS_SUSPENDED) {
+            $activeSuspension = $service->suspensions()
+                ->whereNull('unsuspended_at')
+                ->latest('suspended_at')
+                ->first();
+
+            if (! $activeSuspension) {
+                $service->suspensions()->create([
+                    'tenant_id' => $service->tenant_id,
+                    'user_id' => null,
+                    'reason' => $payload['suspend_reason'] ?? 'Suspended on the control panel.',
+                    'suspended_at' => now(),
+                    'metadata' => ['driver' => optional($service->server)->panel_type],
+                ]);
+            }
+        }
+
+        if ($status === Service::STATUS_ACTIVE) {
+            $service->suspensions()
+                ->whereNull('unsuspended_at')
+                ->latest('suspended_at')
+                ->first()
+                ?->update([
+                    'unsuspended_at' => now(),
+                ]);
+        }
+
+        return array_merge($attributes, [
+            'status' => $status,
+            'provisioning_state' => Service::PROVISIONING_SYNCED,
+            'last_synced_at' => now(),
+            'suspended_at' => $status === Service::STATUS_SUSPENDED ? ($service->suspended_at ?? now()) : null,
+            'terminated_at' => $status === Service::STATUS_TERMINATED ? ($service->terminated_at ?? now()) : $service->terminated_at,
         ]);
     }
 

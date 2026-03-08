@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ensureCsrfCookie, readCookie } from "@/components/provisioning/http";
 import {
   dispatchProvisioningOperation,
   type ProvisioningOperation,
@@ -43,7 +44,10 @@ export function ServiceOperationPanel({
     setIsPending(true);
 
     try {
-      await dispatchProvisioningOperation(serviceId, operation);
+      await ensureCsrfCookie();
+      const xsrfToken = readCookie("XSRF-TOKEN");
+
+      await dispatchProvisioningOperation(serviceId, operation, {}, xsrfToken);
       setMessage(successLabel.replace("{operation}", operation));
       router.refresh();
     } catch (dispatchError) {

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ServiceOperationPanel } from "@/components/provisioning/service-operation-panel";
+import { ProvisioningJobRetryButton } from "@/components/provisioning/provisioning-job-retry-button";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
@@ -36,10 +37,32 @@ export default async function ServiceDetailsPage({
     { value: "sync_service_status", label: t("operationSyncServiceStatus") },
   ] as const;
 
+  function operationLabel(operation: string) {
+    const match = operations.find((entry) => entry.value === operation);
+
+    if (match) {
+      return match.label;
+    }
+
+    if (operation === "test_connection") {
+      return t("operationTestConnection");
+    }
+
+    return operation;
+  }
+
   return (
     <DashboardShell
       actions={
         <div className="flex flex-wrap gap-3">
+          {service.server?.id ? (
+            <Link
+              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              href={localePath(params.locale, `/dashboard/servers/${service.server.id}`)}
+            >
+              {t("viewServerButton")}
+            </Link>
+          ) : null}
           <Link
             className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/services")}
@@ -173,7 +196,7 @@ export default async function ServiceDetailsPage({
             <div className="mt-6 grid gap-4">
               {service.provisioning_logs.slice(0, 6).map((log) => (
                 <div key={log.id} className="rounded-[1.5rem] border border-line bg-white/80 p-4">
-                  <p className="text-sm font-semibold text-foreground">{t(`operationLabel.${log.operation}`)}</p>
+                  <p className="text-sm font-semibold text-foreground">{operationLabel(log.operation)}</p>
                   <p className="mt-2 text-sm text-muted">{log.message}</p>
                 </div>
               ))}
@@ -192,12 +215,23 @@ export default async function ServiceDetailsPage({
               <article key={job.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <p className="text-lg font-semibold text-foreground">{t(`operationLabel.${job.operation}`)}</p>
+                    <p className="text-lg font-semibold text-foreground">{operationLabel(job.operation)}</p>
                     <p className="mt-2 text-sm text-muted">
                       {t(`jobStatus${job.status.charAt(0).toUpperCase()}${job.status.slice(1)}`)}
                     </p>
                   </div>
-                  <p className="text-sm text-muted">{job.requested_at ?? t("notAvailable")}</p>
+                  <div className="grid gap-3 md:justify-items-end">
+                    <p className="text-sm text-muted">{job.requested_at ?? t("notAvailable")}</p>
+                    {job.status === "failed" ? (
+                      <ProvisioningJobRetryButton
+                        jobId={job.id}
+                        buttonLabel={t("retryJobButton")}
+                        runningLabel={t("retryingJob")}
+                        successLabel={t("retryJobSuccess")}
+                        errorLabel={t("retryJobError")}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}

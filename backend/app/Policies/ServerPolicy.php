@@ -34,4 +34,10 @@ class ServerPolicy
         return $user->tenant_id === $server->tenant_id
             && $user->hasPermissionTo('servers.manage');
     }
+
+    public function testConnection(User $user, Server $server): bool
+    {
+        return $user->tenant_id === $server->tenant_id
+            && $user->hasPermissionTo('servers.manage');
+    }
 }

@@ -67,7 +67,7 @@ class ServerSelector
             ->first();
     }
 
-    private function assertActiveServer(Server $server): void
+    public function assertActiveServer(Server $server): void
     {
         if ($server->status !== Server::STATUS_ACTIVE) {
             throw ValidationException::withMessages([
