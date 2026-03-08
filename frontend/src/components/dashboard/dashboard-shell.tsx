@@ -78,6 +78,24 @@ export async function DashboardShell({
         currentPath === "/dashboard/orders/new" ||
         currentPath === "/dashboard/orders/checkout-review",
     },
+    {
+      href: localePath(locale, "/dashboard/invoices"),
+      label: t("invoicesLink"),
+      active:
+        currentPath === "/dashboard/invoices" ||
+        (currentPath.startsWith("/dashboard/invoices/") &&
+          currentPath !== "/dashboard/invoices/new"),
+    },
+    {
+      href: localePath(locale, "/dashboard/invoices/new"),
+      label: t("newInvoiceLink"),
+      active: currentPath === "/dashboard/invoices/new",
+    },
+    {
+      href: localePath(locale, "/dashboard/payments"),
+      label: t("paymentsLink"),
+      active: currentPath === "/dashboard/payments",
+    },
   ];
 
   return (

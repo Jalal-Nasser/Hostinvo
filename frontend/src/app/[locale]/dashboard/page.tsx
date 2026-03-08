@@ -140,6 +140,31 @@ export default async function DashboardPage({
               </Link>
             </div>
           </div>
+
+          <div className="mt-4 rounded-[1.5rem] border border-line bg-[#fffdf8] p-5">
+            <h2 className="text-xl font-semibold text-foreground">{t("billingModuleTitle")}</h2>
+            <p className="mt-3 text-sm leading-7 text-muted">{t("billingModuleDescription")}</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
+                href={localePath(params.locale, "/dashboard/invoices")}
+              >
+                {t("invoicesLink")}
+              </Link>
+              <Link
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                href={localePath(params.locale, "/dashboard/invoices/new")}
+              >
+                {t("newInvoiceLink")}
+              </Link>
+              <Link
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                href={localePath(params.locale, "/dashboard/payments")}
+              >
+                {t("paymentsLink")}
+              </Link>
+            </div>
+          </div>
         </aside>
       </section>
     </DashboardShell>

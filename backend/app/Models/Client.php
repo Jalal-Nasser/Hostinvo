@@ -84,4 +84,14 @@ class Client extends Model
     {
         return $this->hasMany(Order::class)->latest();
     }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('issue_date');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('paid_at');
+    }
 }

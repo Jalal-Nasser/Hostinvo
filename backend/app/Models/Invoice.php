@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Order extends Model
+class Invoice extends Model
 {
     use HasFactory;
     use HasUuids;
@@ -18,11 +18,11 @@ class Order extends Model
     use TenantAware;
 
     public const STATUS_DRAFT = 'draft';
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_ACCEPTED = 'accepted';
+    public const STATUS_UNPAID = 'unpaid';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_OVERDUE = 'overdue';
     public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_FRAUD = 'fraud';
-    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_REFUNDED = 'refunded';
 
     public const DISCOUNT_FIXED = 'fixed';
     public const DISCOUNT_PERCENTAGE = 'percentage';
@@ -34,38 +34,53 @@ class Order extends Model
     protected $fillable = [
         'tenant_id',
         'client_id',
+        'order_id',
         'user_id',
         'reference_number',
         'status',
         'currency',
-        'coupon_code',
+        'issue_date',
+        'due_date',
+        'paid_at',
+        'cancelled_at',
+        'refunded_at',
+        'recurring_cycle',
+        'next_invoice_date',
         'discount_type',
         'discount_value',
         'discount_amount_minor',
+        'credit_applied_minor',
         'tax_rate_bps',
         'tax_amount_minor',
         'subtotal_minor',
         'total_minor',
+        'amount_paid_minor',
+        'refunded_amount_minor',
+        'balance_due_minor',
         'notes',
-        'placed_at',
-        'accepted_at',
-        'completed_at',
-        'cancelled_at',
+        'metadata',
     ];
 
     protected function casts(): array
     {
         return [
+            'issue_date' => 'date',
+            'due_date' => 'date',
+            'paid_at' => 'datetime',
+            'cancelled_at' => 'datetime',
+            'refunded_at' => 'datetime',
+            'next_invoice_date' => 'date',
             'discount_value' => 'integer',
             'discount_amount_minor' => 'integer',
+            'credit_applied_minor' => 'integer',
             'tax_rate_bps' => 'integer',
             'tax_amount_minor' => 'integer',
             'subtotal_minor' => 'integer',
             'total_minor' => 'integer',
-            'placed_at' => 'datetime',
-            'accepted_at' => 'datetime',
-            'completed_at' => 'datetime',
-            'cancelled_at' => 'datetime',
+            'amount_paid_minor' => 'integer',
+            'refunded_amount_minor' => 'integer',
+            'balance_due_minor' => 'integer',
+            'metadata' => 'array',
         ];
     }
 
@@ -73,11 +88,11 @@ class Order extends Model
     {
         return [
             self::STATUS_DRAFT,
-            self::STATUS_PENDING,
-            self::STATUS_ACCEPTED,
+            self::STATUS_UNPAID,
+            self::STATUS_PAID,
+            self::STATUS_OVERDUE,
             self::STATUS_CANCELLED,
-            self::STATUS_FRAUD,
-            self::STATUS_COMPLETED,
+            self::STATUS_REFUNDED,
         ];
     }
 
@@ -94,6 +109,11 @@ class Order extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -101,11 +121,16 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class)->orderBy('created_at');
+        return $this->hasMany(InvoiceItem::class)->orderBy('created_at');
     }
 
-    public function invoices(): HasMany
+    public function payments(): HasMany
     {
-        return $this->hasMany(Invoice::class)->latest('issue_date');
+        return $this->hasMany(Payment::class)->latest('paid_at');
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class)->latest('occurred_at');
     }
 }
