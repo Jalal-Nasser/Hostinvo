@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\ClientController;
+use App\Http\Controllers\Api\V1\Admin\DomainContactController;
+use App\Http\Controllers\Api\V1\Admin\DomainController;
+use App\Http\Controllers\Api\V1\Admin\DomainRenewalController;
 use App\Http\Controllers\Api\V1\Admin\InvoiceController;
 use App\Http\Controllers\Api\V1\Admin\InvoiceGatewayController;
 use App\Http\Controllers\Api\V1\Admin\InvoicePaymentController;
@@ -12,6 +15,7 @@ use App\Http\Controllers\Api\V1\Admin\ProductGroupController;
 use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
 use App\Http\Controllers\Api\V1\Admin\ProvisioningJobController;
 use App\Http\Controllers\Api\V1\Admin\ProvisioningJobRetryController;
+use App\Http\Controllers\Api\V1\Admin\RegistrarLogController;
 use App\Http\Controllers\Api\V1\Admin\ServerController;
 use App\Http\Controllers\Api\V1\Admin\ServerConnectionTestController;
 use App\Http\Controllers\Api\V1\Admin\ServerGroupController;
@@ -26,6 +30,12 @@ use App\Http\Controllers\Api\V1\Admin\TicketStatusController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('clients', ClientController::class);
+Route::get('domains/{domain}/contacts', [DomainContactController::class, 'index'])->name('domains.contacts.index');
+Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update'])->name('domains.contacts.update');
+Route::get('domains/{domain}/renewals', [DomainRenewalController::class, 'index'])->name('domains.renewals.index');
+Route::post('domains/{domain}/renewals', [DomainRenewalController::class, 'store'])->name('domains.renewals.store');
+Route::get('domains/{domain}/registrar-logs', [RegistrarLogController::class, 'index'])->name('domains.registrar-logs.index');
+Route::apiResource('domains', DomainController::class);
 Route::get('invoices/{invoice}/gateway-options', [InvoiceGatewayController::class, 'index'])->name('invoices.gateway-options.index');
 Route::post('invoices/{invoice}/gateway-checkouts', [InvoiceGatewayController::class, 'store'])->name('invoices.gateway-checkouts.store');
 Route::post('invoices/{invoice}/gateway-checkouts/paypal/capture', [InvoiceGatewayController::class, 'capturePayPal'])->name('invoices.gateway-checkouts.paypal.capture');

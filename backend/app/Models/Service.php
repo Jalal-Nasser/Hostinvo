@@ -152,4 +152,9 @@ class Service extends Model
     {
         return $this->hasMany(ProvisioningLog::class)->latest('occurred_at');
     }
+
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class)->latest('expiry_date');
+    }
 }

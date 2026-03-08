@@ -150,6 +150,21 @@ export async function WorkspaceShell({
       visible: hasAnyPermission(user, ["payments.view", "payments.manage"]),
     },
     {
+      href: localePath(locale, "/dashboard/domains"),
+      label: dashboardT("domainsLink"),
+      active:
+        currentPath === "/dashboard/domains" ||
+        (currentPath.startsWith("/dashboard/domains/") &&
+          currentPath !== "/dashboard/domains/new"),
+      visible: hasAnyPermission(user, ["domains.view", "domains.manage"]),
+    },
+    {
+      href: localePath(locale, "/dashboard/domains/new"),
+      label: dashboardT("newDomainLink"),
+      active: currentPath === "/dashboard/domains/new",
+      visible: hasAnyPermission(user, ["domains.manage"]),
+    },
+    {
       href: localePath(locale, "/dashboard/tickets"),
       label: dashboardT("ticketsLink"),
       active:
@@ -207,6 +222,13 @@ export async function WorkspaceShell({
       label: portalT("overviewLink"),
       active: currentPath === "/portal",
       visible: true,
+    },
+    {
+      href: localePath(locale, "/portal/domains"),
+      label: portalT("domainsLink"),
+      active:
+        currentPath === "/portal/domains" || currentPath.startsWith("/portal/domains/"),
+      visible: hasAnyPermission(user, ["client.portal.access"]),
     },
     {
       href: localePath(locale, "/dashboard/services"),

@@ -104,4 +104,9 @@ class Client extends Model
     {
         return $this->hasMany(Ticket::class)->latest('last_reply_at');
     }
+
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class)->latest('expiry_date');
+    }
 }
