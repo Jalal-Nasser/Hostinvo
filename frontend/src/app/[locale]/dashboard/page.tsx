@@ -168,6 +168,31 @@ export default async function DashboardPage({
           </div>
 
           <div className="mt-4 rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <h2 className="text-xl font-semibold text-foreground">{t("supportModuleTitle")}</h2>
+            <p className="mt-3 text-sm leading-7 text-muted">{t("supportModuleDescription")}</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
+                href={localePath(params.locale, "/dashboard/tickets")}
+              >
+                {t("ticketsLink")}
+              </Link>
+              <Link
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                href={localePath(params.locale, "/dashboard/support")}
+              >
+                {t("supportLink")}
+              </Link>
+              <Link
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                href={localePath(params.locale, "/dashboard/tickets/new")}
+              >
+                {t("newTicketLink")}
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[1.5rem] border border-line bg-white/80 p-5">
             <h2 className="text-xl font-semibold text-foreground">{provisioningT("jobsTitle")}</h2>
             <p className="mt-3 text-sm leading-7 text-muted">{provisioningT("jobsDescription")}</p>
             <div className="mt-5 flex flex-wrap gap-3">

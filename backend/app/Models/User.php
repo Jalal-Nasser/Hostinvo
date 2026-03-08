@@ -94,4 +94,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProvisioningJob::class, 'requested_by_user_id')->latest('requested_at');
     }
+
+    public function openedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'opened_by_user_id')->latest('last_reply_at');
+    }
+
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to_user_id')->latest('last_reply_at');
+    }
+
+    public function ticketReplies(): HasMany
+    {
+        return $this->hasMany(TicketReply::class)->latest();
+    }
 }

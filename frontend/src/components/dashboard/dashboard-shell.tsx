@@ -98,6 +98,24 @@ export async function DashboardShell({
       active: currentPath === "/dashboard/payments",
     },
     {
+      href: localePath(locale, "/dashboard/tickets"),
+      label: t("ticketsLink"),
+      active:
+        currentPath === "/dashboard/tickets" ||
+        (currentPath.startsWith("/dashboard/tickets/") &&
+          currentPath !== "/dashboard/tickets/new"),
+    },
+    {
+      href: localePath(locale, "/dashboard/tickets/new"),
+      label: t("newTicketLink"),
+      active: currentPath === "/dashboard/tickets/new",
+    },
+    {
+      href: localePath(locale, "/dashboard/support"),
+      label: t("supportLink"),
+      active: currentPath === "/dashboard/support",
+    },
+    {
       href: localePath(locale, "/dashboard/servers"),
       label: provisioningT("serversTitle"),
       active:

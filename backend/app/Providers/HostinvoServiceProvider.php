@@ -14,6 +14,7 @@ use App\Contracts\Repositories\Provisioning\ProvisioningJobRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServerGroupRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServerRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServiceRepositoryInterface;
+use App\Contracts\Repositories\Support\SupportRepositoryInterface;
 use App\Repositories\Auth\EloquentTenantRepository;
 use App\Repositories\Auth\EloquentUserRepository;
 use App\Repositories\Billing\EloquentInvoiceRepository;
@@ -26,6 +27,7 @@ use App\Repositories\Provisioning\EloquentProvisioningJobRepository;
 use App\Repositories\Provisioning\EloquentServerGroupRepository;
 use App\Repositories\Provisioning\EloquentServerRepository;
 use App\Repositories\Provisioning\EloquentServiceRepository;
+use App\Repositories\Support\EloquentSupportRepository;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Support\ServiceProvider;
 
@@ -49,5 +51,6 @@ class HostinvoServiceProvider extends ServiceProvider
         $this->app->bind(ServerRepositoryInterface::class, EloquentServerRepository::class);
         $this->app->bind(ServiceRepositoryInterface::class, EloquentServiceRepository::class);
         $this->app->bind(ProvisioningJobRepositoryInterface::class, EloquentProvisioningJobRepository::class);
+        $this->app->bind(SupportRepositoryInterface::class, EloquentSupportRepository::class);
     }
 }

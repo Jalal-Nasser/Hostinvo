@@ -99,4 +99,9 @@ class Client extends Model
     {
         return $this->hasMany(Service::class)->latest();
     }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class)->latest('last_reply_at');
+    }
 }

@@ -18,6 +18,11 @@ use App\Http\Controllers\Api\V1\Admin\ServerGroupController;
 use App\Http\Controllers\Api\V1\Admin\ServerPackageController;
 use App\Http\Controllers\Api\V1\Admin\ServiceController;
 use App\Http\Controllers\Api\V1\Admin\ServiceProvisioningController;
+use App\Http\Controllers\Api\V1\Admin\SupportOverviewController;
+use App\Http\Controllers\Api\V1\Admin\TicketController;
+use App\Http\Controllers\Api\V1\Admin\TicketDepartmentController;
+use App\Http\Controllers\Api\V1\Admin\TicketReplyController;
+use App\Http\Controllers\Api\V1\Admin\TicketStatusController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('clients', ClientController::class);
@@ -43,3 +48,10 @@ Route::put('servers/{server}/packages', [ServerPackageController::class, 'update
 Route::apiResource('servers', ServerController::class);
 Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
 Route::apiResource('services', ServiceController::class);
+Route::get('support/overview', SupportOverviewController::class)->name('support.overview.show');
+Route::get('ticket-statuses', [TicketStatusController::class, 'index'])->name('ticket-statuses.index');
+Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])->name('tickets.replies.store');
+Route::apiResource('ticket-departments', TicketDepartmentController::class)->parameters([
+    'ticket-departments' => 'ticketDepartment',
+]);
+Route::apiResource('tickets', TicketController::class);
