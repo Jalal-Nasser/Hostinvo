@@ -28,9 +28,11 @@ class TicketReply extends Model
         'ticket_id',
         'user_id',
         'client_contact_id',
+        'client_id',
         'reply_type',
         'is_internal',
         'message',
+        'attachments',
         'metadata',
     ];
 
@@ -38,6 +40,7 @@ class TicketReply extends Model
     {
         return [
             'is_internal' => 'boolean',
+            'attachments' => 'array',
             'metadata' => 'array',
         ];
     }
@@ -65,5 +68,10 @@ class TicketReply extends Model
     public function clientContact(): BelongsTo
     {
         return $this->belongsTo(ClientContact::class, 'client_contact_id');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 }

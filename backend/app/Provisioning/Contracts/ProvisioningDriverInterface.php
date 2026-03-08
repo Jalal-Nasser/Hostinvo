@@ -3,8 +3,10 @@
 namespace App\Provisioning\Contracts;
 
 use App\Models\Server;
-use App\Provisioning\Data\ProvisioningContext;
-use App\Provisioning\Data\ProvisioningResult;
+use App\Provisioning\DTOs\ProvisionPayload;
+use App\Provisioning\DTOs\ProvisionResult;
+use App\Provisioning\DTOs\ServiceStatus;
+use App\Provisioning\DTOs\UsageData;
 
 interface ProvisioningDriverInterface
 {
@@ -14,19 +16,19 @@ interface ProvisioningDriverInterface
 
     public function testConnection(Server $server): array;
 
-    public function createAccount(ProvisioningContext $context): ProvisioningResult;
+    public function createAccount(ProvisionPayload $payload): ProvisionResult;
 
-    public function suspendAccount(ProvisioningContext $context): ProvisioningResult;
+    public function suspendAccount(string $username, string $reason): bool;
 
-    public function unsuspendAccount(ProvisioningContext $context): ProvisioningResult;
+    public function unsuspendAccount(string $username): bool;
 
-    public function terminateAccount(ProvisioningContext $context): ProvisioningResult;
+    public function terminateAccount(string $username): bool;
 
-    public function changePackage(ProvisioningContext $context): ProvisioningResult;
+    public function changePackage(string $username, string $package): bool;
 
-    public function resetPassword(ProvisioningContext $context): ProvisioningResult;
+    public function resetPassword(string $username, string $newPassword): bool;
 
-    public function syncUsage(ProvisioningContext $context): ProvisioningResult;
+    public function syncUsage(string $username): UsageData;
 
-    public function syncServiceStatus(ProvisioningContext $context): ProvisioningResult;
+    public function syncServiceStatus(string $username): ServiceStatus;
 }

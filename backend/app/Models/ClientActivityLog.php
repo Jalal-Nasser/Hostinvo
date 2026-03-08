@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,12 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ClientActivityLog extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
 
-    public $incrementing = false;
+    public $timestamps = false;
 
-    protected $keyType = 'string';
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'tenant_id',
@@ -24,12 +22,15 @@ class ClientActivityLog extends Model
         'user_id',
         'action',
         'description',
+        'ip_address',
         'metadata',
+        'created_at',
     ];
 
     protected function casts(): array
     {
         return [
+            'created_at' => 'datetime',
             'metadata' => 'array',
         ];
     }

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +11,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TicketStatus extends Model
 {
     use HasFactory;
-    use HasUuids;
     use SoftDeletes;
     use TenantAware;
 
@@ -23,10 +21,6 @@ class TicketStatus extends Model
     public const CODE_ON_HOLD = 'on_hold';
     public const CODE_CLOSED = 'closed';
 
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
     protected $fillable = [
         'tenant_id',
         'name',
@@ -35,6 +29,7 @@ class TicketStatus extends Model
         'is_default',
         'is_closed',
         'display_order',
+        'sort_order',
     ];
 
     protected function casts(): array
@@ -43,6 +38,7 @@ class TicketStatus extends Model
             'is_default' => 'boolean',
             'is_closed' => 'boolean',
             'display_order' => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 

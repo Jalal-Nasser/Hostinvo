@@ -13,14 +13,14 @@ class TenantSettingService
     {
         $setting = TenantSetting::query()
             ->where('tenant_id', $tenant->id)
-            ->where('setting_key', $key)
+            ->where('key', $key)
             ->first();
 
         if (! $setting) {
             return $default;
         }
 
-        return $this->decode($setting->setting_value, $setting->is_encrypted);
+        return $this->decode($setting->value, $setting->is_encrypted);
     }
 
     public function put(
@@ -35,12 +35,11 @@ class TenantSettingService
         return TenantSetting::query()->updateOrCreate(
             [
                 'tenant_id' => $tenant->id,
-                'setting_key' => $key,
+                'key' => $key,
             ],
             [
-                'setting_value' => $encrypted ? Crypt::encryptString($encoded) : $encoded,
+                'value' => $encrypted ? Crypt::encryptString($encoded) : $encoded,
                 'is_encrypted' => $encrypted,
-                'metadata' => $metadata,
             ],
         );
     }
@@ -49,10 +48,10 @@ class TenantSettingService
     {
         return TenantSetting::query()
             ->where('tenant_id', $tenant->id)
-            ->whereIn('setting_key', $keys)
+            ->whereIn('key', $keys)
             ->get()
             ->mapWithKeys(fn (TenantSetting $setting) => [
-                $setting->setting_key => $this->decode($setting->setting_value, $setting->is_encrypted),
+                $setting->key => $this->decode($setting->value, $setting->is_encrypted),
             ])
             ->all();
     }

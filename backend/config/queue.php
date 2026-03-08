@@ -74,6 +74,24 @@ return [
 
     ],
 
+    'tiers' => [
+        'critical' => [
+            'queue' => env('QUEUE_TIER_CRITICAL', 'critical'),
+            'tries' => 3,
+            'backoff' => [60, 300, 900],
+        ],
+        'default' => [
+            'queue' => env('QUEUE_TIER_DEFAULT', 'default'),
+            'tries' => 3,
+            'backoff' => [60, 180],
+        ],
+        'low' => [
+            'queue' => env('QUEUE_TIER_LOW', 'low'),
+            'tries' => 2,
+            'backoff' => [120],
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Job Batching

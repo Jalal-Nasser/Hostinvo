@@ -9,7 +9,7 @@ class HealthCheckController extends Controller
 {
     public function __invoke(): JsonResponse
     {
-        return response()->json([
+        return $this->success([
             'status' => 'ok',
             'application' => config('app.name'),
             'version' => config('hostinvo.api.prefix'),

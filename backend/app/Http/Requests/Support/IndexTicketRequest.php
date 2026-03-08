@@ -17,9 +17,9 @@ class IndexTicketRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
-            'status_id' => ['nullable', 'uuid'],
+            'status_id' => ['nullable', 'integer'],
             'priority' => ['nullable', Rule::in(Ticket::priorities())],
-            'department_id' => ['nullable', 'uuid'],
+            'department_id' => ['nullable', 'integer'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

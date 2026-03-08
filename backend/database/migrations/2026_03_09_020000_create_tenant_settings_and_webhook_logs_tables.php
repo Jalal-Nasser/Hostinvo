@@ -12,20 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_settings', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
-            $table->string('setting_key', 191);
-            $table->text('setting_value')->nullable();
+            $table->string('key', 255);
+            $table->text('value')->nullable();
             $table->boolean('is_encrypted')->default(false);
-            $table->jsonb('metadata')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
-            $table->unique(['tenant_id', 'setting_key']);
+            $table->unique(['tenant_id', 'key']);
             $table->index(['tenant_id', 'created_at']);
         });
 
         Schema::create('webhook_logs', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->nullable()->constrained()->nullOnDelete();
             $table->string('gateway', 64);
             $table->string('event_type', 191)->nullable();
@@ -36,7 +35,7 @@ return new class extends Migration
             $table->jsonb('payload')->nullable();
             $table->timestampTz('processed_at')->nullable();
             $table->text('error_message')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'gateway', 'status']);
             $table->index(['gateway', 'external_reference']);

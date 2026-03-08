@@ -19,17 +19,16 @@ class WebhookController extends Controller
         try {
             $log = $paymentService->handleWebhook($gateway, $request);
         } catch (PaymentGatewayException) {
-            return response()->json([
-                'message' => 'Webhook verification failed.',
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->failure(
+                message: 'Webhook verification failed.',
+                status: Response::HTTP_BAD_REQUEST,
+            );
         }
 
-        return response()->json([
-            'data' => [
-                'id' => $log->id,
-                'gateway' => $log->gateway,
-                'status' => $log->status,
-            ],
+        return $this->success([
+            'id' => $log->id,
+            'gateway' => $log->gateway,
+            'status' => $log->status,
         ]);
     }
 }

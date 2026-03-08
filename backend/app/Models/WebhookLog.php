@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class WebhookLog extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
 
     public const STATUS_RECEIVED = 'received';
@@ -18,10 +16,6 @@ class WebhookLog extends Model
     public const STATUS_IGNORED = 'ignored';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_FAILED = 'failed';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'tenant_id',

@@ -15,9 +15,11 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         $user = User::query()->updateOrCreate(
-            ['email' => env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.test')],
             [
                 'tenant_id' => null,
+                'email' => env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.test'),
+            ],
+            [
                 'name' => env('SUPER_ADMIN_NAME', 'Hostinvo Super Admin'),
                 'locale' => env('APP_LOCALE', 'en'),
                 'is_active' => true,

@@ -12,38 +12,41 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('server_groups', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->string('name', 120);
             $table->string('selection_strategy', 32)->default('least_accounts');
+            $table->string('fill_type', 50)->default('least_accounts');
             $table->string('status', 32)->default('active');
             $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'status']);
             $table->unique(['tenant_id', 'name']);
         });
 
         Schema::create('servers', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('server_group_id')->nullable()->constrained('server_groups')->nullOnDelete();
+            $table->foreignId('server_group_id')->nullable()->constrained('server_groups')->nullOnDelete();
             $table->string('name', 120);
             $table->string('hostname', 191);
             $table->string('panel_type', 32);
             $table->string('api_endpoint', 255);
+            $table->text('api_token')->nullable();
+            $table->text('api_secret')->nullable();
             $table->unsignedInteger('api_port')->nullable();
             $table->string('status', 32)->default('active');
-            $table->boolean('verify_ssl')->default(true);
+            $table->boolean('ssl_verify')->default(true);
             $table->unsignedInteger('max_accounts')->nullable();
-            $table->unsignedInteger('current_accounts')->default(0);
+            $table->unsignedInteger('account_count')->default(0);
             $table->string('username', 120)->nullable();
-            $table->text('credentials')->nullable();
+            $table->ipAddress('ip_address')->nullable();
             $table->timestampTz('last_tested_at')->nullable();
             $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'panel_type', 'status']);
             $table->index(['tenant_id', 'server_group_id', 'status']);
@@ -51,16 +54,16 @@ return new class extends Migration
         });
 
         Schema::create('server_packages', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('server_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('server_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('product_id')->constrained()->cascadeOnDelete();
             $table->string('panel_package_name', 191);
             $table->string('display_name', 191)->nullable();
             $table->boolean('is_default')->default(false);
             $table->jsonb('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'server_id']);
             $table->unique(['tenant_id', 'server_id', 'product_id']);
@@ -73,25 +76,30 @@ return new class extends Migration
             $table->foreignUuid('product_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('order_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignUuid('server_id')->nullable()->constrained('servers')->nullOnDelete();
-            $table->foreignUuid('server_package_id')->nullable()->constrained('server_packages')->nullOnDelete();
+            $table->foreignId('server_id')->nullable()->constrained('servers')->nullOnDelete();
+            $table->foreignId('server_package_id')->nullable()->constrained('server_packages')->nullOnDelete();
             $table->string('reference_number', 64);
             $table->string('service_type', 32)->default('hosting');
             $table->string('status', 32)->default('pending');
             $table->string('provisioning_state', 32)->default('idle');
             $table->string('billing_cycle', 32)->nullable();
+            $table->integer('price')->default(0);
+            $table->string('currency', 3)->default('USD');
             $table->string('domain', 191)->nullable();
             $table->string('username', 120)->nullable();
             $table->string('external_reference', 191)->nullable();
             $table->string('last_operation', 64)->nullable();
+            $table->date('registration_date')->nullable();
+            $table->date('next_due_date')->nullable();
+            $table->date('termination_date')->nullable();
             $table->timestampTz('activated_at')->nullable();
             $table->timestampTz('suspended_at')->nullable();
             $table->timestampTz('terminated_at')->nullable();
             $table->timestampTz('last_synced_at')->nullable();
             $table->text('notes')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'status']);
             $table->index(['tenant_id', 'client_id']);
@@ -100,46 +108,51 @@ return new class extends Migration
         });
 
         Schema::create('service_credentials', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('service_id')->constrained('services')->cascadeOnDelete();
+            $table->string('key', 100)->default('primary');
+            $table->text('value')->nullable();
             $table->text('credentials')->nullable();
             $table->string('control_panel_url', 255)->nullable();
             $table->string('access_url', 255)->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
-            $table->unique(['tenant_id', 'service_id']);
+            $table->unique(['tenant_id', 'service_id', 'key']);
         });
 
         Schema::create('service_usage', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('service_id')->constrained('services')->cascadeOnDelete();
-            $table->unsignedBigInteger('disk_used_mb')->default(0);
-            $table->unsignedBigInteger('disk_limit_mb')->default(0);
-            $table->unsignedBigInteger('bandwidth_used_mb')->default(0);
-            $table->unsignedBigInteger('bandwidth_limit_mb')->default(0);
+            $table->unsignedInteger('disk_used_mb')->default(0);
+            $table->unsignedInteger('disk_limit_mb')->nullable();
+            $table->unsignedInteger('bandwidth_used_mb')->default(0);
+            $table->unsignedInteger('bandwidth_limit_mb')->nullable();
+            $table->unsignedInteger('inodes_used')->default(0);
             $table->unsignedInteger('email_accounts_used')->default(0);
             $table->unsignedInteger('databases_used')->default(0);
+            $table->timestampTz('synced_at')->useCurrent();
             $table->timestampTz('last_synced_at')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'service_id']);
             $table->index(['tenant_id', 'last_synced_at']);
         });
 
         Schema::create('service_suspensions', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('service_id')->constrained('services')->cascadeOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('suspended_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->text('reason')->nullable();
             $table->timestampTz('suspended_at');
             $table->timestampTz('unsuspended_at')->nullable();
             $table->jsonb('metadata')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'service_id', 'suspended_at']);
         });
@@ -148,7 +161,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('service_id')->constrained('services')->cascadeOnDelete();
-            $table->foreignUuid('server_id')->nullable()->constrained('servers')->nullOnDelete();
+            $table->foreignId('server_id')->nullable()->constrained('servers')->nullOnDelete();
             $table->foreignUuid('requested_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('operation', 64);
             $table->string('status', 32)->default('queued');
@@ -162,7 +175,7 @@ return new class extends Migration
             $table->timestampTz('started_at')->nullable();
             $table->timestampTz('completed_at')->nullable();
             $table->timestampTz('failed_at')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'status']);
             $table->index(['tenant_id', 'service_id', 'status']);
@@ -170,19 +183,21 @@ return new class extends Migration
         });
 
         Schema::create('provisioning_logs', function (Blueprint $table): void {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('provisioning_job_id')->nullable()->constrained('provisioning_jobs')->nullOnDelete();
             $table->foreignUuid('service_id')->nullable()->constrained('services')->nullOnDelete();
-            $table->foreignUuid('server_id')->nullable()->constrained('servers')->nullOnDelete();
+            $table->foreignId('server_id')->nullable()->constrained('servers')->nullOnDelete();
             $table->string('operation', 64);
             $table->string('status', 32);
             $table->string('driver', 64)->nullable();
             $table->text('message')->nullable();
             $table->jsonb('request_payload')->nullable();
             $table->jsonb('response_payload')->nullable();
+            $table->text('error_message')->nullable();
+            $table->integer('duration_ms')->nullable();
             $table->timestampTz('occurred_at');
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'status']);
             $table->index(['tenant_id', 'service_id', 'occurred_at']);

@@ -34,7 +34,7 @@ class StoreTicketReplyRequest extends FormRequest
             ],
             'status_id' => [
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('ticket_statuses', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'is_internal' => ['nullable', 'boolean'],

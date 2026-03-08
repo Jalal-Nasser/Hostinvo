@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jobs', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('queue')->index();
-            $table->longText('payload');
-            $table->unsignedTinyInteger('attempts');
+            $table->jsonb('payload');
+            $table->unsignedSmallInteger('attempts')->default(0);
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');
@@ -35,13 +35,13 @@ return new class extends Migration
         });
 
         Schema::create('failed_jobs', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('uuid')->unique();
             $table->text('connection');
             $table->text('queue');
             $table->longText('payload');
             $table->longText('exception');
-            $table->timestamp('failed_at')->useCurrent();
+            $table->timestampTz('failed_at')->useCurrent();
         });
     }
 

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ConfigurableOption extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
 
     public const TYPE_SELECT = 'select';
@@ -22,10 +20,6 @@ class ConfigurableOption extends Model
 
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'tenant_id',
@@ -64,6 +58,6 @@ class ConfigurableOption extends Model
 
     public function choices(): HasMany
     {
-        return $this->hasMany(ConfigurableOptionChoice::class)->orderBy('display_order');
+        return $this->hasMany(ConfigurableOptionChoice::class, 'option_id')->orderBy('display_order');
     }
 }

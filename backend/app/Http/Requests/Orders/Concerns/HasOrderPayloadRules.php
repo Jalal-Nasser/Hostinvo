@@ -30,7 +30,7 @@ trait HasOrderPayloadRules
             'tax_rate_bps' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['nullable', 'uuid'],
+            'items.*.id' => ['nullable', 'integer'],
             'items.*.product_id' => [
                 'required',
                 'uuid',
@@ -41,7 +41,7 @@ trait HasOrderPayloadRules
             'items.*.configurable_options' => ['nullable', 'array'],
             'items.*.configurable_options.*.configurable_option_id' => [
                 'required',
-                'uuid',
+                'integer',
                 Rule::exists('configurable_options', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),

@@ -141,6 +141,7 @@ class EloquentProductRepository implements ProductRepositoryInterface
                 $choiceId = $choice['id'] ?? null;
                 $choiceAttributes = Arr::except($choice, ['id']);
                 $choiceAttributes['tenant_id'] = $product->tenant_id;
+                $choiceAttributes['option_id'] = $optionModel->getKey();
 
                 if ($choiceId && $existingChoices->has($choiceId)) {
                     $existingChoices->get($choiceId)?->fill($choiceAttributes)->save();

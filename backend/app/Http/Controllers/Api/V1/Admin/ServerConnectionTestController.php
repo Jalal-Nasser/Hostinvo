@@ -15,8 +15,8 @@ class ServerConnectionTestController extends Controller
         Server $server,
         ServerManagementService $serverManagementService
     ): JsonResponse {
-        return response()->json([
-            'data' => $serverManagementService->testServerConnection($server, $request->user()),
-        ]);
+        return $this->success(
+            $serverManagementService->testServerConnection($server, $request->user())
+        );
     }
 }

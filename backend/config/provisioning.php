@@ -2,8 +2,9 @@
 
 return [
     'queue' => [
-        'name' => env('HOSTINVO_PROVISIONING_QUEUE', 'critical'),
-        'backoff' => [60, 300, 900],
+        'name' => env('HOSTINVO_PROVISIONING_QUEUE', config('queue.tiers.critical.queue', 'critical')),
+        'backoff' => config('queue.tiers.critical.backoff', [60, 300, 900]),
+        'tries' => config('queue.tiers.critical.tries', 3),
     ],
 
     'cpanel' => [

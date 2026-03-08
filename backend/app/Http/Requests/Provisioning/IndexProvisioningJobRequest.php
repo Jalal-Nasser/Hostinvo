@@ -19,7 +19,7 @@ class IndexProvisioningJobRequest extends FormRequest
             'status' => ['nullable', 'string', 'max:32'],
             'operation' => ['nullable', 'string', 'max:64'],
             'service_id' => ['nullable', 'uuid'],
-            'server_id' => ['nullable', 'uuid'],
+            'server_id' => ['nullable', 'integer'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

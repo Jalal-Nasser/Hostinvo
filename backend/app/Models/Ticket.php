@@ -41,10 +41,12 @@ class Ticket extends Model
         'client_contact_id',
         'opened_by_user_id',
         'assigned_to_user_id',
+        'service_id',
         'ticket_number',
         'subject',
         'priority',
         'source',
+        'status',
         'last_reply_by',
         'last_reply_at',
         'last_client_reply_at',
@@ -115,5 +117,10 @@ class Ticket extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(TicketReply::class)->oldest();
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('client_id')->constrained()->cascadeOnDelete();
+            $table->uuid('subscription_id')->nullable();
             $table->foreignUuid('order_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('reference_number', 64);
@@ -22,9 +23,9 @@ return new class extends Migration
             $table->string('currency', 3)->default('USD');
             $table->date('issue_date')->nullable();
             $table->date('due_date')->nullable();
-            $table->timestamp('paid_at')->nullable();
-            $table->timestamp('cancelled_at')->nullable();
-            $table->timestamp('refunded_at')->nullable();
+            $table->timestampTz('paid_at')->nullable();
+            $table->timestampTz('cancelled_at')->nullable();
+            $table->timestampTz('refunded_at')->nullable();
             $table->string('recurring_cycle', 32)->nullable();
             $table->date('next_invoice_date')->nullable();
             $table->string('discount_type', 32)->nullable();
@@ -39,9 +40,9 @@ return new class extends Migration
             $table->bigInteger('refunded_amount_minor')->default(0);
             $table->bigInteger('balance_due_minor')->default(0);
             $table->text('notes')->nullable();
-            $table->json('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'reference_number']);
             $table->index(['tenant_id', 'status']);
@@ -51,10 +52,10 @@ return new class extends Migration
         });
 
         Schema::create('invoice_items', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('order_item_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('order_item_id')->nullable()->constrained()->nullOnDelete();
             $table->string('item_type', 32)->default('manual');
             $table->string('description');
             $table->string('related_type', 64)->nullable();
@@ -68,9 +69,10 @@ return new class extends Migration
             $table->bigInteger('discount_amount_minor')->default(0);
             $table->bigInteger('tax_amount_minor')->default(0);
             $table->bigInteger('total_minor')->default(0);
-            $table->json('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampTz('created_at')->useCurrent();
+            $table->timestampTz('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'invoice_id']);
             $table->index(['tenant_id', 'order_item_id']);
@@ -89,10 +91,10 @@ return new class extends Migration
             $table->string('currency', 3)->default('USD');
             $table->bigInteger('amount_minor')->default(0);
             $table->string('reference', 120)->nullable();
-            $table->timestamp('paid_at')->nullable();
+            $table->timestampTz('paid_at')->nullable();
             $table->text('notes')->nullable();
-            $table->json('metadata')->nullable();
-            $table->timestamps();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'invoice_id']);
             $table->index(['tenant_id', 'client_id']);
@@ -111,10 +113,10 @@ return new class extends Migration
             $table->string('external_reference', 120)->nullable();
             $table->string('currency', 3)->default('USD');
             $table->bigInteger('amount_minor')->default(0);
-            $table->timestamp('occurred_at')->nullable();
-            $table->json('request_payload')->nullable();
-            $table->json('response_payload')->nullable();
-            $table->timestamps();
+            $table->timestampTz('occurred_at')->nullable();
+            $table->jsonb('request_payload')->nullable();
+            $table->jsonb('response_payload')->nullable();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'invoice_id']);
             $table->index(['tenant_id', 'payment_id']);

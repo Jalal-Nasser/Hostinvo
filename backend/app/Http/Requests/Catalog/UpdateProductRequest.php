@@ -33,7 +33,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'product_group_id' => [
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('product_groups', 'id')->where(
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
@@ -68,7 +68,7 @@ class UpdateProductRequest extends FormRequest
             'display_order' => ['nullable', 'integer', 'min:0'],
             'is_featured' => ['nullable', 'boolean'],
             'configurable_options' => ['nullable', 'array'],
-            'configurable_options.*.id' => ['nullable', 'uuid'],
+            'configurable_options.*.id' => ['nullable', 'integer'],
             'configurable_options.*.name' => ['required', 'string', 'max:255'],
             'configurable_options.*.code' => ['nullable', 'string', 'max:100', 'alpha_dash'],
             'configurable_options.*.option_type' => ['required', Rule::in(ConfigurableOption::types())],
@@ -80,7 +80,7 @@ class UpdateProductRequest extends FormRequest
             'configurable_options.*.is_required' => ['nullable', 'boolean'],
             'configurable_options.*.display_order' => ['nullable', 'integer', 'min:0'],
             'configurable_options.*.choices' => ['nullable', 'array'],
-            'configurable_options.*.choices.*.id' => ['nullable', 'uuid'],
+            'configurable_options.*.choices.*.id' => ['nullable', 'integer'],
             'configurable_options.*.choices.*.label' => ['required', 'string', 'max:255'],
             'configurable_options.*.choices.*.value' => ['nullable', 'string', 'max:100'],
             'configurable_options.*.choices.*.is_default' => ['nullable', 'boolean'],

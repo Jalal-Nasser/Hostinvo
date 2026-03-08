@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('reference_number', 64);
             $table->string('status', 32)->default('draft');
             $table->string('currency', 3);
+            $table->unsignedBigInteger('coupon_id')->nullable();
             $table->string('coupon_code', 100)->nullable();
             $table->string('discount_type', 32)->nullable();
             $table->integer('discount_value')->default(0);
@@ -28,12 +29,12 @@ return new class extends Migration
             $table->bigInteger('subtotal_minor')->default(0);
             $table->bigInteger('total_minor')->default(0);
             $table->text('notes')->nullable();
-            $table->timestamp('placed_at')->nullable();
-            $table->timestamp('accepted_at')->nullable();
-            $table->timestamp('completed_at')->nullable();
-            $table->timestamp('cancelled_at')->nullable();
-            $table->softDeletes();
-            $table->timestamps();
+            $table->timestampTz('placed_at')->nullable();
+            $table->timestampTz('accepted_at')->nullable();
+            $table->timestampTz('completed_at')->nullable();
+            $table->timestampTz('cancelled_at')->nullable();
+            $table->softDeletesTz();
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'reference_number']);
             $table->index(['tenant_id', 'status', 'created_at']);
@@ -41,7 +42,7 @@ return new class extends Migration
         });
 
         Schema::create('order_items', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignUuid('product_id')->nullable()->constrained('products')->nullOnDelete();
@@ -51,12 +52,13 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->bigInteger('unit_price_minor')->default(0);
             $table->bigInteger('setup_fee_minor')->default(0);
+            $table->bigInteger('discount_amount_minor')->default(0);
             $table->bigInteger('subtotal_minor')->default(0);
             $table->bigInteger('total_minor')->default(0);
-            $table->json('product_snapshot')->nullable();
-            $table->json('configurable_options')->nullable();
-            $table->softDeletes();
-            $table->timestamps();
+            $table->jsonb('product_snapshot')->nullable();
+            $table->jsonb('configurable_options')->nullable();
+            $table->softDeletesTz();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'order_id']);
             $table->index(['tenant_id', 'product_id', 'billing_cycle']);

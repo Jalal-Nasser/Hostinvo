@@ -5,15 +5,44 @@ namespace App\Provisioning\Drivers\Plesk;
 use App\Models\Service;
 use App\Models\Server;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
-use App\Provisioning\Data\ProvisioningContext;
-use App\Provisioning\Data\ProvisioningResult;
+use App\Provisioning\DTOs\ProvisionPayload;
+use App\Provisioning\DTOs\ProvisionResult;
+use App\Provisioning\DTOs\ServiceStatus;
+use App\Provisioning\DTOs\UsageData;
+use App\Provisioning\Exceptions\ProvisioningException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class PleskDriver implements ProvisioningDriverInterface
 {
+    private ?Server $server = null;
+
+    private array $lastRequestPayload = [];
+
+    private array $lastResponsePayload = [];
+
     public function __construct(private readonly PleskApiClient $client)
     {
+    }
+
+    public function withServer(Server $server): static
+    {
+        $this->server = $server;
+
+        return $this;
+    }
+
+    public function consumeTelemetry(): array
+    {
+        $telemetry = [
+            'request' => $this->lastRequestPayload,
+            'response' => $this->lastResponsePayload,
+        ];
+
+        $this->lastRequestPayload = [];
+        $this->lastResponsePayload = [];
+
+        return $telemetry;
     }
 
     public function code(): string
@@ -31,42 +60,13 @@ class PleskDriver implements ProvisioningDriverInterface
         return $this->client->testConnection($server);
     }
 
-    public function createAccount(ProvisioningContext $context): ProvisioningResult
+    public function createAccount(ProvisionPayload $payload): ProvisionResult
     {
-        $servicePlan = $this->resolveServicePlan($context);
-        $subscription = $this->resolveSubscription($context);
-        $username = $this->resolveOrGenerateUsername($context);
-        $password = $this->resolvePassword($context);
-        $targetIp = $this->resolveTargetIp($context);
-        $owner = $this->resolveOwnerLogin($context->server);
-
-        if ($servicePlan === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.package_mapping_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($targetIp === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.ip_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
+        $subscription = trim($payload->domain);
+        $servicePlan = trim($payload->packageName);
+        $username = $this->normalizeUsername($payload->username);
+        $targetIp = trim($payload->ip);
+        $owner = $this->resolveOwnerLogin($this->server());
 
         $requestPayload = [
             'subscription' => $subscription,
@@ -74,10 +74,10 @@ class PleskDriver implements ProvisioningDriverInterface
             'username' => $username,
             'ip' => $targetIp,
             'owner' => $owner,
-            'contact_email' => $context->service->client?->email,
+            'contact_email' => $payload->contactEmail ?: $payload->email,
         ];
 
-        $response = $this->client->subscriptionCommand($context->server, [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--create',
             $subscription,
             '-service-plan',
@@ -85,362 +85,209 @@ class PleskDriver implements ProvisioningDriverInterface
             '-login',
             $username,
             '-passwd',
-            $password,
+            $payload->password,
             '-ip',
             $targetIp,
             '-owner',
             $owner,
         ]);
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.account_created', ['subscription' => $subscription]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $subscription, $servicePlan),
-            serviceAttributes: [
-                'external_reference' => $subscription,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-                'metadata' => $this->mergeServiceMetadata($context, [
-                    'driver' => $this->code(),
-                    'subscription' => $subscription,
-                    'service_plan' => $servicePlan,
-                    'panel_owner' => $owner,
-                ]),
-            ],
-            operationPayload: [
-                'domain' => $subscription,
-                'username' => $username,
-                'password' => $password,
-                'panel_package_name' => $servicePlan,
-                'service_status' => Service::STATUS_ACTIVE,
-            ],
+        $responsePayload = $this->summarizeResponse($response, $subscription, $servicePlan);
+        $this->rememberTelemetry($payload->sanitized(), $responsePayload);
+
+        return new ProvisionResult(
+            success: true,
+            username: $username,
+            ip: $targetIp,
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    public function suspendAccount(ProvisioningContext $context): ProvisioningResult
+    public function suspendAccount(string $username, string $reason): bool
     {
-        $subscription = $this->resolveSubscription($context);
+        $subscription = trim($username);
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $response = $this->client->subscriptionCommand($context->server, [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--webspace-off',
             $subscription,
         ]);
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.account_suspended', ['subscription' => $subscription]),
-            requestPayload: ['subscription' => $subscription],
-            responsePayload: $this->summarizeResponse($response, $subscription),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
+        $this->rememberTelemetry(
+            ['subscription' => $subscription, 'reason' => $reason],
+            $this->summarizeResponse($response, $subscription),
         );
+
+        return true;
     }
 
-    public function unsuspendAccount(ProvisioningContext $context): ProvisioningResult
+    public function unsuspendAccount(string $username): bool
     {
-        $subscription = $this->resolveSubscription($context);
+        $subscription = trim($username);
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $response = $this->client->subscriptionCommand($context->server, [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--webspace-on',
             $subscription,
         ]);
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.account_unsuspended', ['subscription' => $subscription]),
-            requestPayload: ['subscription' => $subscription],
-            responsePayload: $this->summarizeResponse($response, $subscription),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
+        $this->rememberTelemetry(
+            ['subscription' => $subscription],
+            $this->summarizeResponse($response, $subscription),
         );
+
+        return true;
     }
 
-    public function terminateAccount(ProvisioningContext $context): ProvisioningResult
+    public function terminateAccount(string $username): bool
     {
-        $subscription = $this->resolveSubscription($context);
+        $subscription = trim($username);
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $response = $this->client->subscriptionCommand($context->server, [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--remove',
             $subscription,
         ]);
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.account_terminated', ['subscription' => $subscription]),
-            requestPayload: ['subscription' => $subscription],
-            responsePayload: $this->summarizeResponse($response, $subscription),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
+        $this->rememberTelemetry(
+            ['subscription' => $subscription],
+            $this->summarizeResponse($response, $subscription),
         );
+
+        return true;
     }
 
-    public function changePackage(ProvisioningContext $context): ProvisioningResult
+    public function changePackage(string $username, string $package): bool
     {
-        $subscription = $this->resolveSubscription($context);
-        $servicePlan = trim((string) ($context->payload['panel_package_name'] ?? $this->resolveServicePlan($context)));
+        $subscription = trim($username);
+        $servicePlan = trim($package);
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($servicePlan === '') {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.package_mapping_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $response = $this->client->subscriptionCommand($context->server, [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--switch-subscription',
             $subscription,
             '-service-plan',
             $servicePlan,
         ]);
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.package_changed', ['subscription' => $subscription]),
-            requestPayload: [
-                'subscription' => $subscription,
-                'service_plan' => $servicePlan,
-            ],
-            responsePayload: $this->summarizeResponse($response, $subscription, $servicePlan),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-                'metadata' => $this->mergeServiceMetadata($context, [
-                    'driver' => $this->code(),
-                    'subscription' => $subscription,
-                    'service_plan' => $servicePlan,
-                ]),
-            ],
-            operationPayload: [
-                'panel_package_name' => $servicePlan,
-            ],
+        $this->rememberTelemetry(
+            ['subscription' => $subscription, 'service_plan' => $servicePlan],
+            $this->summarizeResponse($response, $subscription, $servicePlan),
         );
+
+        return true;
     }
 
-    public function resetPassword(ProvisioningContext $context): ProvisioningResult
+    public function resetPassword(string $username, string $newPassword): bool
     {
-        $subscription = $this->resolveSubscription($context);
-        $password = $this->resolvePassword($context);
-        $username = $this->resolveExistingUsername($context);
+        $subscription = trim($username);
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $parameters = [
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--update',
             $subscription,
             '-passwd',
-            $password,
+            $newPassword,
+        ]);
+
+        $this->rememberTelemetry(
+            ['subscription' => $subscription],
+            $this->summarizeResponse($response, $subscription),
+        );
+
+        return true;
+    }
+
+    public function syncUsage(string $username): UsageData
+    {
+        $subscription = trim($username);
+        $response = $this->client->subscriptionCommand($this->server(), [
+            '--info',
+            $subscription,
+        ]);
+
+        $info = $this->parseSubscriptionInfo($response);
+        $responsePayload = [
+            'driver' => $this->code(),
+            'subscription' => $subscription,
+            'info' => Arr::only($info, [
+                'subscription',
+                'status',
+                'service_plan',
+                'system_user',
+                'disk_space',
+                'disk_space_limit',
+                'traffic',
+                'traffic_limit',
+                'mailboxes',
+                'databases',
+            ]),
         ];
 
-        if ($username !== null) {
-            $parameters = array_merge($parameters, ['-login', $username]);
-        }
+        $this->rememberTelemetry(['subscription' => $subscription], $responsePayload);
 
-        $response = $this->client->subscriptionCommand($context->server, $parameters);
-
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.password_reset', ['subscription' => $subscription]),
-            requestPayload: [
-                'subscription' => $subscription,
-                'username' => $username,
-            ],
-            responsePayload: $this->summarizeResponse($response, $subscription),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'password' => $password,
-            ],
+        return new UsageData(
+            diskUsedMb: $this->toMegabytes($this->extractInfoValue($info, ['disk_space', 'disk_usage', 'disk_quota_used'])),
+            diskLimitMb: $this->toMegabytes($this->extractInfoValue($info, ['disk_space_limit', 'hard_disk_quota', 'disk_limit'])),
+            bandwidthUsedMb: $this->toMegabytes($this->extractInfoValue($info, ['traffic', 'traffic_used', 'bandwidth_usage'])),
+            bandwidthLimitMb: $this->toMegabytes($this->extractInfoValue($info, ['traffic_limit', 'bandwidth_limit'])),
+            inodesUsed: (int) $this->extractInfoValue($info, ['inodes_used', 'inode_usage'], 0),
+            emailAccountsUsed: (int) $this->extractInfoValue($info, ['mailboxes', 'email_accounts', 'mail_names'], 0),
+            databasesUsed: (int) $this->extractInfoValue($info, ['databases', 'database_count'], 0),
+            serviceStatus: $this->determineServiceStatus($info),
+            suspendReason: $this->extractInfoValue($info, ['suspend_reason', 'reason']),
+            packageName: $this->extractServicePlan($info),
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    public function syncUsage(ProvisioningContext $context): ProvisioningResult
+    public function syncServiceStatus(string $username): ServiceStatus
     {
-        $subscription = $this->resolveSubscription($context);
-
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $response = $this->client->subscriptionCommand($context->server, [
+        $subscription = trim($username);
+        $response = $this->client->subscriptionCommand($this->server(), [
             '--info',
             $subscription,
         ]);
 
         $info = $this->parseSubscriptionInfo($response);
+        $responsePayload = [
+            'driver' => $this->code(),
+            'subscription' => $subscription,
+            'info' => Arr::only($info, [
+                'subscription',
+                'status',
+                'service_plan',
+                'system_user',
+                'suspend_reason',
+            ]),
+        ];
 
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.usage_synced', ['subscription' => $subscription]),
-            requestPayload: ['subscription' => $subscription],
-            responsePayload: [
-                'driver' => $this->code(),
-                'subscription' => $subscription,
-                'info' => Arr::only($info, [
-                    'subscription',
-                    'status',
-                    'service_plan',
-                    'system_user',
-                    'disk_space',
-                    'disk_space_limit',
-                    'traffic',
-                    'traffic_limit',
-                    'mailboxes',
-                    'databases',
-                ]),
-            ],
-            serviceAttributes: [
-                'external_reference' => $subscription,
-                'username' => $this->extractUsername($info) ?? $context->service->username,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-                'metadata' => $this->mergeServiceMetadata($context, [
-                    'driver' => $this->code(),
-                    'subscription' => $subscription,
-                    'service_plan' => $this->extractServicePlan($info),
-                ]),
-            ],
-            operationPayload: [
-                'disk_used_mb' => $this->toMegabytes($this->extractInfoValue($info, ['disk_space', 'disk_usage', 'disk_quota_used'])),
-                'disk_limit_mb' => $this->toMegabytes($this->extractInfoValue($info, ['disk_space_limit', 'hard_disk_quota', 'disk_limit'])),
-                'bandwidth_used_mb' => $this->toMegabytes($this->extractInfoValue($info, ['traffic', 'traffic_used', 'bandwidth_usage'])),
-                'bandwidth_limit_mb' => $this->toMegabytes($this->extractInfoValue($info, ['traffic_limit', 'bandwidth_limit'])),
-                'email_accounts_used' => (int) $this->extractInfoValue($info, ['mailboxes', 'email_accounts', 'mail_names'], 0),
-                'databases_used' => (int) $this->extractInfoValue($info, ['databases', 'database_count'], 0),
-                'service_status' => $this->determineServiceStatus($info),
-                'suspend_reason' => $this->extractInfoValue($info, ['suspend_reason', 'reason']),
-                'panel_package_name' => $this->extractServicePlan($info),
-            ],
+        $this->rememberTelemetry(['subscription' => $subscription], $responsePayload);
+
+        return new ServiceStatus(
+            status: $this->determineServiceStatus($info),
+            suspendReason: $this->extractInfoValue($info, ['suspend_reason', 'reason']),
+            packageName: $this->extractServicePlan($info),
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    public function syncServiceStatus(ProvisioningContext $context): ProvisioningResult
+    private function rememberTelemetry(array $requestPayload, array $responsePayload): void
     {
-        $subscription = $this->resolveSubscription($context);
+        $this->lastRequestPayload = $requestPayload;
+        $this->lastResponsePayload = $responsePayload;
+    }
 
-        if ($subscription === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.plesk.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
+    private function server(): Server
+    {
+        if (! $this->server instanceof Server) {
+            throw new ProvisioningException('Provisioning driver is missing a bound server instance.');
         }
 
-        $response = $this->client->subscriptionCommand($context->server, [
-            '--info',
-            $subscription,
-        ]);
-
-        $info = $this->parseSubscriptionInfo($response);
-
-        return ProvisioningResult::success(
-            message: __('provisioning.plesk.status_synced', ['subscription' => $subscription]),
-            requestPayload: ['subscription' => $subscription],
-            responsePayload: [
-                'driver' => $this->code(),
-                'subscription' => $subscription,
-                'info' => Arr::only($info, [
-                    'subscription',
-                    'status',
-                    'service_plan',
-                    'system_user',
-                    'suspend_reason',
-                ]),
-            ],
-            serviceAttributes: [
-                'external_reference' => $subscription,
-                'username' => $this->extractUsername($info) ?? $context->service->username,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-                'metadata' => $this->mergeServiceMetadata($context, [
-                    'driver' => $this->code(),
-                    'subscription' => $subscription,
-                    'service_plan' => $this->extractServicePlan($info),
-                ]),
-            ],
-            operationPayload: [
-                'service_status' => $this->determineServiceStatus($info),
-                'suspend_reason' => $this->extractInfoValue($info, ['suspend_reason', 'reason']),
-                'panel_package_name' => $this->extractServicePlan($info),
-            ],
-        );
+        return $this->server;
     }
 
-    private function resolveServicePlan(ProvisioningContext $context): ?string
-    {
-        $plan = trim((string) ($context->payload['panel_package_name'] ?? $context->serverPackage?->panel_package_name ?? ''));
-
-        return $plan !== '' ? $plan : null;
-    }
-
-    private function resolveSubscription(ProvisioningContext $context): ?string
-    {
-        $subscription = trim((string) ($context->payload['domain']
-            ?? $context->service->domain
-            ?? $context->service->external_reference
-            ?? ''));
-
-        return $subscription !== '' ? $subscription : null;
-    }
-
-    private function resolveExistingUsername(ProvisioningContext $context): ?string
-    {
-        return $this->normalizeUsername(
-            (string) ($context->payload['username'] ?? $context->service->username ?? '')
-        );
-    }
-
-    private function resolveOrGenerateUsername(ProvisioningContext $context): ?string
-    {
-        $existing = $this->resolveExistingUsername($context);
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $subscription = $this->resolveSubscription($context);
-
-        if ($subscription === null) {
-            return null;
-        }
-
-        return $this->normalizeUsername(Str::before($subscription, '.'));
-    }
-
-    private function normalizeUsername(string $value): ?string
+    private function normalizeUsername(string $value): string
     {
         $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', $value) ?? '');
 
         if ($normalized === '') {
-            return null;
+            $normalized = 'plesk' . strtolower(Str::random(6));
         }
 
         if (is_numeric($normalized[0])) {
@@ -454,36 +301,6 @@ class PleskDriver implements ProvisioningDriverInterface
         }
 
         return $normalized;
-    }
-
-    private function resolvePassword(ProvisioningContext $context): string
-    {
-        $password = trim((string) ($context->payload['password'] ?? ''));
-
-        return $password !== '' ? $password : Str::password(20);
-    }
-
-    private function resolveTargetIp(ProvisioningContext $context): ?string
-    {
-        $explicit = trim((string) ($context->payload['ip_address'] ?? ''));
-
-        if ($explicit !== '') {
-            return $explicit;
-        }
-
-        $endpoint = trim((string) ($context->server->api_endpoint ?: $context->server->hostname));
-
-        if ($endpoint === '') {
-            return null;
-        }
-
-        if (! preg_match('/^https?:\/\//i', $endpoint)) {
-            $endpoint = 'https://' . $endpoint;
-        }
-
-        $host = parse_url($endpoint, PHP_URL_HOST);
-
-        return is_string($host) && $host !== '' ? $host : null;
     }
 
     private function resolveOwnerLogin(Server $server): string
@@ -527,13 +344,6 @@ class PleskDriver implements ProvisioningDriverInterface
         $plan = $this->extractInfoValue($info, ['service_plan', 'plan']);
 
         return filled($plan) ? (string) $plan : null;
-    }
-
-    private function extractUsername(array $info): ?string
-    {
-        $username = $this->extractInfoValue($info, ['system_user', 'login', 'username']);
-
-        return filled($username) ? (string) $username : null;
     }
 
     private function extractInfoValue(array $info, array $keys, mixed $default = null): mixed
@@ -594,13 +404,6 @@ class PleskDriver implements ProvisioningDriverInterface
             'unlimited', 'infinity' => 0,
             default => (int) round($amount),
         };
-    }
-
-    private function mergeServiceMetadata(ProvisioningContext $context, array $panelMetadata): array
-    {
-        return array_merge((array) ($context->service->metadata ?? []), [
-            'panel' => array_filter($panelMetadata, static fn (mixed $value): bool => $value !== null && $value !== ''),
-        ]);
     }
 
     private function summarizeResponse(array $response, string $subscription, ?string $servicePlan = null): array

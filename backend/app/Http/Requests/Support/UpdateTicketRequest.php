@@ -25,13 +25,13 @@ class UpdateTicketRequest extends FormRequest
             'department_id' => [
                 'sometimes',
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('ticket_departments', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'status_id' => [
                 'sometimes',
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('ticket_statuses', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'client_id' => [

@@ -11,8 +11,8 @@ class NewPasswordController extends Controller
 {
     public function store(ResetPasswordRequest $request, AuthService $authService): JsonResponse
     {
-        return response()->json([
-            'message' => $authService->resetPassword($request->validated()),
-        ]);
+        return $this->message(
+            $authService->resetPassword($request->validated())
+        );
     }
 }

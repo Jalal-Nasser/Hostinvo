@@ -9,6 +9,25 @@ class TicketResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $department = $this->resource->relationLoaded('department')
+            ? $this->resource->getRelation('department')
+            : null;
+        $status = $this->resource->relationLoaded('status')
+            ? $this->resource->getRelation('status')
+            : null;
+        $client = $this->resource->relationLoaded('client')
+            ? $this->resource->getRelation('client')
+            : null;
+        $clientContact = $this->resource->relationLoaded('clientContact')
+            ? $this->resource->getRelation('clientContact')
+            : null;
+        $openedBy = $this->resource->relationLoaded('openedBy')
+            ? $this->resource->getRelation('openedBy')
+            : null;
+        $assignedTo = $this->resource->relationLoaded('assignedTo')
+            ? $this->resource->getRelation('assignedTo')
+            : null;
+
         return [
             'id' => $this->id,
             'tenant_id' => $this->tenant_id,
@@ -22,6 +41,7 @@ class TicketResource extends JsonResource
             'subject' => $this->subject,
             'priority' => $this->priority,
             'source' => $this->source,
+            'status_value' => $this->resource->status,
             'last_reply_by' => $this->last_reply_by,
             'last_reply_at' => optional($this->last_reply_at)?->toIso8601String(),
             'last_client_reply_at' => optional($this->last_client_reply_at)?->toIso8601String(),
@@ -29,41 +49,41 @@ class TicketResource extends JsonResource
             'closed_at' => optional($this->closed_at)?->toIso8601String(),
             'metadata' => $this->metadata,
             'replies_count' => $this->whenCounted('replies'),
-            'department' => $this->whenLoaded('department', fn () => $this->department ? [
-                'id' => $this->department->id,
-                'name' => $this->department->name,
-                'slug' => $this->department->slug,
-                'is_active' => $this->department->is_active,
-            ] : null),
-            'status' => $this->whenLoaded('status', fn () => $this->status ? [
-                'id' => $this->status->id,
-                'name' => $this->status->name,
-                'code' => $this->status->code,
-                'color' => $this->status->color,
-                'is_closed' => $this->status->is_closed,
-            ] : null),
-            'client' => $this->whenLoaded('client', fn () => $this->client ? [
-                'id' => $this->client->id,
-                'display_name' => $this->client->display_name,
-                'email' => $this->client->email,
-                'preferred_locale' => $this->client->preferred_locale,
-            ] : null),
-            'client_contact' => $this->whenLoaded('clientContact', fn () => $this->clientContact ? [
-                'id' => $this->clientContact->id,
-                'first_name' => $this->clientContact->first_name,
-                'last_name' => $this->clientContact->last_name,
-                'email' => $this->clientContact->email,
-            ] : null),
-            'opened_by' => $this->whenLoaded('openedBy', fn () => $this->openedBy ? [
-                'id' => $this->openedBy->id,
-                'name' => $this->openedBy->name,
-                'email' => $this->openedBy->email,
-            ] : null),
-            'assigned_to' => $this->whenLoaded('assignedTo', fn () => $this->assignedTo ? [
-                'id' => $this->assignedTo->id,
-                'name' => $this->assignedTo->name,
-                'email' => $this->assignedTo->email,
-            ] : null),
+            'department' => $department ? [
+                'id' => $department->id,
+                'name' => $department->name,
+                'slug' => $department->slug,
+                'is_active' => $department->is_active,
+            ] : null,
+            'status' => $status ? [
+                'id' => $status->id,
+                'name' => $status->name,
+                'code' => $status->code,
+                'color' => $status->color,
+                'is_closed' => $status->is_closed,
+            ] : null,
+            'client' => $client ? [
+                'id' => $client->id,
+                'display_name' => $client->display_name,
+                'email' => $client->email,
+                'preferred_locale' => $client->preferred_locale,
+            ] : null,
+            'client_contact' => $clientContact ? [
+                'id' => $clientContact->id,
+                'first_name' => $clientContact->first_name,
+                'last_name' => $clientContact->last_name,
+                'email' => $clientContact->email,
+            ] : null,
+            'opened_by' => $openedBy ? [
+                'id' => $openedBy->id,
+                'name' => $openedBy->name,
+                'email' => $openedBy->email,
+            ] : null,
+            'assigned_to' => $assignedTo ? [
+                'id' => $assignedTo->id,
+                'name' => $assignedTo->name,
+                'email' => $assignedTo->email,
+            ] : null,
             'replies' => TicketReplyResource::collection($this->whenLoaded('replies')),
             'created_at' => optional($this->created_at)?->toIso8601String(),
             'updated_at' => optional($this->updated_at)?->toIso8601String(),

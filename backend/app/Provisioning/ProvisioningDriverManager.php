@@ -28,6 +28,10 @@ class ProvisioningDriverManager
             throw new InvalidArgumentException("Configured provisioning driver [{$driverClass}] is invalid.");
         }
 
+        if (method_exists($driver, 'withServer')) {
+            $driver->withServer($server);
+        }
+
         return $driver;
     }
 }

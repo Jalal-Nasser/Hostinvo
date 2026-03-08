@@ -22,9 +22,7 @@ class AuthenticatedSessionController extends Controller
     {
         $authService->logout($request);
 
-        return response()->json([
-            'message' => __('auth.logged_out'),
-        ]);
+        return $this->message(__('auth.logged_out'));
     }
 
     public function show(Request $request, AuthService $authService): AuthenticatedUserResource

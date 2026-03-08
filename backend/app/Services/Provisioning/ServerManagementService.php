@@ -44,6 +44,7 @@ class ServerManagementService
             'tenant_id' => $actor->tenant_id,
             'name' => trim((string) $payload['name']),
             'selection_strategy' => $payload['selection_strategy'],
+            'fill_type' => $payload['selection_strategy'],
             'status' => $payload['status'],
             'notes' => $payload['notes'] ?? null,
         ]);
@@ -54,6 +55,7 @@ class ServerManagementService
         return $this->serverGroups->update($serverGroup, [
             'name' => trim((string) $payload['name']),
             'selection_strategy' => $payload['selection_strategy'],
+            'fill_type' => $payload['selection_strategy'],
             'status' => $payload['status'],
             'notes' => $payload['notes'] ?? null,
         ]);
@@ -184,20 +186,26 @@ class ServerManagementService
 
         $existingCredentials = (array) ($server?->credentials ?? []);
         $incomingCredentials = Arr::only($payload['credentials'] ?? [], ['api_token', 'api_key', 'api_secret', 'notes']);
+        $hostname = trim((string) ($payload['hostname'] ?? $server?->hostname ?? ''));
+        $maxAccounts = array_key_exists('max_accounts', $payload)
+            ? $payload['max_accounts']
+            : $server?->max_accounts;
 
         return [
             'tenant_id' => $tenantId,
             'server_group_id' => $serverGroupId,
             'name' => trim((string) $payload['name']),
-            'hostname' => trim((string) $payload['hostname']),
+            'hostname' => $hostname,
             'panel_type' => $payload['panel_type'],
             'api_endpoint' => $payload['api_endpoint'] ?? null,
             'api_port' => $payload['api_port'] ?? null,
             'status' => $payload['status'],
-            'verify_ssl' => (bool) ($payload['verify_ssl'] ?? true),
-            'max_accounts' => $payload['max_accounts'] ?? 0,
-            'current_accounts' => $payload['current_accounts'] ?? 0,
+            'ssl_verify' => (bool) ($payload['verify_ssl'] ?? $server?->verify_ssl ?? true),
+            'max_accounts' => $maxAccounts,
+            'account_count' => (int) ($payload['current_accounts'] ?? $server?->current_accounts ?? 0),
             'username' => $payload['username'] ?? $server?->username,
+            'ip_address' => $payload['ip_address']
+                ?? (filter_var($hostname, FILTER_VALIDATE_IP) ?: $server?->ip_address),
             'credentials' => array_filter(
                 array_merge($existingCredentials, $incomingCredentials),
                 static fn (mixed $value): bool => $value !== null && $value !== ''

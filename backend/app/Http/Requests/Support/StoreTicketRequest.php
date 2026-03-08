@@ -20,12 +20,12 @@ class StoreTicketRequest extends FormRequest
         return [
             'department_id' => [
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('ticket_departments', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'status_id' => [
                 'nullable',
-                'uuid',
+                'integer',
                 Rule::exists('ticket_statuses', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'client_id' => [

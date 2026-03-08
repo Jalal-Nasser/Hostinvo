@@ -23,11 +23,12 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('country', 2);
             $table->string('status', 32)->default('active');
-            $table->string('preferred_locale', 5)->default('en');
+            $table->string('preferred_locale', 10)->default('en');
             $table->string('currency', 3)->default('USD');
+            $table->integer('credit_balance')->default(0);
             $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'email']);
             $table->index(['tenant_id', 'status']);
@@ -44,8 +45,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('job_title')->nullable();
             $table->boolean('is_primary')->default(false);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'client_id']);
             $table->index(['tenant_id', 'email']);
@@ -63,22 +64,23 @@ return new class extends Migration
             $table->string('postal_code')->nullable();
             $table->string('country', 2);
             $table->boolean('is_primary')->default(false);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->index(['tenant_id', 'client_id']);
             $table->index(['tenant_id', 'type']);
         });
 
         Schema::create('client_activity_logs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->bigIncrements('id');
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('client_id')->constrained('clients')->cascadeOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('action');
             $table->string('description');
-            $table->json('metadata')->nullable();
-            $table->timestamps();
+            $table->ipAddress('ip_address')->nullable();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampTz('created_at')->useCurrent();
 
             $table->index(['tenant_id', 'client_id']);
             $table->index(['tenant_id', 'action']);

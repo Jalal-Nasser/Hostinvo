@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_groups', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('status', 32)->default('active');
             $table->string('visibility', 32)->default('public');
             $table->integer('display_order')->default(0);
-            $table->timestamps();
+            $table->integer('sort_order')->default(0);
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'slug']);
             $table->index(['tenant_id', 'status', 'visibility', 'display_order']);
@@ -40,7 +41,9 @@ return new class extends Migration
             $table->string('visibility', 32)->default('public');
             $table->integer('display_order')->default(0);
             $table->boolean('is_featured')->default(false);
-            $table->timestamps();
+            $table->text('welcome_email')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'slug']);
             $table->index(['tenant_id', 'product_group_id']);
@@ -48,22 +51,22 @@ return new class extends Migration
         });
 
         Schema::create('product_pricing', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('billing_cycle', 32);
             $table->string('currency', 3)->default('USD');
-            $table->decimal('price', 12, 2)->default(0);
-            $table->decimal('setup_fee', 12, 2)->default(0);
+            $table->integer('price')->default(0);
+            $table->integer('setup_fee')->default(0);
             $table->boolean('is_enabled')->default(false);
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'product_id', 'billing_cycle']);
             $table->index(['tenant_id', 'billing_cycle', 'is_enabled']);
         });
 
         Schema::create('configurable_options', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('name');
@@ -73,24 +76,26 @@ return new class extends Migration
             $table->string('status', 32)->default('active');
             $table->boolean('is_required')->default(false);
             $table->integer('display_order')->default(0);
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'product_id', 'code']);
             $table->index(['tenant_id', 'product_id', 'status', 'display_order']);
         });
 
-        Schema::create('configurable_option_choices', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('configurable_option_values', function (Blueprint $table) {
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->foreignUuid('configurable_option_id')->constrained('configurable_options')->cascadeOnDelete();
+            $table->foreignId('option_id')->constrained('configurable_options')->cascadeOnDelete();
             $table->string('label');
             $table->string('value');
+            $table->integer('price_modifier')->default(0);
             $table->boolean('is_default')->default(false);
             $table->integer('display_order')->default(0);
-            $table->timestamps();
+            $table->integer('sort_order')->default(0);
+            $table->timestampsTz();
 
-            $table->unique(['configurable_option_id', 'value']);
-            $table->index(['tenant_id', 'configurable_option_id', 'display_order']);
+            $table->unique(['option_id', 'value']);
+            $table->index(['tenant_id', 'option_id', 'display_order']);
         });
     }
 
@@ -99,7 +104,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('configurable_option_choices');
+        Schema::dropIfExists('configurable_option_values');
         Schema::dropIfExists('configurable_options');
         Schema::dropIfExists('product_pricing');
         Schema::dropIfExists('products');

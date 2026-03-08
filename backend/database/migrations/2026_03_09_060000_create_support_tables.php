@@ -12,21 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ticket_departments', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('email')->nullable();
             $table->string('slug');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_default')->default(false);
             $table->unsignedInteger('display_order')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->integer('sort_order')->default(0);
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'slug']);
         });
 
         Schema::create('ticket_statuses', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('code');
@@ -34,8 +37,9 @@ return new class extends Migration
             $table->boolean('is_default')->default(false);
             $table->boolean('is_closed')->default(false);
             $table->unsignedInteger('display_order')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->integer('sort_order')->default(0);
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'code']);
         });
@@ -43,24 +47,26 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('department_id')->nullable()->constrained('ticket_departments')->nullOnDelete();
-            $table->foreignUuid('status_id')->nullable()->constrained('ticket_statuses')->nullOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained('ticket_departments')->nullOnDelete();
+            $table->foreignId('status_id')->nullable()->constrained('ticket_statuses')->nullOnDelete();
             $table->foreignUuid('client_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('client_contact_id')->nullable()->constrained('client_contacts')->nullOnDelete();
             $table->foreignUuid('opened_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('assigned_to_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('service_id')->nullable()->constrained('services')->nullOnDelete();
             $table->string('ticket_number');
             $table->string('subject');
             $table->string('priority', 32);
             $table->string('source', 32)->default('portal');
             $table->string('last_reply_by', 32)->nullable();
-            $table->timestamp('last_reply_at')->nullable();
-            $table->timestamp('last_client_reply_at')->nullable();
-            $table->timestamp('last_admin_reply_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
-            $table->json('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->string('status', 50)->default('open');
+            $table->timestampTz('last_reply_at')->nullable();
+            $table->timestampTz('last_client_reply_at')->nullable();
+            $table->timestampTz('last_admin_reply_at')->nullable();
+            $table->timestampTz('closed_at')->nullable();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
             $table->unique(['tenant_id', 'ticket_number']);
             $table->index(['tenant_id', 'priority']);
@@ -75,11 +81,13 @@ return new class extends Migration
             $table->foreignUuid('ticket_id')->constrained('tickets')->cascadeOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignUuid('client_contact_id')->nullable()->constrained('client_contacts')->nullOnDelete();
+            $table->foreignUuid('client_id')->nullable()->constrained('clients')->nullOnDelete();
             $table->string('reply_type', 32);
             $table->boolean('is_internal')->default(false);
             $table->longText('message');
-            $table->json('metadata')->nullable();
-            $table->timestamps();
+            $table->jsonb('attachments')->nullable();
+            $table->jsonb('metadata')->nullable();
+            $table->timestampsTz();
 
             $table->index(['tenant_id', 'ticket_id', 'created_at']);
         });

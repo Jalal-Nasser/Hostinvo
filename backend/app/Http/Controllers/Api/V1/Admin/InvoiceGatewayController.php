@@ -17,9 +17,9 @@ class InvoiceGatewayController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        return response()->json([
-            'data' => $paymentService->availableGatewayOptions($invoice, request()->user()),
-        ]);
+        return $this->success(
+            $paymentService->availableGatewayOptions($invoice, request()->user())
+        );
     }
 
     public function store(
@@ -31,14 +31,12 @@ class InvoiceGatewayController extends Controller
 
         $checkout = $paymentService->createGatewayCheckout($invoice, $request->validated(), $request->user());
 
-        return response()->json([
-            'data' => [
-                'gateway' => $request->validated('gateway'),
-                'redirect_url' => $checkout['checkout']->redirectUrl,
-                'external_reference' => $checkout['checkout']->externalReference,
-                'payment' => (new PaymentResource($checkout['payment']))->resolve($request),
-            ],
-        ], Response::HTTP_CREATED);
+        return $this->success([
+            'gateway' => $request->validated('gateway'),
+            'redirect_url' => $checkout['checkout']->redirectUrl,
+            'external_reference' => $checkout['checkout']->externalReference,
+            'payment' => (new PaymentResource($checkout['payment']))->resolve($request),
+        ], status: Response::HTTP_CREATED);
     }
 
     public function capturePayPal(

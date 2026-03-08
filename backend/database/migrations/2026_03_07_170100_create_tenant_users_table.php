@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_users', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('is_primary')->default(true);
-            $table->timestamp('joined_at')->nullable();
-            $table->timestamps();
+            $table->timestampTz('joined_at')->nullable();
+            $table->timestampsTz();
 
             $table->unique(['tenant_id', 'user_id']);
             $table->index(['tenant_id', 'role_id']);

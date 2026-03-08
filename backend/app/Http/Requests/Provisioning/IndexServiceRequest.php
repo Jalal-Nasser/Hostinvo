@@ -20,7 +20,7 @@ class IndexServiceRequest extends FormRequest
             'provisioning_state' => ['nullable', 'string', 'max:32'],
             'client_id' => ['nullable', 'uuid'],
             'product_id' => ['nullable', 'uuid'],
-            'server_id' => ['nullable', 'uuid'],
+            'server_id' => ['nullable', 'integer'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

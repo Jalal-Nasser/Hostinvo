@@ -13,25 +13,33 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->foreignUuid('tenant_id')->nullable()->constrained('tenants')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('guard_name')->default('web');
             $table->string('display_name');
             $table->text('description')->nullable();
             $table->boolean('is_system')->default(true);
-            $table->timestamps();
+            $table->timestampsTz();
+
+            $table->unique(['tenant_id', 'name']);
+            $table->index(['tenant_id', 'guard_name']);
         });
 
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
+            $table->string('guard_name')->default('web');
             $table->string('display_name');
             $table->text('description')->nullable();
-            $table->timestamps();
+            $table->timestampsTz();
+
+            $table->unique(['name', 'guard_name']);
         });
 
         Schema::create('permission_role', function (Blueprint $table) {
             $table->foreignId('role_id')->constrained()->cascadeOnDelete();
             $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->primary(['role_id', 'permission_id']);
         });
@@ -39,7 +47,7 @@ return new class extends Migration
         Schema::create('role_user', function (Blueprint $table) {
             $table->foreignId('role_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
+            $table->timestampsTz();
 
             $table->primary(['role_id', 'user_id']);
         });

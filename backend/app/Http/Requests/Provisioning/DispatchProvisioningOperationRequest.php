@@ -28,7 +28,7 @@ class DispatchProvisioningOperationRequest extends FormRequest
             'payload.password' => ['nullable', 'string', 'min:8', 'max:255'],
             'payload.reason' => ['nullable', 'string', 'max:500'],
             'payload.panel_package_name' => ['nullable', 'string', 'max:191'],
-            'payload.server_package_id' => ['nullable', 'uuid'],
+            'payload.server_package_id' => ['nullable', 'integer'],
             'payload.disk_used_mb' => ['nullable', 'integer', 'min:0'],
             'payload.disk_limit_mb' => ['nullable', 'integer', 'min:0'],
             'payload.bandwidth_used_mb' => ['nullable', 'integer', 'min:0'],

@@ -26,7 +26,7 @@ trait HasServerPayloadRules
             && ($this->isMethod('post') || blank($existingServer?->credentials['api_secret'] ?? null));
 
         return [
-            'server_group_id' => ['nullable', 'uuid'],
+            'server_group_id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:255'],
             'hostname' => ['required', 'string', 'max:255'],
             'panel_type' => ['required', 'string', Rule::in(Server::panelTypes())],
@@ -61,7 +61,7 @@ trait HasServerPayloadRules
             'last_tested_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
             'packages' => ['nullable', 'array'],
-            'packages.*.id' => ['nullable', 'uuid'],
+            'packages.*.id' => ['nullable', 'integer'],
             'packages.*.product_id' => ['required', 'uuid'],
             'packages.*.panel_package_name' => ['required', 'string', 'max:255'],
             'packages.*.display_name' => ['nullable', 'string', 'max:255'],

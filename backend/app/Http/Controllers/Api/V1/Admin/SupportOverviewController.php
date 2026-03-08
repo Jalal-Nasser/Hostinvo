@@ -18,13 +18,11 @@ class SupportOverviewController extends Controller
 
         $overview = $supportService->getOverview(request()->user());
 
-        return response()->json([
-            'data' => [
-                'stats' => $overview['stats'],
-                'departments' => TicketDepartmentResource::collection($overview['departments'])->resolve(),
-                'statuses' => TicketStatusResource::collection($overview['statuses'])->resolve(),
-                'recent_tickets' => TicketResource::collection($overview['recent_tickets'])->resolve(),
-            ],
+        return $this->success([
+            'stats' => $overview['stats'],
+            'departments' => TicketDepartmentResource::collection($overview['departments'])->resolve(),
+            'statuses' => TicketStatusResource::collection($overview['statuses'])->resolve(),
+            'recent_tickets' => TicketResource::collection($overview['recent_tickets'])->resolve(),
         ]);
     }
 }

@@ -67,6 +67,7 @@ class SupportService
                 'tenant_id' => $actor->tenant_id,
                 'department_id' => $department->id,
                 'status_id' => $status->id,
+                'status' => $status->code,
                 'client_id' => $client->id,
                 'client_contact_id' => $clientContact?->id,
                 'opened_by_user_id' => $actor->id,
@@ -117,6 +118,7 @@ class SupportService
                     'client_id' => $client->id,
                     'department_id' => $department->id,
                     'status_id' => $status->id,
+                    'status' => $status->code,
                     'client_contact_id' => $clientContact?->id,
                     'assigned_to_user_id' => $assignee?->id,
                     'closed_at' => $status->is_closed ? ($ticket->closed_at ?? now()) : null,
@@ -364,7 +366,15 @@ class SupportService
         }
 
         if ($isInternal) {
-            return $ticket->status ?? $this->resolveStatus($ticket->status_id);
+            $currentStatus = $ticket->relationLoaded('status')
+                ? $ticket->getRelation('status')
+                : $this->support->findStatusById((string) $ticket->status_id);
+
+            if ($currentStatus instanceof TicketStatus) {
+                return $currentStatus;
+            }
+
+            return $this->resolveStatus((string) $ticket->status_id);
         }
 
         if ($actor->hasPermissionTo(['tickets.manage', 'support.access'])) {
@@ -438,8 +448,10 @@ class SupportService
 
     private function applyReplyState(Ticket $ticket, TicketReply $reply, TicketStatus $status, bool $statusWasExplicit): void
     {
+        $appliedStatus = $status;
         $attributes = [
             'status_id' => $status->id,
+            'status' => $status->code,
             'closed_at' => $status->is_closed ? ($ticket->closed_at ?? now()) : null,
         ];
 
@@ -451,7 +463,9 @@ class SupportService
                 $attributes['last_admin_reply_at'] = $reply->created_at;
 
                 if (! $statusWasExplicit && ! $status->is_closed) {
-                    $attributes['status_id'] = $this->resolveStatus(null, TicketStatus::CODE_ANSWERED)->id;
+                    $appliedStatus = $this->resolveStatus(null, TicketStatus::CODE_ANSWERED);
+                    $attributes['status_id'] = $appliedStatus->id;
+                    $attributes['status'] = $appliedStatus->code;
                     $attributes['closed_at'] = null;
                 }
             } elseif ($reply->reply_type === TicketReply::TYPE_CLIENT) {
@@ -459,7 +473,9 @@ class SupportService
                 $attributes['last_client_reply_at'] = $reply->created_at;
 
                 if (! $statusWasExplicit && ! $status->is_closed) {
-                    $attributes['status_id'] = $this->resolveStatus(null, TicketStatus::CODE_CUSTOMER_REPLY)->id;
+                    $appliedStatus = $this->resolveStatus(null, TicketStatus::CODE_CUSTOMER_REPLY);
+                    $attributes['status_id'] = $appliedStatus->id;
+                    $attributes['status'] = $appliedStatus->code;
                     $attributes['closed_at'] = null;
                 }
             }
@@ -467,7 +483,7 @@ class SupportService
             $attributes['last_reply_by'] = Ticket::REPLY_BY_INTERNAL;
 
             if (! $statusWasExplicit) {
-                unset($attributes['status_id'], $attributes['closed_at']);
+                unset($attributes['status_id'], $attributes['status'], $attributes['closed_at']);
             }
         }
 

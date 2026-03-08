@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductGroup extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
 
     public const STATUS_ACTIVE = 'active';
@@ -21,10 +19,6 @@ class ProductGroup extends Model
     public const VISIBILITY_PRIVATE = 'private';
     public const VISIBILITY_HIDDEN = 'hidden';
 
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
     protected $fillable = [
         'tenant_id',
         'name',
@@ -33,12 +27,14 @@ class ProductGroup extends Model
         'status',
         'visibility',
         'display_order',
+        'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
             'display_order' => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 

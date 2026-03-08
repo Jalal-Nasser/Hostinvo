@@ -16,6 +16,8 @@ use App\Models\Service;
 use App\Models\ServiceSuspension;
 use App\Models\User;
 use App\Provisioning\Data\ProvisioningContext;
+use App\Provisioning\Contracts\ProvisioningDriverInterface;
+use App\Provisioning\DTOs\ProvisionPayload;
 use App\Provisioning\Exceptions\ProvisioningException;
 use App\Provisioning\ProvisioningDriverManager;
 use App\Provisioning\ProvisioningJobDispatcher;
@@ -205,6 +207,19 @@ class ProvisioningService
 
         try {
             $result = $this->executeDriverOperation($driver, $job->operation, $context);
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+            $message = collect($errors)->flatten()->first()
+                ?? $exception->getMessage();
+
+            $this->markQueuedJobFailed(
+                jobId: $jobId,
+                message: (string) $message,
+                requestPayload: $job->payload ?? [],
+                shouldThrow: false,
+            );
+
+            return;
         } catch (ProvisioningException $exception) {
             $this->jobs->update($job, [
                 'attempts' => max($attempts, 1),
@@ -498,23 +513,285 @@ class ProvisioningService
     }
 
     private function executeDriverOperation(
-        object $driver,
+        ProvisioningDriverInterface $driver,
         string $operation,
         ProvisioningContext $context
     ): \App\Provisioning\Data\ProvisioningResult {
         return match ($operation) {
-            ProvisioningJob::OPERATION_CREATE_ACCOUNT => $driver->createAccount($context),
-            ProvisioningJob::OPERATION_SUSPEND_ACCOUNT => $driver->suspendAccount($context),
-            ProvisioningJob::OPERATION_UNSUSPEND_ACCOUNT => $driver->unsuspendAccount($context),
-            ProvisioningJob::OPERATION_TERMINATE_ACCOUNT => $driver->terminateAccount($context),
-            ProvisioningJob::OPERATION_CHANGE_PACKAGE => $driver->changePackage($context),
-            ProvisioningJob::OPERATION_RESET_PASSWORD => $driver->resetPassword($context),
-            ProvisioningJob::OPERATION_SYNC_USAGE => $driver->syncUsage($context),
-            ProvisioningJob::OPERATION_SYNC_SERVICE_STATUS => $driver->syncServiceStatus($context),
+            ProvisioningJob::OPERATION_CREATE_ACCOUNT => $this->handleCreateAccount($driver, $context),
+            ProvisioningJob::OPERATION_SUSPEND_ACCOUNT => $this->handleBooleanOperation(
+                $driver,
+                $context,
+                $operation,
+                fn () => $driver->suspendAccount(
+                    $this->resolveDriverAccountIdentifier($context),
+                    (string) ($context->payload['reason'] ?? 'Suspended by Hostinvo.')
+                ),
+            ),
+            ProvisioningJob::OPERATION_UNSUSPEND_ACCOUNT => $this->handleBooleanOperation(
+                $driver,
+                $context,
+                $operation,
+                fn () => $driver->unsuspendAccount($this->resolveDriverAccountIdentifier($context)),
+            ),
+            ProvisioningJob::OPERATION_TERMINATE_ACCOUNT => $this->handleBooleanOperation(
+                $driver,
+                $context,
+                $operation,
+                fn () => $driver->terminateAccount($this->resolveDriverAccountIdentifier($context)),
+            ),
+            ProvisioningJob::OPERATION_CHANGE_PACKAGE => $this->handleBooleanOperation(
+                $driver,
+                $context,
+                $operation,
+                fn () => $driver->changePackage(
+                    $this->resolveDriverAccountIdentifier($context),
+                    $this->resolvePanelPackageName($context),
+                ),
+                operationPayload: [
+                    'panel_package_name' => $this->resolvePanelPackageName($context),
+                ],
+            ),
+            ProvisioningJob::OPERATION_RESET_PASSWORD => $this->handleResetPassword($driver, $context, $operation),
+            ProvisioningJob::OPERATION_SYNC_USAGE => $this->handleUsageSync($driver, $context),
+            ProvisioningJob::OPERATION_SYNC_SERVICE_STATUS => $this->handleStatusSync($driver, $context),
             default => throw ValidationException::withMessages([
                 'operation' => ['The requested provisioning operation is invalid.'],
             ]),
         };
+    }
+
+    private function handleCreateAccount(
+        ProvisioningDriverInterface $driver,
+        ProvisioningContext $context
+    ): \App\Provisioning\Data\ProvisioningResult {
+        $payload = $this->buildProvisionPayload($context);
+        $result = $driver->createAccount($payload);
+        $telemetry = $this->consumeDriverTelemetry($driver);
+
+        return \App\Provisioning\Data\ProvisioningResult::success(
+            message: sprintf('Provisioning create account completed for %s.', $result->username),
+            requestPayload: $telemetry['request'] ?: $payload->sanitized(),
+            responsePayload: $telemetry['response'] ?: ['raw_response' => $result->rawResponse],
+            serviceAttributes: array_filter([
+                'username' => $result->username,
+                'external_reference' => $context->server->panel_type === Server::PANEL_PLESK
+                    ? $payload->domain
+                    : $result->username,
+                'provisioning_state' => Service::PROVISIONING_SYNCED,
+            ], static fn (mixed $value): bool => filled($value)),
+            operationPayload: array_filter([
+                'username' => $result->username,
+                'password' => $payload->password,
+                'domain' => $payload->domain,
+                'panel_package_name' => $payload->packageName,
+                'ip_address' => $result->ip,
+            ], static fn (mixed $value): bool => filled($value)),
+        );
+    }
+
+    private function handleBooleanOperation(
+        ProvisioningDriverInterface $driver,
+        ProvisioningContext $context,
+        string $operation,
+        \Closure $callback,
+        array $operationPayload = [],
+    ): \App\Provisioning\Data\ProvisioningResult {
+        $successful = $callback();
+        $telemetry = $this->consumeDriverTelemetry($driver);
+
+        if (! $successful) {
+            return \App\Provisioning\Data\ProvisioningResult::failure(
+                message: sprintf('Provisioning %s failed.', $operation),
+                requestPayload: $telemetry['request'],
+                responsePayload: $telemetry['response'],
+            );
+        }
+
+        return \App\Provisioning\Data\ProvisioningResult::success(
+            message: sprintf('Provisioning %s completed.', $operation),
+            requestPayload: $telemetry['request'],
+            responsePayload: $telemetry['response'],
+            serviceAttributes: [
+                'provisioning_state' => Service::PROVISIONING_SYNCED,
+            ],
+            operationPayload: $operationPayload,
+        );
+    }
+
+    private function handleUsageSync(
+        ProvisioningDriverInterface $driver,
+        ProvisioningContext $context
+    ): \App\Provisioning\Data\ProvisioningResult {
+        $identifier = $this->resolveDriverAccountIdentifier($context);
+        $usage = $driver->syncUsage($identifier);
+        $telemetry = $this->consumeDriverTelemetry($driver);
+
+        return \App\Provisioning\Data\ProvisioningResult::success(
+            message: sprintf('Provisioning usage sync completed for %s.', $identifier),
+            requestPayload: $telemetry['request'] ?: ['identifier' => $identifier],
+            responsePayload: $telemetry['response'] ?: ['raw_response' => $usage->rawResponse],
+            serviceAttributes: [
+                'provisioning_state' => Service::PROVISIONING_SYNCED,
+                'external_reference' => $context->server->panel_type === Server::PANEL_PLESK ? $identifier : $context->service->external_reference,
+            ],
+            operationPayload: [
+                'disk_used_mb' => $usage->diskUsedMb,
+                'disk_limit_mb' => $usage->diskLimitMb ?? 0,
+                'bandwidth_used_mb' => $usage->bandwidthUsedMb,
+                'bandwidth_limit_mb' => $usage->bandwidthLimitMb ?? 0,
+                'inodes_used' => $usage->inodesUsed,
+                'email_accounts_used' => $usage->emailAccountsUsed,
+                'databases_used' => $usage->databasesUsed,
+                'service_status' => $usage->serviceStatus,
+                'suspend_reason' => $usage->suspendReason,
+                'panel_package_name' => $usage->packageName,
+            ],
+        );
+    }
+
+    private function handleResetPassword(
+        ProvisioningDriverInterface $driver,
+        ProvisioningContext $context,
+        string $operation
+    ): \App\Provisioning\Data\ProvisioningResult {
+        $password = (string) ($context->payload['password'] ?? Str::password(20));
+
+        return $this->handleBooleanOperation(
+            $driver,
+            $context,
+            $operation,
+            fn () => $driver->resetPassword(
+                $this->resolveDriverAccountIdentifier($context),
+                $password
+            ),
+            operationPayload: [
+                'password' => $password,
+            ],
+        );
+    }
+
+    private function handleStatusSync(
+        ProvisioningDriverInterface $driver,
+        ProvisioningContext $context
+    ): \App\Provisioning\Data\ProvisioningResult {
+        $identifier = $this->resolveDriverAccountIdentifier($context);
+        $status = $driver->syncServiceStatus($identifier);
+        $telemetry = $this->consumeDriverTelemetry($driver);
+
+        return \App\Provisioning\Data\ProvisioningResult::success(
+            message: sprintf('Provisioning status sync completed for %s.', $identifier),
+            requestPayload: $telemetry['request'] ?: ['identifier' => $identifier],
+            responsePayload: $telemetry['response'] ?: ['raw_response' => $status->rawResponse],
+            serviceAttributes: [
+                'provisioning_state' => Service::PROVISIONING_SYNCED,
+                'external_reference' => $context->server->panel_type === Server::PANEL_PLESK ? $identifier : $context->service->external_reference,
+            ],
+            operationPayload: [
+                'service_status' => $status->status,
+                'suspend_reason' => $status->suspendReason,
+                'panel_package_name' => $status->packageName,
+            ],
+        );
+    }
+
+    private function buildProvisionPayload(ProvisioningContext $context): ProvisionPayload
+    {
+        $username = trim((string) ($context->payload['username']
+            ?? $context->service->username
+            ?? ($context->service->domain ? Str::before($context->service->domain, '.') : '')
+            ?? ''));
+        $domain = trim((string) ($context->payload['domain']
+            ?? $context->service->domain
+            ?? $context->service->external_reference
+            ?? ''));
+        $packageName = $this->resolvePanelPackageName($context);
+        $email = (string) ($context->service->client?->email ?? 'provisioning@hostinvo.test');
+        $password = (string) ($context->payload['password'] ?? Str::password(20));
+        $ip = trim((string) ($context->payload['ip_address'] ?? $context->server->ip_address ?? $this->inferServerIp($context->server)));
+
+        if ($username === '' || $domain === '' || $packageName === '' || $ip === '') {
+            throw ValidationException::withMessages([
+                'provisioning' => ['Provisioning payload is incomplete for account creation.'],
+            ]);
+        }
+
+        return new ProvisionPayload(
+            serviceId: $context->service->id,
+            username: $username,
+            domain: $domain,
+            email: $email,
+            password: $password,
+            packageName: $packageName,
+            ip: $ip,
+            contactEmail: $email,
+        );
+    }
+
+    private function resolvePanelPackageName(ProvisioningContext $context): string
+    {
+        return trim((string) ($context->payload['panel_package_name'] ?? $context->serverPackage?->panel_package_name ?? ''));
+    }
+
+    private function resolveDriverAccountIdentifier(ProvisioningContext $context): string
+    {
+        if ($context->server->panel_type === Server::PANEL_PLESK) {
+            $identifier = trim((string) ($context->payload['domain']
+                ?? $context->service->external_reference
+                ?? $context->service->domain
+                ?? ''));
+
+            if ($identifier !== '') {
+                return $identifier;
+            }
+        }
+
+        $identifier = trim((string) ($context->payload['username']
+            ?? $context->service->username
+            ?? $context->service->external_reference
+            ?? ''));
+
+        if ($identifier === '') {
+            throw ValidationException::withMessages([
+                'username' => ['A provisioning account identifier is required for this operation.'],
+            ]);
+        }
+
+        return $identifier;
+    }
+
+    private function inferServerIp(Server $server): string
+    {
+        if (filled($server->ip_address)) {
+            return (string) $server->ip_address;
+        }
+
+        $endpoint = trim((string) ($server->api_endpoint ?: $server->hostname));
+
+        if ($endpoint === '') {
+            return '';
+        }
+
+        if (! preg_match('/^https?:\/\//i', $endpoint)) {
+            $endpoint = 'https://' . $endpoint;
+        }
+
+        return (string) (parse_url($endpoint, PHP_URL_HOST) ?: '');
+    }
+
+    private function consumeDriverTelemetry(ProvisioningDriverInterface $driver): array
+    {
+        if (method_exists($driver, 'consumeTelemetry')) {
+            /** @var array{request: array, response: array} $telemetry */
+            $telemetry = $driver->consumeTelemetry();
+
+            return $telemetry;
+        }
+
+        return [
+            'request' => [],
+            'response' => [],
+        ];
     }
 
     private function applyOperationState(
@@ -537,6 +814,11 @@ class ProvisioningService
             ProvisioningJob::OPERATION_TERMINATE_ACCOUNT => $this->applyTerminateState($service, $server, $attributes),
             ProvisioningJob::OPERATION_CHANGE_PACKAGE => array_merge($attributes, [
                 'provisioning_state' => Service::PROVISIONING_PLACEHOLDER,
+                'metadata' => $this->mergeServiceMetadata($service, [
+                    'panel' => [
+                        'service_plan' => $payload['panel_package_name'] ?? null,
+                    ],
+                ]),
             ]),
             ProvisioningJob::OPERATION_RESET_PASSWORD => $this->applyResetPasswordState($service, $attributes, $payload),
             ProvisioningJob::OPERATION_SYNC_USAGE => $this->applyUsageSyncState($service, $attributes, $payload),
@@ -548,7 +830,7 @@ class ProvisioningService
     private function applyCreateAccountState(Service $service, Server $server, array $attributes, array $payload): array
     {
         if (! in_array($service->status, [Service::STATUS_ACTIVE, Service::STATUS_SUSPENDED, Service::STATUS_TERMINATED], true)) {
-            $server->increment('current_accounts');
+            $server->increment('account_count');
         }
 
         $username = $payload['username'] ?? $service->username;
@@ -579,6 +861,12 @@ class ProvisioningService
             'activated_at' => $service->activated_at ?? now(),
             'external_reference' => $service->external_reference ?: ($username ?: Str::upper($server->panel_type . '-' . Str::random(10))),
             'username' => $username,
+            'metadata' => $this->mergeServiceMetadata($service, [
+                'panel' => [
+                    'service_plan' => $payload['panel_package_name'] ?? null,
+                    'ip_address' => $payload['ip_address'] ?? null,
+                ],
+            ]),
         ]);
     }
 
@@ -620,7 +908,7 @@ class ProvisioningService
     {
         if (in_array($service->status, [Service::STATUS_ACTIVE, Service::STATUS_SUSPENDED, Service::STATUS_PROVISIONING], true)) {
             $server->update([
-                'current_accounts' => max(0, $server->current_accounts - 1),
+                'account_count' => max(0, $server->current_accounts - 1),
             ]);
         }
 
@@ -668,6 +956,7 @@ class ProvisioningService
                 'disk_limit_mb' => (int) ($payload['disk_limit_mb'] ?? 0),
                 'bandwidth_used_mb' => (int) ($payload['bandwidth_used_mb'] ?? 0),
                 'bandwidth_limit_mb' => (int) ($payload['bandwidth_limit_mb'] ?? 0),
+                'inodes_used' => (int) ($payload['inodes_used'] ?? 0),
                 'email_accounts_used' => (int) ($payload['email_accounts_used'] ?? 0),
                 'databases_used' => (int) ($payload['databases_used'] ?? 0),
                 'last_synced_at' => now(),
@@ -680,6 +969,11 @@ class ProvisioningService
         return array_merge($attributes, [
             'provisioning_state' => Service::PROVISIONING_SYNCED,
             'last_synced_at' => now(),
+            'metadata' => $this->mergeServiceMetadata($service, [
+                'panel' => [
+                    'service_plan' => $payload['panel_package_name'] ?? null,
+                ],
+            ]),
         ]);
     }
 
@@ -724,7 +1018,43 @@ class ProvisioningService
             'last_synced_at' => now(),
             'suspended_at' => $status === Service::STATUS_SUSPENDED ? ($service->suspended_at ?? now()) : null,
             'terminated_at' => $status === Service::STATUS_TERMINATED ? ($service->terminated_at ?? now()) : $service->terminated_at,
+            'metadata' => $this->mergeServiceMetadata($service, [
+                'panel' => [
+                    'service_plan' => $payload['panel_package_name'] ?? null,
+                ],
+            ]),
         ]);
+    }
+
+    private function mergeServiceMetadata(Service $service, array $metadata): array
+    {
+        return array_replace_recursive(
+            (array) ($service->metadata ?? []),
+            $this->withoutNullMetadata($metadata),
+        );
+    }
+
+    private function withoutNullMetadata(array $metadata): array
+    {
+        $normalized = [];
+
+        foreach ($metadata as $key => $value) {
+            if (is_array($value)) {
+                $nested = $this->withoutNullMetadata($value);
+
+                if ($nested !== []) {
+                    $normalized[$key] = $nested;
+                }
+
+                continue;
+            }
+
+            if ($value !== null) {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     private function generateReferenceNumber(): string

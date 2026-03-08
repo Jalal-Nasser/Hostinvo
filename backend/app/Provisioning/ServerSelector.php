@@ -9,6 +9,28 @@ use Illuminate\Validation\ValidationException;
 
 class ServerSelector
 {
+    public function pickServer(string $productId): Server
+    {
+        $server = Server::query()
+            ->where('status', Server::STATUS_ACTIVE)
+            ->where(function ($builder): void {
+                $builder
+                    ->whereNull('max_accounts')
+                    ->orWhereColumn('account_count', '<', 'max_accounts');
+            })
+            ->whereHas('packages', fn ($query) => $query->where('product_id', $productId))
+            ->orderBy('account_count')
+            ->first();
+
+        if (! $server instanceof Server) {
+            throw ValidationException::withMessages([
+                'server_id' => ['No available active server could be selected for the requested product.'],
+            ]);
+        }
+
+        return $server;
+    }
+
     public function resolveServerForService(Service $service): Server
     {
         if ($service->server) {
@@ -62,7 +84,7 @@ class ServerSelector
             ->whereHas('server', fn ($query) => $query->where('status', Server::STATUS_ACTIVE))
             ->orderByDesc('is_default')
             ->join('servers', 'servers.id', '=', 'server_packages.server_id')
-            ->orderBy('servers.current_accounts')
+            ->orderBy('servers.account_count')
             ->select('server_packages.*')
             ->first();
     }

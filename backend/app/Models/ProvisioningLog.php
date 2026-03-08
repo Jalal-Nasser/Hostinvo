@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProvisioningLog extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
 
     public const STATUS_QUEUED = 'queued';
@@ -19,10 +17,6 @@ class ProvisioningLog extends Model
     public const STATUS_PLACEHOLDER = 'placeholder';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_FAILED = 'failed';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $fillable = [
         'tenant_id',
@@ -35,6 +29,8 @@ class ProvisioningLog extends Model
         'message',
         'request_payload',
         'response_payload',
+        'error_message',
+        'duration_ms',
         'occurred_at',
     ];
 
@@ -43,6 +39,7 @@ class ProvisioningLog extends Model
         return [
             'request_payload' => 'array',
             'response_payload' => 'array',
+            'duration_ms' => 'integer',
             'occurred_at' => 'datetime',
         ];
     }

@@ -52,7 +52,10 @@ class RolePermissionSeeder extends Seeder
 
         foreach ($permissions as $name => [$displayName, $description]) {
             Permission::query()->updateOrCreate(
-                ['name' => $name],
+                [
+                    'name' => $name,
+                    'guard_name' => 'web',
+                ],
                 [
                     'display_name' => $displayName,
                     'description' => $description,
@@ -173,8 +176,12 @@ class RolePermissionSeeder extends Seeder
 
         foreach ($roleMap as $roleName => $permissionNames) {
             $role = Role::query()->updateOrCreate(
-                ['name' => $roleName],
                 [
+                    'tenant_id' => null,
+                    'name' => $roleName,
+                ],
+                [
+                    'guard_name' => 'web',
                     'display_name' => str($roleName)->replace('_', ' ')->title()->toString(),
                     'description' => 'Seeded Hostinvo foundation role.',
                     'is_system' => true,

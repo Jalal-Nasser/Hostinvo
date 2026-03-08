@@ -15,14 +15,17 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique();
+            $table->string('plan', 100)->default('standard');
+            $table->string('status')->default('active');
+            $table->uuid('owner_user_id')->nullable();
             $table->string('primary_domain')->nullable()->unique();
-            $table->string('default_locale', 5)->default('en');
+            $table->string('default_locale', 10)->default('en');
             $table->string('default_currency', 3)->default('USD');
             $table->string('timezone')->default('UTC');
-            $table->string('status')->default('active');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestampsTz();
+            $table->softDeletesTz();
 
+            $table->index(['status', 'plan']);
             $table->index(['status', 'default_locale']);
         });
     }

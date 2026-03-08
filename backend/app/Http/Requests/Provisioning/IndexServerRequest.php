@@ -18,7 +18,7 @@ class IndexServerRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:32'],
             'panel_type' => ['nullable', 'string', 'max:32'],
-            'server_group_id' => ['nullable', 'uuid'],
+            'server_group_id' => ['nullable', 'integer'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

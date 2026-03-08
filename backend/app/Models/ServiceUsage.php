@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,12 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ServiceUsage extends Model
 {
     use HasFactory;
-    use HasUuids;
     use TenantAware;
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
 
     protected $table = 'service_usage';
 
@@ -27,8 +21,10 @@ class ServiceUsage extends Model
         'disk_limit_mb',
         'bandwidth_used_mb',
         'bandwidth_limit_mb',
+        'inodes_used',
         'email_accounts_used',
         'databases_used',
+        'synced_at',
         'last_synced_at',
         'metadata',
     ];
@@ -40,8 +36,10 @@ class ServiceUsage extends Model
             'disk_limit_mb' => 'integer',
             'bandwidth_used_mb' => 'integer',
             'bandwidth_limit_mb' => 'integer',
+            'inodes_used' => 'integer',
             'email_accounts_used' => 'integer',
             'databases_used' => 'integer',
+            'synced_at' => 'datetime',
             'last_synced_at' => 'datetime',
             'metadata' => 'array',
         ];

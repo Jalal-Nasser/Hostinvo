@@ -60,7 +60,7 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
     working_dir: /var/www/backend
-    command: ["php", "artisan", "queue:work", "redis", "--queue=default", "--sleep=1", "--tries=3", "--timeout=120"]
+    command: ["php", "artisan", "queue:work", "redis", "--queue=critical,default,low", "--sleep=3", "--tries=3", "--timeout=120", "--backoff=60,300,900"]
     volumes:
       - ./backend:/var/www/backend
     depends_on:

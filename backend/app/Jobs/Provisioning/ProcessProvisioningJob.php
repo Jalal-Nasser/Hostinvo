@@ -13,11 +13,12 @@ class ProcessProvisioningJob implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
 
-    public int $tries = 4;
+    public int $tries = 3;
 
     public function __construct(public readonly string $provisioningJobId)
     {
         $this->onQueue(config('provisioning.queue.name', 'critical'));
+        $this->tries = (int) config('provisioning.queue.tries', 3);
     }
 
     public function handle(ProvisioningService $provisioningService): void

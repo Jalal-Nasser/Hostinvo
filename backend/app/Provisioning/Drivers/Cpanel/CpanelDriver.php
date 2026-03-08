@@ -5,15 +5,44 @@ namespace App\Provisioning\Drivers\Cpanel;
 use App\Models\Service;
 use App\Models\Server;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
-use App\Provisioning\Data\ProvisioningContext;
-use App\Provisioning\Data\ProvisioningResult;
+use App\Provisioning\DTOs\ProvisionPayload;
+use App\Provisioning\DTOs\ProvisionResult;
+use App\Provisioning\DTOs\ServiceStatus;
+use App\Provisioning\DTOs\UsageData;
+use App\Provisioning\Exceptions\ProvisioningException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class CpanelDriver implements ProvisioningDriverInterface
 {
+    private ?Server $server = null;
+
+    private array $lastRequestPayload = [];
+
+    private array $lastResponsePayload = [];
+
     public function __construct(private readonly CpanelApiClient $client)
     {
+    }
+
+    public function withServer(Server $server): static
+    {
+        $this->server = $server;
+
+        return $this;
+    }
+
+    public function consumeTelemetry(): array
+    {
+        $telemetry = [
+            'request' => $this->lastRequestPayload,
+            'response' => $this->lastResponsePayload,
+        ];
+
+        $this->lastRequestPayload = [];
+        $this->lastResponsePayload = [];
+
+        return $telemetry;
     }
 
     public function code(): string
@@ -31,346 +60,180 @@ class CpanelDriver implements ProvisioningDriverInterface
         return $this->client->testConnection($server);
     }
 
-    public function createAccount(ProvisioningContext $context): ProvisioningResult
+    public function createAccount(ProvisionPayload $payload): ProvisionResult
     {
-        $package = $this->resolvePackageName($context);
-        $domain = $this->resolvePrimaryDomain($context);
-        $username = $this->generateUsername($context);
-        $password = $this->resolvePassword($context);
-
-        if ($package === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.package_mapping_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($domain === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.domain_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
         $requestPayload = [
-            'username' => $username,
-            'domain' => $domain,
-            'plan' => $package,
-            'contactemail' => $context->service->client?->email,
+            'username' => $this->normalizeUsername($payload->username),
+            'domain' => trim($payload->domain),
+            'plan' => trim($payload->packageName),
+            'contactemail' => $payload->contactEmail ?: $payload->email,
         ];
 
-        $response = $this->client->createAccount($context->server, array_merge($requestPayload, [
-            'password' => $password,
+        $response = $this->client->createAccount($this->server(), array_merge($requestPayload, [
+            'password' => $payload->password,
         ]));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.account_created', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username, $package),
-            serviceAttributes: [
-                'username' => $username,
-                'external_reference' => $username,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'username' => $username,
-                'password' => $password,
-                'domain' => $domain,
-            ],
+        $responsePayload = $this->summarizeResponse($response, $requestPayload['username'], $requestPayload['plan']);
+        $this->rememberTelemetry($payload->sanitized(), $responsePayload);
+
+        return new ProvisionResult(
+            success: true,
+            username: $requestPayload['username'],
+            ip: Arr::get($responsePayload, 'data.ip'),
+            nameserver1: Arr::get($responsePayload, 'data.nameserver'),
+            nameserver2: Arr::get($responsePayload, 'data.nameserver2'),
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    public function suspendAccount(ProvisioningContext $context): ProvisioningResult
+    public function suspendAccount(string $username, string $reason): bool
     {
-        $username = $this->resolveExistingUsername($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $reason = trim((string) ($context->payload['reason'] ?? 'Suspended by Hostinvo.'));
         $requestPayload = [
-            'user' => $username,
-            'reason' => $reason,
+            'user' => $this->normalizeUsername($username),
+            'reason' => trim($reason) !== '' ? trim($reason) : 'Suspended by Hostinvo.',
         ];
 
-        $response = $this->client->suspendAccount($context->server, $requestPayload);
+        $response = $this->client->suspendAccount($this->server(), $requestPayload);
+        $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user']));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.account_suspended', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-        );
+        return true;
     }
 
-    public function unsuspendAccount(ProvisioningContext $context): ProvisioningResult
+    public function unsuspendAccount(string $username): bool
     {
-        $username = $this->resolveExistingUsername($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
         $requestPayload = [
-            'user' => $username,
+            'user' => $this->normalizeUsername($username),
         ];
 
-        $response = $this->client->unsuspendAccount($context->server, $requestPayload);
+        $response = $this->client->unsuspendAccount($this->server(), $requestPayload);
+        $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user']));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.account_unsuspended', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-        );
+        return true;
     }
 
-    public function terminateAccount(ProvisioningContext $context): ProvisioningResult
+    public function terminateAccount(string $username): bool
     {
-        $username = $this->resolveExistingUsername($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
         $requestPayload = [
-            'user' => $username,
+            'user' => $this->normalizeUsername($username),
             'keepdns' => 0,
         ];
 
-        $response = $this->client->terminateAccount($context->server, $requestPayload);
+        $response = $this->client->terminateAccount($this->server(), $requestPayload);
+        $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user']));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.account_terminated', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-        );
+        return true;
     }
 
-    public function changePackage(ProvisioningContext $context): ProvisioningResult
+    public function changePackage(string $username, string $package): bool
     {
-        $username = $this->resolveExistingUsername($context);
-        $package = trim((string) ($context->payload['panel_package_name'] ?? $this->resolvePackageName($context)));
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        if ($package === '') {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.package_mapping_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
         $requestPayload = [
-            'user' => $username,
-            'pkg' => $package,
+            'user' => $this->normalizeUsername($username),
+            'pkg' => trim($package),
         ];
 
-        $response = $this->client->changePackage($context->server, $requestPayload);
+        $response = $this->client->changePackage($this->server(), $requestPayload);
+        $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user'], $requestPayload['pkg']));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.package_changed', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username, $package),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'panel_package_name' => $package,
-            ],
-        );
+        return true;
     }
 
-    public function resetPassword(ProvisioningContext $context): ProvisioningResult
+    public function resetPassword(string $username, string $newPassword): bool
     {
-        $username = $this->resolveExistingUsername($context);
-        $password = $this->resolvePassword($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
         $requestPayload = [
-            'user' => $username,
+            'user' => $this->normalizeUsername($username),
         ];
 
-        $response = $this->client->resetPassword($context->server, array_merge($requestPayload, [
-            'pass' => $password,
+        $response = $this->client->resetPassword($this->server(), array_merge($requestPayload, [
+            'pass' => $newPassword,
         ]));
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.password_reset', ['username' => $username]),
-            requestPayload: $requestPayload,
-            responsePayload: $this->summarizeResponse($response, $username),
-            serviceAttributes: [
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'password' => $password,
-            ],
-        );
+        $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user']));
+
+        return true;
     }
 
-    public function syncUsage(ProvisioningContext $context): ProvisioningResult
+    public function syncUsage(string $username): UsageData
     {
-        $username = $this->resolveExistingUsername($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $account = $this->client->findAccount($context->server, $username);
+        $normalized = $this->normalizeUsername($username);
+        $account = $this->client->findAccount($this->server(), $normalized);
 
         if (! $account) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.account_missing'),
-                requestPayload: ['username' => $username],
+            throw new ProvisioningException(
+                __('provisioning.cpanel.account_missing'),
+                requestPayload: ['username' => $normalized],
             );
         }
 
-        $bandwidth = $this->client->fetchBandwidth($context->server, $username);
+        $bandwidth = $this->client->fetchBandwidth($this->server(), $normalized);
+        $responsePayload = [
+            'account' => Arr::only($account, ['user', 'domain', 'plan', 'diskused', 'disklimit', 'suspended', 'suspendreason']),
+            'bandwidth' => Arr::only($bandwidth, ['totalbytes', 'bwlimit']),
+        ];
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.usage_synced', ['username' => $username]),
-            requestPayload: ['username' => $username],
-            responsePayload: [
-                'account' => Arr::only($account, ['user', 'domain', 'plan', 'diskused', 'disklimit', 'suspended']),
-                'bandwidth' => Arr::only($bandwidth, ['totalbytes', 'bwlimit']),
-            ],
-            serviceAttributes: [
-                'username' => $username,
-                'external_reference' => $username,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'disk_used_mb' => $this->toMegabytes(Arr::get($account, 'diskused')),
-                'disk_limit_mb' => $this->toMegabytes(Arr::get($account, 'disklimit')),
-                'bandwidth_used_mb' => $this->toMegabytes(Arr::get($bandwidth, 'totalbytes') ?? Arr::get($bandwidth, 'total'), true),
-                'bandwidth_limit_mb' => $this->toMegabytes(Arr::get($bandwidth, 'bwlimit') ?? Arr::get($account, 'maxbw'), true),
-                'service_status' => $this->determineServiceStatus($account),
-                'suspend_reason' => Arr::get($account, 'suspendreason'),
-            ],
+        $this->rememberTelemetry(['username' => $normalized], $responsePayload);
+
+        return new UsageData(
+            diskUsedMb: $this->toMegabytes(Arr::get($account, 'diskused')),
+            diskLimitMb: $this->toMegabytes(Arr::get($account, 'disklimit')),
+            bandwidthUsedMb: $this->toMegabytes(Arr::get($bandwidth, 'totalbytes') ?? Arr::get($bandwidth, 'total'), true),
+            bandwidthLimitMb: $this->toMegabytes(Arr::get($bandwidth, 'bwlimit') ?? Arr::get($account, 'maxbw'), true),
+            inodesUsed: 0,
+            emailAccountsUsed: 0,
+            databasesUsed: 0,
+            serviceStatus: $this->determineServiceStatus($account),
+            suspendReason: Arr::get($account, 'suspendreason'),
+            packageName: Arr::get($account, 'plan'),
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    public function syncServiceStatus(ProvisioningContext $context): ProvisioningResult
+    public function syncServiceStatus(string $username): ServiceStatus
     {
-        $username = $this->resolveExistingUsername($context);
-
-        if ($username === null) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.username_required'),
-                requestPayload: ['service_id' => $context->service->id],
-            );
-        }
-
-        $account = $this->client->findAccount($context->server, $username);
+        $normalized = $this->normalizeUsername($username);
+        $account = $this->client->findAccount($this->server(), $normalized);
 
         if (! $account) {
-            return ProvisioningResult::failure(
-                message: __('provisioning.cpanel.account_missing'),
-                requestPayload: ['username' => $username],
+            throw new ProvisioningException(
+                __('provisioning.cpanel.account_missing'),
+                requestPayload: ['username' => $normalized],
             );
         }
 
-        return ProvisioningResult::success(
-            message: __('provisioning.cpanel.status_synced', ['username' => $username]),
-            requestPayload: ['username' => $username],
-            responsePayload: [
-                'account' => Arr::only($account, ['user', 'domain', 'plan', 'suspended', 'suspendreason']),
-            ],
-            serviceAttributes: [
-                'username' => $username,
-                'external_reference' => $username,
-                'provisioning_state' => Service::PROVISIONING_SYNCED,
-            ],
-            operationPayload: [
-                'service_status' => $this->determineServiceStatus($account),
-                'suspend_reason' => Arr::get($account, 'suspendreason'),
-                'panel_package_name' => Arr::get($account, 'plan'),
-            ],
+        $responsePayload = [
+            'account' => Arr::only($account, ['user', 'domain', 'plan', 'suspended', 'suspendreason']),
+        ];
+
+        $this->rememberTelemetry(['username' => $normalized], $responsePayload);
+
+        return new ServiceStatus(
+            status: $this->determineServiceStatus($account),
+            suspendReason: Arr::get($account, 'suspendreason'),
+            packageName: Arr::get($account, 'plan'),
+            rawResponse: json_encode($responsePayload) ?: null,
         );
     }
 
-    private function resolvePackageName(ProvisioningContext $context): ?string
+    private function rememberTelemetry(array $requestPayload, array $responsePayload): void
     {
-        $package = trim((string) ($context->payload['panel_package_name'] ?? $context->serverPackage?->panel_package_name ?? ''));
-
-        return $package !== '' ? $package : null;
+        $this->lastRequestPayload = $requestPayload;
+        $this->lastResponsePayload = $responsePayload;
     }
 
-    private function resolvePrimaryDomain(ProvisioningContext $context): ?string
+    private function server(): Server
     {
-        $domain = trim((string) ($context->payload['domain'] ?? $context->service->domain ?? ''));
-
-        return $domain !== '' ? $domain : null;
-    }
-
-    private function resolveExistingUsername(ProvisioningContext $context): ?string
-    {
-        return $this->normalizeUsername(
-            (string) ($context->payload['username'] ?? $context->service->username ?? $context->service->external_reference ?? '')
-        );
-    }
-
-    private function generateUsername(ProvisioningContext $context): ?string
-    {
-        $preferred = $this->resolveExistingUsername($context);
-
-        if ($preferred !== null) {
-            return $preferred;
+        if (! $this->server instanceof Server) {
+            throw new ProvisioningException('Provisioning driver is missing a bound server instance.');
         }
 
-        $domain = $this->resolvePrimaryDomain($context);
-
-        if ($domain === null) {
-            return null;
-        }
-
-        return $this->normalizeUsername(Str::before($domain, '.'));
+        return $this->server;
     }
 
-    private function normalizeUsername(string $value): ?string
+    private function normalizeUsername(string $value): string
     {
         $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', $value) ?? '');
 
         if ($normalized === '') {
-            return null;
+            $normalized = 'host' . strtolower(Str::random(8));
         }
 
         if (is_numeric($normalized[0])) {
@@ -384,13 +247,6 @@ class CpanelDriver implements ProvisioningDriverInterface
         }
 
         return $normalized;
-    }
-
-    private function resolvePassword(ProvisioningContext $context): string
-    {
-        $password = trim((string) ($context->payload['password'] ?? ''));
-
-        return $password !== '' ? $password : Str::password(20);
     }
 
     private function determineServiceStatus(array $account): string
@@ -441,7 +297,7 @@ class CpanelDriver implements ProvisioningDriverInterface
             'username' => $username,
             'package' => $package,
             'metadata' => Arr::only(Arr::get($response, 'metadata', []), ['result', 'reason', 'command', 'version']),
-            'data' => Arr::only(Arr::get($response, 'data', []), ['user', 'domain', 'ip', 'nameserver']),
+            'data' => Arr::only(Arr::get($response, 'data', []), ['user', 'domain', 'ip', 'nameserver', 'nameserver2']),
         ], static fn (mixed $value): bool => $value !== null && $value !== []);
     }
 }
