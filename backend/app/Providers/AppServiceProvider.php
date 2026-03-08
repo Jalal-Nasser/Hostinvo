@@ -35,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->ip());
         });
 
+        RateLimiter::for('webhooks', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
         Gate::before(function ($user, string $ability) {
             return $user->hasRole(Role::SUPER_ADMIN) ? true : null;
         });

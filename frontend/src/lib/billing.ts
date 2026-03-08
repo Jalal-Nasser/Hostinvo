@@ -14,11 +14,13 @@ export const invoiceStatuses = [
 export const paymentStatuses = ["pending", "completed", "failed", "cancelled"] as const;
 export const paymentTypes = ["payment", "refund", "credit"] as const;
 export const invoiceItemTypes = ["manual", "order", "service"] as const;
+export const gatewayCodes = ["stripe", "paypal"] as const;
 
 export type InvoiceStatus = (typeof invoiceStatuses)[number];
 export type PaymentStatus = (typeof paymentStatuses)[number];
 export type PaymentType = (typeof paymentTypes)[number];
 export type InvoiceItemType = (typeof invoiceItemTypes)[number];
+export type GatewayCode = (typeof gatewayCodes)[number];
 
 export type TransactionRecord = {
   id: string;
@@ -36,6 +38,14 @@ export type TransactionRecord = {
   response_payload?: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+};
+
+export type GatewayOptionRecord = {
+  code: GatewayCode;
+  label: string;
+  description: string;
+  enabled: boolean;
+  usable: boolean;
 };
 
 export type PaymentRecord = {
@@ -175,6 +185,13 @@ export type InvoiceFormPayload = {
   }>;
 };
 
+export type GatewayCheckoutRecord = {
+  gateway: GatewayCode;
+  redirect_url: string;
+  external_reference: string;
+  payment: PaymentRecord;
+};
+
 type PaginatedResponse<T> = {
   data: T[];
   meta?: {
@@ -273,6 +290,27 @@ export async function fetchPaymentsFromCookies(
   }
 
   return (await response.json()) as PaginatedResponse<PaymentRecord>;
+}
+
+export async function fetchInvoiceGatewayOptionsFromCookies(
+  cookieHeader: string,
+  invoiceId: string,
+): Promise<GatewayOptionRecord[] | null> {
+  const response = await fetch(`${apiBaseUrl}/admin/invoices/${invoiceId}/gateway-options`, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      Cookie: cookieHeader,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { data: GatewayOptionRecord[] };
+
+  return payload.data;
 }
 
 export function minorToDecimalString(value: number): string {

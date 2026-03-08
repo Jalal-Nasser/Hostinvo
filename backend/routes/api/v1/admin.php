@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\ClientController;
 use App\Http\Controllers\Api\V1\Admin\InvoiceController;
+use App\Http\Controllers\Api\V1\Admin\InvoiceGatewayController;
 use App\Http\Controllers\Api\V1\Admin\InvoicePaymentController;
 use App\Http\Controllers\Api\V1\Admin\OrderCheckoutController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
@@ -12,6 +13,9 @@ use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('clients', ClientController::class);
+Route::get('invoices/{invoice}/gateway-options', [InvoiceGatewayController::class, 'index'])->name('invoices.gateway-options.index');
+Route::post('invoices/{invoice}/gateway-checkouts', [InvoiceGatewayController::class, 'store'])->name('invoices.gateway-checkouts.store');
+Route::post('invoices/{invoice}/gateway-checkouts/paypal/capture', [InvoiceGatewayController::class, 'capturePayPal'])->name('invoices.gateway-checkouts.paypal.capture');
 Route::post('invoices/{invoice}/payments', [InvoicePaymentController::class, 'store'])->name('invoices.payments.store');
 Route::apiResource('invoices', InvoiceController::class);
 Route::post('orders/review', [OrderCheckoutController::class, 'review'])->name('orders.review');

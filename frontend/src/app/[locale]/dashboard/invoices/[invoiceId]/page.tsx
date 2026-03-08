@@ -28,6 +28,14 @@ export default async function InvoiceDetailsPage({
     <DashboardShell
       actions={
         <div className="flex flex-wrap gap-3">
+          {invoice.balance_due_minor > 0 && ["unpaid", "overdue"].includes(invoice.status) ? (
+            <Link
+              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+              href={localePath(params.locale, `/dashboard/invoices/${invoice.id}/pay`)}
+            >
+              {t("payInvoiceButton")}
+            </Link>
+          ) : null}
           <Link
             className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, `/dashboard/invoices/${invoice.id}/edit`)}
