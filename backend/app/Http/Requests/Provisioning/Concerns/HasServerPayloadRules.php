@@ -14,6 +14,16 @@ trait HasServerPayloadRules
             && ($this->isMethod('post') || blank($existingServer?->username));
         $requiresCpanelToken = fn () => $this->input('panel_type') === Server::PANEL_CPANEL
             && ($this->isMethod('post') || blank($existingServer?->credentials['api_token'] ?? null));
+        $hasIncomingPleskApiKey = fn (): bool => filled($this->input('credentials.api_key'));
+        $hasExistingPleskApiKey = fn (): bool => filled($existingServer?->credentials['api_key'] ?? null);
+        $requiresPleskUsername = fn () => $this->input('panel_type') === Server::PANEL_PLESK
+            && ! $hasIncomingPleskApiKey()
+            && ! $hasExistingPleskApiKey()
+            && ($this->isMethod('post') || blank($existingServer?->username));
+        $requiresPleskSecret = fn () => $this->input('panel_type') === Server::PANEL_PLESK
+            && ! $hasIncomingPleskApiKey()
+            && ! $hasExistingPleskApiKey()
+            && ($this->isMethod('post') || blank($existingServer?->credentials['api_secret'] ?? null));
 
         return [
             'server_group_id' => ['nullable', 'uuid'],
@@ -31,6 +41,7 @@ trait HasServerPayloadRules
                 'string',
                 'max:255',
                 Rule::requiredIf($requiresCpanelUsername),
+                Rule::requiredIf($requiresPleskUsername),
             ],
             'credentials' => ['nullable', 'array'],
             'credentials.api_token' => [
@@ -40,7 +51,12 @@ trait HasServerPayloadRules
                 Rule::requiredIf($requiresCpanelToken),
             ],
             'credentials.api_key' => ['nullable', 'string', 'max:2048'],
-            'credentials.api_secret' => ['nullable', 'string', 'max:2048'],
+            'credentials.api_secret' => [
+                'nullable',
+                'string',
+                'max:2048',
+                Rule::requiredIf($requiresPleskSecret),
+            ],
             'credentials.notes' => ['nullable', 'string'],
             'last_tested_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],

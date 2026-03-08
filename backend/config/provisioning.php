@@ -14,6 +14,14 @@ return [
         'retry_sleep_ms' => env('HOSTINVO_CPANEL_RETRY_SLEEP_MS', 500),
     ],
 
+    'plesk' => [
+        'default_port' => env('HOSTINVO_PLESK_DEFAULT_PORT', 8443),
+        'timeout' => env('HOSTINVO_PLESK_TIMEOUT', 30),
+        'connect_timeout' => env('HOSTINVO_PLESK_CONNECT_TIMEOUT', 10),
+        'retry_times' => env('HOSTINVO_PLESK_RETRY_TIMES', 3),
+        'retry_sleep_ms' => env('HOSTINVO_PLESK_RETRY_SLEEP_MS', 500),
+    ],
+
     'drivers' => [
         'cpanel' => \App\Provisioning\Drivers\Cpanel\CpanelDriver::class,
         'plesk' => \App\Provisioning\Drivers\Plesk\PleskDriver::class,
