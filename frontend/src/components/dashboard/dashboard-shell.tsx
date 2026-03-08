@@ -24,6 +24,7 @@ export async function DashboardShell({
   actions,
 }: DashboardShellProps) {
   const t = await getTranslations("Dashboard");
+  const provisioningT = await getTranslations("Provisioning");
 
   const navigation = [
     {
@@ -95,6 +96,19 @@ export async function DashboardShell({
       href: localePath(locale, "/dashboard/payments"),
       label: t("paymentsLink"),
       active: currentPath === "/dashboard/payments",
+    },
+    {
+      href: localePath(locale, "/dashboard/services"),
+      label: provisioningT("servicesTitle"),
+      active:
+        currentPath === "/dashboard/services" ||
+        (currentPath.startsWith("/dashboard/services/") &&
+          currentPath !== "/dashboard/services/new"),
+    },
+    {
+      href: localePath(locale, "/dashboard/provisioning"),
+      label: provisioningT("jobsTitle"),
+      active: currentPath === "/dashboard/provisioning",
     },
   ];
 

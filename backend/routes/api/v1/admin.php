@@ -10,6 +10,12 @@ use App\Http\Controllers\Api\V1\Admin\PaymentController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductGroupController;
 use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
+use App\Http\Controllers\Api\V1\Admin\ProvisioningJobController;
+use App\Http\Controllers\Api\V1\Admin\ServerController;
+use App\Http\Controllers\Api\V1\Admin\ServerGroupController;
+use App\Http\Controllers\Api\V1\Admin\ServerPackageController;
+use App\Http\Controllers\Api\V1\Admin\ServiceController;
+use App\Http\Controllers\Api\V1\Admin\ServiceProvisioningController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('clients', ClientController::class);
@@ -23,7 +29,13 @@ Route::post('orders/place', [OrderCheckoutController::class, 'place'])->name('or
 Route::post('orders/{order}/place', [OrderController::class, 'place'])->name('orders.place-existing');
 Route::apiResource('orders', OrderController::class);
 Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+Route::apiResource('provisioning-jobs', ProvisioningJobController::class)->only(['index', 'show']);
 Route::apiResource('product-groups', ProductGroupController::class);
 Route::apiResource('products', ProductController::class);
 Route::get('products/{product}/pricing', [ProductPricingController::class, 'show'])->name('products.pricing.show');
 Route::put('products/{product}/pricing', [ProductPricingController::class, 'update'])->name('products.pricing.update');
+Route::apiResource('server-groups', ServerGroupController::class);
+Route::put('servers/{server}/packages', [ServerPackageController::class, 'update'])->name('servers.packages.update');
+Route::apiResource('servers', ServerController::class);
+Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
+Route::apiResource('services', ServiceController::class);

@@ -108,4 +108,9 @@ class Order extends Model
     {
         return $this->hasMany(Invoice::class)->latest('issue_date');
     }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class)->latest();
+    }
 }

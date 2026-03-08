@@ -10,6 +10,10 @@ use App\Contracts\Repositories\Catalog\ProductGroupRepositoryInterface;
 use App\Contracts\Repositories\Catalog\ProductRepositoryInterface;
 use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
 use App\Contracts\Repositories\Orders\OrderRepositoryInterface;
+use App\Contracts\Repositories\Provisioning\ProvisioningJobRepositoryInterface;
+use App\Contracts\Repositories\Provisioning\ServerGroupRepositoryInterface;
+use App\Contracts\Repositories\Provisioning\ServerRepositoryInterface;
+use App\Contracts\Repositories\Provisioning\ServiceRepositoryInterface;
 use App\Repositories\Auth\EloquentTenantRepository;
 use App\Repositories\Auth\EloquentUserRepository;
 use App\Repositories\Billing\EloquentInvoiceRepository;
@@ -18,6 +22,10 @@ use App\Repositories\Catalog\EloquentProductGroupRepository;
 use App\Repositories\Catalog\EloquentProductRepository;
 use App\Repositories\Clients\EloquentClientRepository;
 use App\Repositories\Orders\EloquentOrderRepository;
+use App\Repositories\Provisioning\EloquentProvisioningJobRepository;
+use App\Repositories\Provisioning\EloquentServerGroupRepository;
+use App\Repositories\Provisioning\EloquentServerRepository;
+use App\Repositories\Provisioning\EloquentServiceRepository;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,5 +45,9 @@ class HostinvoServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
         $this->app->bind(InvoiceRepositoryInterface::class, EloquentInvoiceRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, EloquentPaymentRepository::class);
+        $this->app->bind(ServerGroupRepositoryInterface::class, EloquentServerGroupRepository::class);
+        $this->app->bind(ServerRepositoryInterface::class, EloquentServerRepository::class);
+        $this->app->bind(ServiceRepositoryInterface::class, EloquentServiceRepository::class);
+        $this->app->bind(ProvisioningJobRepositoryInterface::class, EloquentProvisioningJobRepository::class);
     }
 }

@@ -94,4 +94,9 @@ class Client extends Model
     {
         return $this->hasMany(Payment::class)->latest('paid_at');
     }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class)->latest();
+    }
 }

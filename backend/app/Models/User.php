@@ -84,4 +84,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(TenantUser::class);
     }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class, 'user_id')->latest();
+    }
+
+    public function requestedProvisioningJobs(): HasMany
+    {
+        return $this->hasMany(ProvisioningJob::class, 'requested_by_user_id')->latest('requested_at');
+    }
 }

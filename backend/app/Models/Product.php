@@ -72,4 +72,14 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class)->latest();
     }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class)->latest();
+    }
+
+    public function serverPackages(): HasMany
+    {
+        return $this->hasMany(ServerPackage::class)->orderBy('panel_package_name');
+    }
 }
