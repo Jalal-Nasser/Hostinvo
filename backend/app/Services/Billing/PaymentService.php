@@ -250,6 +250,10 @@ class PaymentService
 
     public function handleWebhook(string $gateway, Request $request): WebhookLog
     {
+        if (! $this->gateways->supports($gateway)) {
+            throw new PaymentGatewayException('The requested payment gateway is not configured.');
+        }
+
         $driver = $this->gateways->resolve($gateway);
         $matchedTenant = null;
         $matchedPayload = null;

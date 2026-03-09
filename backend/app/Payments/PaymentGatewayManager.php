@@ -32,6 +32,16 @@ class PaymentGatewayManager
         return $driver;
     }
 
+    public function supports(string $gateway): bool
+    {
+        return is_array(config("payments.gateways.{$gateway}"));
+    }
+
+    public function supportedGatewayCodes(): array
+    {
+        return array_keys((array) config('payments.gateways', []));
+    }
+
     public function configurationForTenant(Tenant $tenant, string $gateway): GatewayConfiguration
     {
         $config = config("payments.gateways.{$gateway}");

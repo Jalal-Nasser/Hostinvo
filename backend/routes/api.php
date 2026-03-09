@@ -4,10 +4,12 @@ use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
+$supportedWebhookGateways = array_keys((array) config('payments.gateways', []));
+
 Route::middleware(['api'])
     ->prefix('v1')
     ->name('api.v1.')
-    ->group(function (): void {
+    ->group(function () use ($supportedWebhookGateways): void {
         Route::get('/health', HealthCheckController::class)->name('health');
 
         Route::prefix('auth')
@@ -27,7 +29,9 @@ Route::middleware(['api'])
         Route::prefix('webhooks')
             ->name('webhooks.')
             ->middleware(['throttle:webhooks'])
-            ->group(function (): void {
-                Route::post('{gateway}', WebhookController::class)->name('handle');
+            ->group(function () use ($supportedWebhookGateways): void {
+                Route::post('{gateway}', WebhookController::class)
+                    ->whereIn('gateway', $supportedWebhookGateways)
+                    ->name('handle');
             });
     });
