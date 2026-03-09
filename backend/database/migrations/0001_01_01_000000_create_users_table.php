@@ -31,20 +31,26 @@ return new class extends Migration
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            $table->string('email');
             $table->string('token');
             $table->timestampTz('created_at')->nullable();
+
+            $table->primary(['tenant_id', 'email']);
+            $table->index(['email']);
         });
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->uuid('user_id')->nullable()->index();
+            $table->uuid('tenant_id')->nullable()->index();
             $table->ipAddress('ip_address')->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
 
             $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('tenant_id')->references('id')->on('tenants')->nullOnDelete();
         });
 
         Schema::table('tenants', function (Blueprint $table) {

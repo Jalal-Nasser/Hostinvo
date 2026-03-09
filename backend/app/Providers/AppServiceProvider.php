@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Models\Role;
+use App\Session\TenantDatabaseSessionHandler;
+use App\Support\Auth\PasswordResetTenantContext;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -17,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PasswordResetTenantContext::class);
     }
 
     /**
@@ -25,6 +28,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Session::extend('tenant-database', function ($app) {
+            return new TenantDatabaseSessionHandler(
+                $app['db']->connection(config('session.connection')),
+                config('session.table'),
+                config('session.lifetime'),
+                $app,
+            );
+        });
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(
                 $request->user()?->getAuthIdentifier() ?: $request->ip()
@@ -46,13 +58,19 @@ class AppServiceProvider extends ServiceProvider
         ResetPassword::createUrlUsing(function ($user, string $token): string {
             $locale = $user->locale ?: config('app.locale');
             $frontendUrl = rtrim(config('app.frontend_url'), '/');
+            $context = app(PasswordResetTenantContext::class)->buildSignedUrlContext($user, $token);
+            $query = http_build_query(array_filter([
+                'token' => $token,
+                'email' => $user->email,
+                'tenant_id' => $context['tenant_id'] ?? null,
+                'tenant_signature' => $context['tenant_signature'] ?? null,
+            ]));
 
             return sprintf(
-                '%s/%s/auth/reset-password?token=%s&email=%s',
+                '%s/%s/auth/reset-password?%s',
                 $frontendUrl,
                 $locale,
-                $token,
-                urlencode($user->email)
+                $query,
             );
         });
     }

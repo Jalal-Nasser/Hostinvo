@@ -69,4 +69,23 @@ trait HasServerPayloadRules
             'packages.*.metadata' => ['nullable', 'array'],
         ];
     }
+
+    public function serverPayloadAfterValidation(): array
+    {
+        return [
+            function ($validator): void {
+                $sslVerify = $this->input('verify_ssl');
+
+                if (config('app.env') !== 'production' || $sslVerify === null) {
+                    return;
+                }
+
+                $normalized = filter_var($sslVerify, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+                if ($normalized === false) {
+                    $validator->errors()->add('verify_ssl', 'SSL verification cannot be disabled in production.');
+                }
+            },
+        ];
+    }
 }

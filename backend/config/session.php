@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'redis'),
+    'driver' => env('SESSION_DRIVER', 'tenant-database'),
 
     /*
     |--------------------------------------------------------------------------
@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'connection' => env('SESSION_CONNECTION', 'default'),
+    'connection' => env('SESSION_CONNECTION', env('DB_CONNECTION', 'pgsql')),
 
     /*
     |--------------------------------------------------------------------------

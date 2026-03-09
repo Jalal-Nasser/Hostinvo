@@ -19,4 +19,9 @@ class StoreServerRequest extends FormRequest
     {
         return $this->serverPayloadRules();
     }
+
+    public function after(): array
+    {
+        return $this->serverPayloadAfterValidation();
+    }
 }

@@ -9,5 +9,11 @@ interface TenantRepositoryInterface
 {
     public function findById(string $id): ?Tenant;
 
+    public function findBySlug(string $slug): ?Tenant;
+
+    public function findByPrimaryDomain(string $domain): ?Tenant;
+
+    public function findByHost(string $host): ?Tenant;
+
     public function allActive(): Collection;
 }

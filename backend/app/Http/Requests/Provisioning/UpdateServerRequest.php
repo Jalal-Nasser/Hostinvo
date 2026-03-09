@@ -18,4 +18,9 @@ class UpdateServerRequest extends FormRequest
     {
         return $this->serverPayloadRules();
     }
+
+    public function after(): array
+    {
+        return $this->serverPayloadAfterValidation();
+    }
 }

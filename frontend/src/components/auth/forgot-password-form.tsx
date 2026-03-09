@@ -20,6 +20,16 @@ async function ensureCsrfCookie() {
   });
 }
 
+function tenantHostHeader(): Record<string, string> {
+  if (typeof window === "undefined" || window.location.hostname === "") {
+    return {};
+  }
+
+  return {
+    "X-Tenant-Host": window.location.hostname,
+  };
+}
+
 export function ForgotPasswordForm() {
   const t = useTranslations("Auth");
   const locale = useLocale();
@@ -45,6 +55,7 @@ export function ForgotPasswordForm() {
               Accept: "application/json",
               "Content-Type": "application/json",
               "X-Requested-With": "XMLHttpRequest",
+              ...tenantHostHeader(),
               ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
             },
             body: JSON.stringify({

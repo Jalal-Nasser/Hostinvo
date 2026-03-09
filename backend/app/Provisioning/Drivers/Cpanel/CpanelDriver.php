@@ -2,8 +2,9 @@
 
 namespace App\Provisioning\Drivers\Cpanel;
 
-use App\Models\Service;
 use App\Models\Server;
+use App\Models\Service;
+use App\Models\ServiceCredential;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
 use App\Provisioning\DTOs\ProvisionPayload;
 use App\Provisioning\DTOs\ProvisionResult;
@@ -11,6 +12,7 @@ use App\Provisioning\DTOs\ServiceStatus;
 use App\Provisioning\DTOs\UsageData;
 use App\Provisioning\Exceptions\ProvisioningException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CpanelDriver implements ProvisioningDriverInterface
@@ -21,13 +23,12 @@ class CpanelDriver implements ProvisioningDriverInterface
 
     private array $lastResponsePayload = [];
 
-    public function __construct(private readonly CpanelApiClient $client)
-    {
-    }
+    public function __construct(private readonly CpanelApiClient $client) {}
 
     public function withServer(Server $server): static
     {
         $this->server = $server;
+        $this->logInsecureSslUsage($server);
 
         return $this;
     }
@@ -57,6 +58,8 @@ class CpanelDriver implements ProvisioningDriverInterface
 
     public function testConnection(Server $server): array
     {
+        $this->logInsecureSslUsage($server);
+
         return $this->client->testConnection($server);
     }
 
@@ -70,7 +73,7 @@ class CpanelDriver implements ProvisioningDriverInterface
         ];
 
         $response = $this->client->createAccount($this->server(), array_merge($requestPayload, [
-            'password' => $payload->password,
+            'password' => $this->resolveServicePassword($payload->serviceId),
         ]));
 
         $responsePayload = $this->summarizeResponse($response, $requestPayload['username'], $requestPayload['plan']);
@@ -137,14 +140,14 @@ class CpanelDriver implements ProvisioningDriverInterface
         return true;
     }
 
-    public function resetPassword(string $username, string $newPassword): bool
+    public function resetPassword(string $username, string $serviceId): bool
     {
         $requestPayload = [
             'user' => $this->normalizeUsername($username),
         ];
 
         $response = $this->client->resetPassword($this->server(), array_merge($requestPayload, [
-            'pass' => $newPassword,
+            'pass' => $this->resolveServicePassword($serviceId),
         ]));
 
         $this->rememberTelemetry($requestPayload, $this->summarizeResponse($response, $requestPayload['user']));
@@ -219,6 +222,24 @@ class CpanelDriver implements ProvisioningDriverInterface
         $this->lastResponsePayload = $responsePayload;
     }
 
+    private function resolveServicePassword(string $serviceId): string
+    {
+        $credential = ServiceCredential::query()
+            ->where('service_id', $serviceId)
+            ->first();
+
+        $password = $credential?->decryptValue();
+
+        if ($password === null || $password === '') {
+            throw new ProvisioningException(
+                'Provisioning password credentials are missing for this service.',
+                requestPayload: ['service_id' => $serviceId],
+            );
+        }
+
+        return $password;
+    }
+
     private function server(): Server
     {
         if (! $this->server instanceof Server) {
@@ -233,11 +254,11 @@ class CpanelDriver implements ProvisioningDriverInterface
         $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', $value) ?? '');
 
         if ($normalized === '') {
-            $normalized = 'host' . strtolower(Str::random(8));
+            $normalized = 'host'.strtolower(Str::random(8));
         }
 
         if (is_numeric($normalized[0])) {
-            $normalized = 'h' . $normalized;
+            $normalized = 'h'.$normalized;
         }
 
         $normalized = substr($normalized, 0, 16);
@@ -299,5 +320,17 @@ class CpanelDriver implements ProvisioningDriverInterface
             'metadata' => Arr::only(Arr::get($response, 'metadata', []), ['result', 'reason', 'command', 'version']),
             'data' => Arr::only(Arr::get($response, 'data', []), ['user', 'domain', 'ip', 'nameserver', 'nameserver2']),
         ], static fn (mixed $value): bool => $value !== null && $value !== []);
+    }
+
+    private function logInsecureSslUsage(Server $server): void
+    {
+        if ($server->verify_ssl === false) {
+            Log::critical('cPanel provisioning is running with ssl_verify disabled.', [
+                'driver' => $this->code(),
+                'tenant_id' => $server->tenant_id,
+                'server_id' => $server->id,
+                'hostname' => $server->hostname,
+            ]);
+        }
     }
 }

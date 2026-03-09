@@ -55,6 +55,7 @@ class RolePermissionSeeder extends Seeder
         foreach ($permissions as $name => [$displayName, $description]) {
             Permission::query()->updateOrCreate(
                 [
+                    'tenant_id' => null,
                     'name' => $name,
                     'guard_name' => 'web',
                 ],

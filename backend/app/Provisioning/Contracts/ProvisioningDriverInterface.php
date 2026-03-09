@@ -26,7 +26,7 @@ interface ProvisioningDriverInterface
 
     public function changePackage(string $username, string $package): bool;
 
-    public function resetPassword(string $username, string $newPassword): bool;
+    public function resetPassword(string $username, string $serviceId): bool;
 
     public function syncUsage(string $username): UsageData;
 

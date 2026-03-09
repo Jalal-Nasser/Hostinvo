@@ -13,10 +13,9 @@ use App\Models\ProvisioningJob;
 use App\Models\ProvisioningLog;
 use App\Models\Server;
 use App\Models\Service;
-use App\Models\ServiceSuspension;
 use App\Models\User;
-use App\Provisioning\Data\ProvisioningContext;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
+use App\Provisioning\Data\ProvisioningContext;
 use App\Provisioning\DTOs\ProvisionPayload;
 use App\Provisioning\Exceptions\ProvisioningException;
 use App\Provisioning\ProvisioningDriverManager;
@@ -44,8 +43,7 @@ class ProvisioningService
         private readonly ProvisioningLogger $logger,
         private readonly ProvisioningJobDispatcher $dispatcher,
         private readonly ServerSelector $serverSelector,
-    ) {
-    }
+    ) {}
 
     public function paginateServices(array $filters): LengthAwarePaginator
     {
@@ -122,6 +120,7 @@ class ProvisioningService
         }
 
         return DB::transaction(function () use ($service, $operation, $actor, $payload): ProvisioningJob {
+            $payload = $this->prepareDispatchPayload($service, $operation, $payload);
             [$server, $serverPackage] = $this->resolveTargetInfrastructure($service, $payload);
 
             $serviceAttributes = [
@@ -582,7 +581,6 @@ class ProvisioningService
             ], static fn (mixed $value): bool => filled($value)),
             operationPayload: array_filter([
                 'username' => $result->username,
-                'password' => $payload->password,
                 'domain' => $payload->domain,
                 'panel_package_name' => $payload->packageName,
                 'ip_address' => $result->ip,
@@ -655,7 +653,11 @@ class ProvisioningService
         ProvisioningContext $context,
         string $operation
     ): \App\Provisioning\Data\ProvisioningResult {
-        $password = (string) ($context->payload['password'] ?? Str::password(20));
+        $this->persistProvisioningSecret(
+            $context->service,
+            $operation,
+            is_string($context->payload['password'] ?? null) ? (string) $context->payload['password'] : null,
+        );
 
         return $this->handleBooleanOperation(
             $driver,
@@ -663,11 +665,8 @@ class ProvisioningService
             $operation,
             fn () => $driver->resetPassword(
                 $this->resolveDriverAccountIdentifier($context),
-                $password
+                $context->service->id,
             ),
-            operationPayload: [
-                'password' => $password,
-            ],
         );
     }
 
@@ -707,7 +706,11 @@ class ProvisioningService
             ?? ''));
         $packageName = $this->resolvePanelPackageName($context);
         $email = (string) ($context->service->client?->email ?? 'provisioning@hostinvo.test');
-        $password = (string) ($context->payload['password'] ?? Str::password(20));
+        $this->persistProvisioningSecret(
+            $context->service,
+            ProvisioningJob::OPERATION_CREATE_ACCOUNT,
+            is_string($context->payload['password'] ?? null) ? (string) $context->payload['password'] : null,
+        );
         $ip = trim((string) ($context->payload['ip_address'] ?? $context->server->ip_address ?? $this->inferServerIp($context->server)));
 
         if ($username === '' || $domain === '' || $packageName === '' || $ip === '') {
@@ -721,7 +724,6 @@ class ProvisioningService
             username: $username,
             domain: $domain,
             email: $email,
-            password: $password,
             packageName: $packageName,
             ip: $ip,
             contactEmail: $email,
@@ -773,7 +775,7 @@ class ProvisioningService
         }
 
         if (! preg_match('/^https?:\/\//i', $endpoint)) {
-            $endpoint = 'https://' . $endpoint;
+            $endpoint = 'https://'.$endpoint;
         }
 
         return (string) (parse_url($endpoint, PHP_URL_HOST) ?: '');
@@ -834,32 +836,24 @@ class ProvisioningService
         }
 
         $username = $payload['username'] ?? $service->username;
-        $password = $payload['password'] ?? null;
-        $existingCredentials = (array) ($service->credentials?->credentials ?? []);
-
-        $service->credentials()->updateOrCreate(
-            ['service_id' => $service->id],
-            [
-                'tenant_id' => $service->tenant_id,
-                'credentials' => array_filter(array_merge($existingCredentials, [
-                    'username' => $username,
-                    'password' => $password,
-                ]), static fn (mixed $value): bool => filled($value)),
-                'control_panel_url' => $server->api_endpoint,
-                'access_url' => filled($service->domain)
-                    ? sprintf('https://%s', $service->domain)
-                    : null,
-                'metadata' => [
-                    'driver' => $server->panel_type,
-                ],
-            ]
-        );
+        $this->syncServiceCredentialRecord($service, [
+            'credentials' => [
+                'username' => $username,
+            ],
+            'control_panel_url' => $server->api_endpoint,
+            'access_url' => filled($service->domain)
+                ? sprintf('https://%s', $service->domain)
+                : null,
+            'metadata' => [
+                'driver' => $server->panel_type,
+            ],
+        ]);
 
         return array_merge($attributes, [
             'status' => Service::STATUS_ACTIVE,
             'provisioning_state' => Service::PROVISIONING_PLACEHOLDER,
             'activated_at' => $service->activated_at ?? now(),
-            'external_reference' => $service->external_reference ?: ($username ?: Str::upper($server->panel_type . '-' . Str::random(10))),
+            'external_reference' => $service->external_reference ?: ($username ?: Str::upper($server->panel_type.'-'.Str::random(10))),
             'username' => $username,
             'metadata' => $this->mergeServiceMetadata($service, [
                 'panel' => [
@@ -921,25 +915,15 @@ class ProvisioningService
 
     private function applyResetPasswordState(Service $service, array $attributes, array $payload): array
     {
-        $password = $payload['password'] ?? Str::password(16);
-
-        $service->credentials()->updateOrCreate(
-            ['service_id' => $service->id],
-            [
-                'tenant_id' => $service->tenant_id,
-                'credentials' => array_filter(array_merge(
-                    (array) ($service->credentials?->credentials ?? []),
-                    [
-                        'username' => $service->username,
-                        'password' => $password,
-                    ],
-                ), static fn (mixed $value): bool => filled($value)),
-                'metadata' => [
-                    'updated_at' => now()->toIso8601String(),
-                    'driver' => optional($service->server)->panel_type,
-                ],
-            ]
-        );
+        $this->syncServiceCredentialRecord($service, [
+            'credentials' => [
+                'username' => $service->username,
+            ],
+            'metadata' => [
+                'updated_at' => now()->toIso8601String(),
+                'driver' => optional($service->server)->panel_type,
+            ],
+        ]);
 
         return array_merge($attributes, [
             'provisioning_state' => Service::PROVISIONING_PLACEHOLDER,
@@ -1057,8 +1041,102 @@ class ProvisioningService
         return $normalized;
     }
 
+    private function prepareDispatchPayload(Service $service, string $operation, array $payload): array
+    {
+        if (in_array($operation, [
+            ProvisioningJob::OPERATION_CREATE_ACCOUNT,
+            ProvisioningJob::OPERATION_RESET_PASSWORD,
+        ], true)) {
+            $this->persistProvisioningSecret(
+                $service,
+                $operation,
+                is_string($payload['password'] ?? null) ? (string) $payload['password'] : null,
+            );
+        }
+
+        return Arr::except($payload, ['password']);
+    }
+
+    private function persistProvisioningSecret(Service $service, string $operation, ?string $plainPassword = null): string
+    {
+        $credential = $service->credentials()->firstOrNew(
+            ['service_id' => $service->id],
+            [
+                'tenant_id' => $service->tenant_id,
+                'key' => 'primary',
+            ],
+        );
+
+        $resolvedPassword = filled($plainPassword)
+            ? trim((string) $plainPassword)
+            : $credential->decryptValue();
+
+        if ($resolvedPassword === null || $resolvedPassword === '') {
+            $resolvedPassword = Str::password(20);
+        }
+
+        $credential->tenant_id = $service->tenant_id;
+        $credential->service_id = $service->id;
+        $credential->key = $credential->key ?: 'primary';
+        $credential->credentials = Arr::except((array) ($credential->credentials ?? []), ['password']);
+        $credential->storeSecret($resolvedPassword);
+        $credential->metadata = array_replace(
+            (array) ($credential->metadata ?? []),
+            [
+                'password_last_rotated_at' => now()->toIso8601String(),
+                'password_source_operation' => $operation,
+            ],
+        );
+        $credential->save();
+
+        $service->setRelation('credentials', $credential);
+
+        return $resolvedPassword;
+    }
+
+    private function syncServiceCredentialRecord(Service $service, array $attributes): void
+    {
+        $credential = $service->credentials()->firstOrNew(
+            ['service_id' => $service->id],
+            [
+                'tenant_id' => $service->tenant_id,
+                'key' => 'primary',
+            ],
+        );
+
+        $credential->tenant_id = $service->tenant_id;
+        $credential->service_id = $service->id;
+        $credential->key = $credential->key ?: 'primary';
+
+        if (array_key_exists('credentials', $attributes)) {
+            $credential->credentials = array_filter(array_merge(
+                Arr::except((array) ($credential->credentials ?? []), ['password']),
+                Arr::except((array) $attributes['credentials'], ['password']),
+            ), static fn (mixed $value): bool => filled($value));
+        }
+
+        if (array_key_exists('control_panel_url', $attributes)) {
+            $credential->control_panel_url = $attributes['control_panel_url'];
+        }
+
+        if (array_key_exists('access_url', $attributes)) {
+            $credential->access_url = $attributes['access_url'];
+        }
+
+        if (array_key_exists('metadata', $attributes)) {
+            $credential->metadata = array_replace_recursive(
+                (array) ($credential->metadata ?? []),
+                $this->withoutNullMetadata((array) $attributes['metadata']),
+            );
+        }
+
+        $credential->save();
+
+        $service->setRelation('credentials', $credential);
+    }
+
     private function generateReferenceNumber(): string
     {
-        return 'SVC-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6));
+        return 'SVC-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
     }
 }

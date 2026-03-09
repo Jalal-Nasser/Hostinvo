@@ -8,7 +8,12 @@ export default async function ResetPasswordPage({
   searchParams,
 }: Readonly<{
   params: { locale: string };
-  searchParams: { email?: string; token?: string };
+  searchParams: {
+    email?: string;
+    token?: string;
+    tenant_id?: string;
+    tenant_signature?: string;
+  };
 }>) {
   setRequestLocale(params.locale);
 
@@ -22,6 +27,8 @@ export default async function ResetPasswordPage({
     >
       <ResetPasswordForm
         initialEmail={searchParams.email}
+        tenantId={searchParams.tenant_id}
+        tenantSignature={searchParams.tenant_signature}
         token={searchParams.token}
       />
     </AuthShell>

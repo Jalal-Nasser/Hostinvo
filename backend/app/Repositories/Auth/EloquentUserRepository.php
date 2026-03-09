@@ -15,6 +15,15 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->first();
     }
 
+    public function findByEmailForTenant(string $email, string $tenantId): ?User
+    {
+        return User::query()
+            ->with(['tenant', 'roles.permissions'])
+            ->where('tenant_id', $tenantId)
+            ->where('email', $email)
+            ->first();
+    }
+
     public function findById(string $id): ?User
     {
         return User::query()

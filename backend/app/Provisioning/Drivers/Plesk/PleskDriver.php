@@ -2,8 +2,9 @@
 
 namespace App\Provisioning\Drivers\Plesk;
 
-use App\Models\Service;
 use App\Models\Server;
+use App\Models\Service;
+use App\Models\ServiceCredential;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
 use App\Provisioning\DTOs\ProvisionPayload;
 use App\Provisioning\DTOs\ProvisionResult;
@@ -11,6 +12,7 @@ use App\Provisioning\DTOs\ServiceStatus;
 use App\Provisioning\DTOs\UsageData;
 use App\Provisioning\Exceptions\ProvisioningException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PleskDriver implements ProvisioningDriverInterface
@@ -21,13 +23,12 @@ class PleskDriver implements ProvisioningDriverInterface
 
     private array $lastResponsePayload = [];
 
-    public function __construct(private readonly PleskApiClient $client)
-    {
-    }
+    public function __construct(private readonly PleskApiClient $client) {}
 
     public function withServer(Server $server): static
     {
         $this->server = $server;
+        $this->logInsecureSslUsage($server);
 
         return $this;
     }
@@ -57,6 +58,8 @@ class PleskDriver implements ProvisioningDriverInterface
 
     public function testConnection(Server $server): array
     {
+        $this->logInsecureSslUsage($server);
+
         return $this->client->testConnection($server);
     }
 
@@ -85,7 +88,7 @@ class PleskDriver implements ProvisioningDriverInterface
             '-login',
             $username,
             '-passwd',
-            $payload->password,
+            $this->resolveServicePassword($payload->serviceId),
             '-ip',
             $targetIp,
             '-owner',
@@ -174,7 +177,7 @@ class PleskDriver implements ProvisioningDriverInterface
         return true;
     }
 
-    public function resetPassword(string $username, string $newPassword): bool
+    public function resetPassword(string $username, string $serviceId): bool
     {
         $subscription = trim($username);
 
@@ -182,7 +185,7 @@ class PleskDriver implements ProvisioningDriverInterface
             '--update',
             $subscription,
             '-passwd',
-            $newPassword,
+            $this->resolveServicePassword($serviceId),
         ]);
 
         $this->rememberTelemetry(
@@ -273,6 +276,24 @@ class PleskDriver implements ProvisioningDriverInterface
         $this->lastResponsePayload = $responsePayload;
     }
 
+    private function resolveServicePassword(string $serviceId): string
+    {
+        $credential = ServiceCredential::query()
+            ->where('service_id', $serviceId)
+            ->first();
+
+        $password = $credential?->decryptValue();
+
+        if ($password === null || $password === '') {
+            throw new ProvisioningException(
+                'Provisioning password credentials are missing for this service.',
+                requestPayload: ['service_id' => $serviceId],
+            );
+        }
+
+        return $password;
+    }
+
     private function server(): Server
     {
         if (! $this->server instanceof Server) {
@@ -287,11 +308,11 @@ class PleskDriver implements ProvisioningDriverInterface
         $normalized = strtolower(preg_replace('/[^a-z0-9]/', '', $value) ?? '');
 
         if ($normalized === '') {
-            $normalized = 'plesk' . strtolower(Str::random(6));
+            $normalized = 'plesk'.strtolower(Str::random(6));
         }
 
         if (is_numeric($normalized[0])) {
-            $normalized = 'p' . $normalized;
+            $normalized = 'p'.$normalized;
         }
 
         $normalized = substr($normalized, 0, 16);
@@ -416,5 +437,17 @@ class PleskDriver implements ProvisioningDriverInterface
             'stdout' => filled(Arr::get($response, 'stdout')) ? Str::limit((string) Arr::get($response, 'stdout'), 400) : null,
             'stderr' => filled(Arr::get($response, 'stderr')) ? Str::limit((string) Arr::get($response, 'stderr'), 400) : null,
         ], static fn (mixed $value): bool => $value !== null && $value !== '');
+    }
+
+    private function logInsecureSslUsage(Server $server): void
+    {
+        if ($server->verify_ssl === false) {
+            Log::critical('Plesk provisioning is running with ssl_verify disabled.', [
+                'driver' => $this->code(),
+                'tenant_id' => $server->tenant_id,
+                'server_id' => $server->id,
+                'hostname' => $server->hostname,
+            ]);
+        }
     }
 }

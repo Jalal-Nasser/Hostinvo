@@ -9,12 +9,10 @@ readonly class ProvisionPayload
         public string $username,
         public string $domain,
         public string $email,
-        public string $password,
         public string $packageName,
         public string $ip,
         public ?string $contactEmail = null,
-    ) {
-    }
+    ) {}
 
     public function sanitized(): array
     {

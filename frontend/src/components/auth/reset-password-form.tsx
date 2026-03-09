@@ -23,11 +23,15 @@ async function ensureCsrfCookie() {
 type ResetPasswordFormProps = {
   initialEmail?: string;
   token?: string;
+  tenantId?: string;
+  tenantSignature?: string;
 };
 
 export function ResetPasswordForm({
   initialEmail,
   token,
+  tenantId,
+  tenantSignature,
 }: ResetPasswordFormProps) {
   const t = useTranslations("Auth");
   const locale = useLocale();
@@ -59,11 +63,16 @@ export function ResetPasswordForm({
               Accept: "application/json",
               "Content-Type": "application/json",
               "X-Requested-With": "XMLHttpRequest",
+              ...(typeof window !== "undefined" && window.location.hostname
+                ? { "X-Tenant-Host": window.location.hostname }
+                : {}),
               ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
             },
             body: JSON.stringify({
               token,
               email: formData.get("email"),
+              tenant_id: tenantId,
+              tenant_signature: tenantSignature,
               password: formData.get("password"),
               password_confirmation: formData.get("password_confirmation"),
             }),

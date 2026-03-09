@@ -12,7 +12,7 @@ class PasswordResetLinkController extends Controller
     public function store(ForgotPasswordRequest $request, AuthService $authService): JsonResponse
     {
         return $this->message(
-            $authService->sendPasswordResetLink($request->validated('email'))
+            $authService->sendPasswordResetLink($request->validated('email'), $request)
         );
     }
 }
