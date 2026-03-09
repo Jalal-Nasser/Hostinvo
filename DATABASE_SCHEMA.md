@@ -92,7 +92,7 @@
 |--------|------|-------|
 | id | VARCHAR(255) PK | |
 | user_id | UUID NULL FK → users.id | |
-| tenant_id | UUID NULL FK → tenants.id | stamped from authenticated session context |
+| tenant_id | UUID NULL FK → tenants.id | stamped by the tenant-aware database session handler |
 | ip_address | INET NULL | |
 | user_agent | TEXT NULL | |
 | payload | TEXT NOT NULL | |
@@ -110,7 +110,7 @@
 | token | VARCHAR(255) NOT NULL | hashed |
 | created_at | TIMESTAMPTZ NULL | |
 
-*Composite key / unique: (email, tenant_id)*
+*Composite primary key / unique: (tenant_id, email)*
 
 ---
 
