@@ -31,17 +31,18 @@ class TenantSettingService
         array $metadata = []
     ): TenantSetting {
         $encoded = $this->encode($value);
+        $setting = TenantSetting::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('key', $key)
+            ->first() ?? new TenantSetting();
 
-        return TenantSetting::query()->updateOrCreate(
-            [
-                'tenant_id' => $tenant->id,
-                'key' => $key,
-            ],
-            [
-                'value' => $encrypted ? Crypt::encryptString($encoded) : $encoded,
-                'is_encrypted' => $encrypted,
-            ],
-        );
+        $setting->tenant_id = $tenant->id;
+        $setting->key = $key;
+        $setting->value = $encrypted ? Crypt::encryptString($encoded) : $encoded;
+        $setting->is_encrypted = $encrypted;
+        $setting->save();
+
+        return $setting;
     }
 
     public function getMany(Tenant $tenant, array $keys): array

@@ -26,26 +26,29 @@ class Server extends Model
     public const STATUS_MAINTENANCE = 'maintenance';
 
     protected $fillable = [
-        'tenant_id',
         'server_group_id',
         'name',
         'hostname',
         'panel_type',
         'api_endpoint',
         'api_port',
-        'api_token',
-        'api_secret',
-        'credentials',
         'status',
         'verify_ssl',
         'ssl_verify',
         'max_accounts',
-        'current_accounts',
-        'account_count',
         'username',
         'ip_address',
-        'last_tested_at',
         'notes',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
+        'api_token',
+        'api_secret',
+        'credentials',
+        'current_accounts',
+        'account_count',
+        'last_tested_at',
     ];
 
     protected $hidden = [

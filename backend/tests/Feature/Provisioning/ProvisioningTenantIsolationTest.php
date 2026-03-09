@@ -49,7 +49,7 @@ class ProvisioningTenantIsolationTest extends TestCase
         $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
         $userA->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenantA->id,
             'user_id' => $userA->id,
             'role_id' => $role->id,
@@ -79,7 +79,7 @@ class ProvisioningTenantIsolationTest extends TestCase
             'is_featured' => false,
         ]);
 
-        $serverB = Server::query()->create([
+        $serverB = Server::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'name' => 'Tenant B Server',
             'hostname' => 'tenant-b-node.example.test',
@@ -91,7 +91,7 @@ class ProvisioningTenantIsolationTest extends TestCase
             'current_accounts' => 0,
         ]);
 
-        $serviceB = Service::query()->create([
+        $serviceB = Service::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_id' => $clientB->id,
             'product_id' => $productB->id,

@@ -77,12 +77,16 @@ class EloquentProvisioningJobRepository implements ProvisioningJobRepositoryInte
 
     public function create(array $attributes): ProvisioningJob
     {
-        return ProvisioningJob::query()->create($attributes);
+        $job = new ProvisioningJob();
+        $job->forceFill($attributes);
+        $job->save();
+
+        return $job;
     }
 
     public function update(ProvisioningJob $job, array $attributes): ProvisioningJob
     {
-        $job->fill($attributes);
+        $job->forceFill($attributes);
         $job->save();
 
         return $job;

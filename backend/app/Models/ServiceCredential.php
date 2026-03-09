@@ -14,7 +14,7 @@ class ServiceCredential extends Model
     use HasFactory;
     use TenantAware;
 
-    protected $fillable = [
+    protected $guarded = [
         'tenant_id',
         'service_id',
         'key',

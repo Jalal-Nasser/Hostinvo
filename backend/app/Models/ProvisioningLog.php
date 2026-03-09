@@ -18,7 +18,7 @@ class ProvisioningLog extends Model
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_FAILED = 'failed';
 
-    protected $fillable = [
+    protected $guarded = [
         'tenant_id',
         'provisioning_job_id',
         'service_id',

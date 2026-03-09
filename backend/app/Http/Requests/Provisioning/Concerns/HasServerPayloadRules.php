@@ -35,7 +35,6 @@ trait HasServerPayloadRules
             'status' => ['required', 'string', Rule::in(Server::statuses())],
             'verify_ssl' => ['nullable', 'boolean'],
             'max_accounts' => ['nullable', 'integer', 'min:0'],
-            'current_accounts' => ['nullable', 'integer', 'min:0'],
             'username' => [
                 'nullable',
                 'string',
@@ -58,7 +57,6 @@ trait HasServerPayloadRules
                 Rule::requiredIf($requiresPleskSecret),
             ],
             'credentials.notes' => ['nullable', 'string'],
-            'last_tested_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
             'packages' => ['nullable', 'array'],
             'packages.*.id' => ['nullable', 'integer'],

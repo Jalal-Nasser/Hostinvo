@@ -33,7 +33,7 @@ class ProvisioningJob extends Model
 
     protected $keyType = 'string';
 
-    protected $fillable = [
+    protected $guarded = [
         'tenant_id',
         'service_id',
         'server_id',

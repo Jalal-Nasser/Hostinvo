@@ -13,11 +13,14 @@ class TenantUser extends Model
     use TenantAware;
 
     protected $fillable = [
+        'is_primary',
+        'joined_at',
+    ];
+
+    protected $guarded = [
         'tenant_id',
         'user_id',
         'role_id',
-        'is_primary',
-        'joined_at',
     ];
 
     protected function casts(): array

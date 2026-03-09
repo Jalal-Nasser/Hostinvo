@@ -44,12 +44,16 @@ class EloquentServerGroupRepository implements ServerGroupRepositoryInterface
 
     public function create(array $attributes): ServerGroup
     {
-        return ServerGroup::query()->create($attributes);
+        $serverGroup = new ServerGroup();
+        $serverGroup->forceFill($attributes);
+        $serverGroup->save();
+
+        return $serverGroup;
     }
 
     public function update(ServerGroup $serverGroup, array $attributes): ServerGroup
     {
-        $serverGroup->fill($attributes);
+        $serverGroup->forceFill($attributes);
         $serverGroup->save();
 
         return $serverGroup;

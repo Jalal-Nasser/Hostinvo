@@ -68,12 +68,16 @@ class EloquentServerRepository implements ServerRepositoryInterface
 
     public function create(array $attributes): Server
     {
-        return Server::query()->create($attributes);
+        $server = new Server();
+        $server->forceFill($attributes);
+        $server->save();
+
+        return $server;
     }
 
     public function update(Server $server, array $attributes): Server
     {
-        $server->fill($attributes);
+        $server->forceFill($attributes);
         $server->save();
 
         return $server;

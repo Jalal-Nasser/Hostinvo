@@ -37,7 +37,7 @@ class AuthenticatedUserApiTest extends TestCase
 
         $user->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
             'role_id' => $role->id,

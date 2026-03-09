@@ -202,7 +202,7 @@ class ServerManagementService
             'status' => $payload['status'],
             'ssl_verify' => (bool) ($payload['verify_ssl'] ?? $server?->verify_ssl ?? true),
             'max_accounts' => $maxAccounts,
-            'account_count' => (int) ($payload['current_accounts'] ?? $server?->current_accounts ?? 0),
+            'account_count' => (int) ($server?->current_accounts ?? 0),
             'username' => $payload['username'] ?? $server?->username,
             'ip_address' => $payload['ip_address']
                 ?? (filter_var($hostname, FILTER_VALIDATE_IP) ?: $server?->ip_address),
@@ -210,7 +210,7 @@ class ServerManagementService
                 array_merge($existingCredentials, $incomingCredentials),
                 static fn (mixed $value): bool => $value !== null && $value !== ''
             ),
-            'last_tested_at' => $payload['last_tested_at'] ?? null,
+            'last_tested_at' => $server?->last_tested_at,
             'notes' => $payload['notes'] ?? null,
         ];
     }

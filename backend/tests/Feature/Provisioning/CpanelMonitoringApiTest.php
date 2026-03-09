@@ -42,7 +42,7 @@ class CpanelMonitoringApiTest extends TestCase
         $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
         $user->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -72,7 +72,7 @@ class CpanelMonitoringApiTest extends TestCase
             'is_featured' => false,
         ]);
 
-        $server = Server::query()->create([
+        $server = Server::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'name' => 'cPanel Node',
             'hostname' => 'cpanel-node.example.test',
@@ -89,7 +89,7 @@ class CpanelMonitoringApiTest extends TestCase
             ],
         ]);
 
-        $service = Service::query()->create([
+        $service = Service::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'product_id' => $product->id,

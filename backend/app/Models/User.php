@@ -34,13 +34,16 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'tenant_id',
         'name',
         'email',
         'locale',
+        'password',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
         'is_active',
         'last_login_at',
-        'password',
     ];
 
     /**

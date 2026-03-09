@@ -90,12 +90,16 @@ class EloquentServiceRepository implements ServiceRepositoryInterface
 
     public function create(array $attributes): Service
     {
-        return Service::query()->create($attributes);
+        $service = new Service();
+        $service->forceFill($attributes);
+        $service->save();
+
+        return $service;
     }
 
     public function update(Service $service, array $attributes): Service
     {
-        $service->fill($attributes);
+        $service->forceFill($attributes);
         $service->save();
 
         return $service;

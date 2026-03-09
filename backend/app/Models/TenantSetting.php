@@ -12,7 +12,7 @@ class TenantSetting extends Model
     use HasFactory;
     use TenantAware;
 
-    protected $fillable = [
+    protected $guarded = [
         'tenant_id',
         'setting_key',
         'key',

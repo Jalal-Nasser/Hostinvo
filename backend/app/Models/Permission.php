@@ -15,11 +15,14 @@ class Permission extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tenant_id',
         'name',
         'guard_name',
         'display_name',
         'description',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected static function booted(): void

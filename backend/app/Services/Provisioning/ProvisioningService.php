@@ -517,17 +517,17 @@ class ProvisioningService
                     : $this->generateReferenceNumber()
             ),
             'service_type' => $payload['service_type'] ?? $service?->service_type ?? Service::TYPE_HOSTING,
-            'status' => $payload['status'] ?? $service?->status ?? Service::STATUS_PENDING,
-            'provisioning_state' => $payload['provisioning_state'] ?? $service?->provisioning_state ?? Service::PROVISIONING_IDLE,
+            'status' => $service?->status ?? Service::STATUS_PENDING,
+            'provisioning_state' => $service?->provisioning_state ?? Service::PROVISIONING_IDLE,
             'billing_cycle' => $payload['billing_cycle'] ?? $service?->billing_cycle,
             'domain' => $payload['domain'] ?? $service?->domain,
             'username' => $payload['username'] ?? $service?->username,
-            'external_reference' => $payload['external_reference'] ?? $service?->external_reference,
-            'last_operation' => $payload['last_operation'] ?? $service?->last_operation,
-            'activated_at' => $payload['activated_at'] ?? optional($service?->activated_at)?->toIso8601String(),
-            'suspended_at' => $payload['suspended_at'] ?? optional($service?->suspended_at)?->toIso8601String(),
-            'terminated_at' => $payload['terminated_at'] ?? optional($service?->terminated_at)?->toIso8601String(),
-            'last_synced_at' => $payload['last_synced_at'] ?? optional($service?->last_synced_at)?->toIso8601String(),
+            'external_reference' => $service?->external_reference,
+            'last_operation' => $service?->last_operation,
+            'activated_at' => optional($service?->activated_at)?->toIso8601String(),
+            'suspended_at' => optional($service?->suspended_at)?->toIso8601String(),
+            'terminated_at' => optional($service?->terminated_at)?->toIso8601String(),
+            'last_synced_at' => optional($service?->last_synced_at)?->toIso8601String(),
             'notes' => $payload['notes'] ?? $service?->notes,
             'metadata' => $payload['metadata'] ?? $service?->metadata,
         ];
@@ -956,9 +956,9 @@ class ProvisioningService
     private function applyTerminateState(Service $service, Server $server, array $attributes): array
     {
         if (in_array($service->status, [Service::STATUS_ACTIVE, Service::STATUS_SUSPENDED, Service::STATUS_PROVISIONING], true)) {
-            $server->update([
+            $server->forceFill([
                 'account_count' => max(0, $server->current_accounts - 1),
-            ]);
+            ])->save();
         }
 
         return array_merge($attributes, [
@@ -1114,13 +1114,7 @@ class ProvisioningService
 
     private function persistProvisioningSecret(Service $service, string $operation, ?string $plainPassword = null): string
     {
-        $credential = $service->credentials()->firstOrNew(
-            ['service_id' => $service->id],
-            [
-                'tenant_id' => $service->tenant_id,
-                'key' => 'primary',
-            ],
-        );
+        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential();
 
         $resolvedPassword = filled($plainPassword)
             ? trim((string) $plainPassword)
@@ -1151,13 +1145,7 @@ class ProvisioningService
 
     private function syncServiceCredentialRecord(Service $service, array $attributes): void
     {
-        $credential = $service->credentials()->firstOrNew(
-            ['service_id' => $service->id],
-            [
-                'tenant_id' => $service->tenant_id,
-                'key' => 'primary',
-            ],
-        );
+        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential();
 
         $credential->tenant_id = $service->tenant_id;
         $credential->service_id = $service->id;

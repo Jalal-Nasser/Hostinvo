@@ -38,7 +38,7 @@ class DomainPortalApiTest extends TestCase
         $role = Role::query()->where('name', Role::CLIENT_USER)->firstOrFail();
         $portalUser->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'user_id' => $portalUser->id,
             'role_id' => $role->id,

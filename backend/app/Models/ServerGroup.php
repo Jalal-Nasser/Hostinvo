@@ -21,12 +21,15 @@ class ServerGroup extends Model
     public const STRATEGY_LEAST_ACCOUNTS = 'least_accounts';
 
     protected $fillable = [
-        'tenant_id',
         'name',
         'selection_strategy',
         'fill_type',
         'status',
         'notes',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     public static function statuses(): array

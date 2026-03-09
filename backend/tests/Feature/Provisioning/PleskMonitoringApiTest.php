@@ -43,7 +43,7 @@ class PleskMonitoringApiTest extends TestCase
         $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
         $user->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -73,7 +73,7 @@ class PleskMonitoringApiTest extends TestCase
             'is_featured' => false,
         ]);
 
-        $server = Server::query()->create([
+        $server = Server::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'name' => 'Plesk Node',
             'hostname' => '192.0.2.10',
@@ -90,7 +90,7 @@ class PleskMonitoringApiTest extends TestCase
             ],
         ]);
 
-        $service = Service::query()->create([
+        $service = Service::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'product_id' => $product->id,
@@ -196,7 +196,7 @@ class PleskMonitoringApiTest extends TestCase
         $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
         $user->roles()->attach($role);
 
-        TenantUser::query()->create([
+        TenantUser::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
             'role_id' => $role->id,
@@ -226,7 +226,7 @@ class PleskMonitoringApiTest extends TestCase
             'is_featured' => false,
         ]);
 
-        $server = Server::query()->create([
+        $server = Server::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'name' => 'Lifecycle Plesk Node',
             'hostname' => '192.0.2.20',
@@ -251,7 +251,7 @@ class PleskMonitoringApiTest extends TestCase
             'is_default' => true,
         ]);
 
-        $service = Service::query()->create([
+        $service = Service::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'product_id' => $product->id,

@@ -53,17 +53,20 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $name => [$displayName, $description]) {
-            Permission::query()->updateOrCreate(
-                [
-                    'tenant_id' => null,
-                    'name' => $name,
-                    'guard_name' => 'web',
-                ],
-                [
-                    'display_name' => $displayName,
-                    'description' => $description,
-                ]
-            );
+            $permission = Permission::query()
+                ->whereNull('tenant_id')
+                ->where('name', $name)
+                ->where('guard_name', 'web')
+                ->first() ?? new Permission();
+
+            $permission->forceFill([
+                'tenant_id' => null,
+                'name' => $name,
+                'guard_name' => 'web',
+                'display_name' => $displayName,
+                'description' => $description,
+            ]);
+            $permission->save();
         }
 
         $roleMap = [
@@ -184,18 +187,20 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($roleMap as $roleName => $permissionNames) {
-            $role = Role::query()->updateOrCreate(
-                [
-                    'tenant_id' => null,
-                    'name' => $roleName,
-                ],
-                [
-                    'guard_name' => 'web',
-                    'display_name' => str($roleName)->replace('_', ' ')->title()->toString(),
-                    'description' => 'Seeded Hostinvo foundation role.',
-                    'is_system' => true,
-                ]
-            );
+            $role = Role::query()
+                ->whereNull('tenant_id')
+                ->where('name', $roleName)
+                ->first() ?? new Role();
+
+            $role->forceFill([
+                'tenant_id' => null,
+                'name' => $roleName,
+                'guard_name' => 'web',
+                'display_name' => str($roleName)->replace('_', ' ')->title()->toString(),
+                'description' => 'Seeded Hostinvo foundation role.',
+                'is_system' => true,
+            ]);
+            $role->save();
 
             $permissionIds = Permission::query()
                 ->whereIn('name', $permissionNames)

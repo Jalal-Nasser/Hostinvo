@@ -39,28 +39,31 @@ class Service extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'client_id',
         'product_id',
         'order_id',
-        'user_id',
         'server_id',
         'server_package_id',
         'reference_number',
         'service_type',
-        'status',
-        'provisioning_state',
         'billing_cycle',
         'domain',
         'username',
+        'notes',
+        'metadata',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
+        'user_id',
+        'status',
+        'provisioning_state',
         'external_reference',
         'last_operation',
         'activated_at',
         'suspended_at',
         'terminated_at',
         'last_synced_at',
-        'notes',
-        'metadata',
     ];
 
     protected function casts(): array

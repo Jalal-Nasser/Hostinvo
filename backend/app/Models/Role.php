@@ -19,11 +19,14 @@ class Role extends Model
     public const CLIENT_USER = 'client_user';
 
     protected $fillable = [
-        'tenant_id',
         'name',
         'guard_name',
         'display_name',
         'description',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
         'is_system',
     ];
 

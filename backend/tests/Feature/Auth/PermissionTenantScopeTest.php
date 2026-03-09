@@ -28,7 +28,7 @@ class PermissionTenantScopeTest extends TestCase
 
         $this->expectException(ValidationException::class);
 
-        Permission::query()->create([
+        Permission::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'name' => 'dashboard.view',
             'guard_name' => 'web',

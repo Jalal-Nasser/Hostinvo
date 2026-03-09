@@ -21,7 +21,8 @@ class ProvisioningLogger
         array $requestPayload = [],
         array $responsePayload = []
     ): ProvisioningLog {
-        return ProvisioningLog::query()->create([
+        $log = new ProvisioningLog();
+        $log->forceFill([
             'tenant_id' => $job->tenant_id,
             'provisioning_job_id' => $job->id,
             'service_id' => $job->service_id,
@@ -34,6 +35,9 @@ class ProvisioningLogger
             'response_payload' => $this->sanitizer->sanitizeArray($responsePayload),
             'occurred_at' => now(),
         ]);
+        $log->save();
+
+        return $log;
     }
 
     public function recordQueued(ProvisioningJob $job): ProvisioningLog
@@ -48,7 +52,8 @@ class ProvisioningLogger
 
     public function recordServiceNote(Service $service, string $message, array $metadata = []): ProvisioningLog
     {
-        return ProvisioningLog::query()->create([
+        $log = new ProvisioningLog();
+        $log->forceFill([
             'tenant_id' => $service->tenant_id,
             'provisioning_job_id' => null,
             'service_id' => $service->id,
@@ -61,6 +66,9 @@ class ProvisioningLogger
             'response_payload' => $this->sanitizer->sanitizeArray($metadata),
             'occurred_at' => now(),
         ]);
+        $log->save();
+
+        return $log;
     }
 
     public function recordServerEvent(
@@ -71,7 +79,8 @@ class ProvisioningLogger
         array $requestPayload = [],
         array $responsePayload = []
     ): ProvisioningLog {
-        return ProvisioningLog::query()->create([
+        $log = new ProvisioningLog();
+        $log->forceFill([
             'tenant_id' => $server->tenant_id,
             'provisioning_job_id' => null,
             'service_id' => null,
@@ -84,5 +93,8 @@ class ProvisioningLogger
             'response_payload' => $this->sanitizer->sanitizeArray($responsePayload),
             'occurred_at' => now(),
         ]);
+        $log->save();
+
+        return $log;
     }
 }
