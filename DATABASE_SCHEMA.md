@@ -57,10 +57,13 @@
 | Column | Type | Notes |
 |--------|------|-------|
 | id | BIGSERIAL PK | |
+| tenant_id | UUID NULL FK → tenants.id | NULL = platform-level permission |
 | name | VARCHAR(255) NOT NULL | e.g. clients.view, invoices.create |
 | guard_name | VARCHAR(100) NOT NULL DEFAULT 'web' | |
 | created_at | TIMESTAMPTZ NOT NULL | |
 | updated_at | TIMESTAMPTZ NOT NULL | |
+
+*Unique: (name, tenant_id)*
 
 ---
 
@@ -89,21 +92,25 @@
 |--------|------|-------|
 | id | VARCHAR(255) PK | |
 | user_id | UUID NULL FK → users.id | |
+| tenant_id | UUID NULL FK → tenants.id | stamped from authenticated session context |
 | ip_address | INET NULL | |
 | user_agent | TEXT NULL | |
 | payload | TEXT NOT NULL | |
 | last_activity | INTEGER NOT NULL | Unix timestamp |
 
-*Index: (user_id), (last_activity)*
+*Index: (user_id), (tenant_id), (last_activity)*
 
 ---
 
 ### password_reset_tokens
 | Column | Type | Notes |
 |--------|------|-------|
-| email | VARCHAR(255) PK | |
+| tenant_id | UUID NOT NULL FK → tenants.id | required tenant context for reset flow |
+| email | VARCHAR(255) NOT NULL | |
 | token | VARCHAR(255) NOT NULL | hashed |
 | created_at | TIMESTAMPTZ NULL | |
+
+*Composite key / unique: (email, tenant_id)*
 
 ---
 

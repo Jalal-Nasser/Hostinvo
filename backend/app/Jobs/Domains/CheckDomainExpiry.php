@@ -26,9 +26,12 @@ class CheckDomainExpiry implements ShouldQueue
     /** Days before expiry at which reminder notifications are dispatched. */
     private const REMINDER_DAYS = [60, 30, 14, 7];
 
-    public string $queue = 'default';
-
     public int $tries = 2;
+
+    public function __construct()
+    {
+        $this->onQueue('default');
+    }
 
     public function handle(): void
     {

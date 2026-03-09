@@ -359,10 +359,11 @@ class PleskMonitoringApiTest extends TestCase
             ->assertAccepted()
             ->assertJsonPath('data.status', ProvisioningJob::STATUS_COMPLETED);
 
-        $this->assertSame(
-            'NewSecret123!',
-            $service->fresh()->credentials?->credentials['password'] ?? null,
-        );
+        $credential = $service->fresh()->credentials;
+
+        $this->assertNotNull($credential);
+        $this->assertSame('NewSecret123!', $credential?->decryptValue());
+        $this->assertNull($credential?->credentials['password'] ?? null);
 
         $this->postJson("/api/v1/admin/services/{$service->id}/operations/sync_usage", [
             'payload' => [],

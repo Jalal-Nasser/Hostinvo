@@ -15,7 +15,7 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'token' => ['required', 'string'],
-            'email' => ['required', 'email:rfc,dns'],
+            'email' => ['required', 'email'],
             'tenant_id' => ['nullable', 'uuid'],
             'tenant_signature' => ['nullable', 'string'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

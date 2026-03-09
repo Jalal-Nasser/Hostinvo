@@ -292,6 +292,25 @@ class ProvisioningService
         });
     }
 
+    public function processCreateAccountForService(string $serviceId, int $attempts = 1): void
+    {
+        $job = ProvisioningJob::query()
+            ->where('service_id', $serviceId)
+            ->where('operation', ProvisioningJob::OPERATION_CREATE_ACCOUNT)
+            ->whereIn('status', [
+                ProvisioningJob::STATUS_QUEUED,
+                ProvisioningJob::STATUS_PROCESSING,
+            ])
+            ->latest('requested_at')
+            ->first();
+
+        if (! $job) {
+            return;
+        }
+
+        $this->processQueuedJob($job->id, $attempts);
+    }
+
     public function markQueuedJobFailed(
         string $jobId,
         string $message,
@@ -342,6 +361,42 @@ class ProvisioningService
                 $responsePayload,
             );
         });
+    }
+
+    public function markCreateAccountFailedForService(
+        string $serviceId,
+        string $message,
+        array $requestPayload = [],
+        array $responsePayload = [],
+        bool $shouldThrow = true
+    ): void {
+        $job = ProvisioningJob::query()
+            ->where('service_id', $serviceId)
+            ->where('operation', ProvisioningJob::OPERATION_CREATE_ACCOUNT)
+            ->whereIn('status', [
+                ProvisioningJob::STATUS_QUEUED,
+                ProvisioningJob::STATUS_PROCESSING,
+            ])
+            ->latest('requested_at')
+            ->first();
+
+        if (! $job) {
+            if ($shouldThrow) {
+                throw ValidationException::withMessages([
+                    'service' => ['The queued create-account job could not be found for this service.'],
+                ]);
+            }
+
+            return;
+        }
+
+        $this->markQueuedJobFailed(
+            $job->id,
+            $message,
+            $requestPayload,
+            $responsePayload,
+            $shouldThrow,
+        );
     }
 
     public function retryFailedJob(ProvisioningJob $job, User $actor): ProvisioningJob

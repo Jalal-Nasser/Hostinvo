@@ -7,6 +7,7 @@ use App\Support\Tenancy\CurrentTenant;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveTenant
@@ -22,6 +23,7 @@ class ResolveTenant
     {
         $currentTenant = app(CurrentTenant::class);
         $user = $request->user();
+        $sessionStore = $request->hasSession() ? $request->session() : Session::driver();
 
         if (! $user || blank($user->tenant_id)) {
             $currentTenant->clear();
@@ -30,14 +32,14 @@ class ResolveTenant
             return $next($request);
         }
 
-        $sessionTenantId = $request->hasSession()
-            ? $request->session()->get('tenant_id')
-            : null;
+        $sessionTenantId = $sessionStore->get('tenant_id');
 
         if (filled($sessionTenantId) && $sessionTenantId !== $user->tenant_id) {
             Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            Auth::forgetGuards();
+            $request->setUserResolver(static fn () => null);
+            $sessionStore->invalidate();
+            $sessionStore->regenerateToken();
             $currentTenant->clear();
             app()->forgetInstance('tenant');
 
@@ -50,9 +52,7 @@ class ResolveTenant
             ? $user->tenant
             : $this->tenants->findById($user->tenant_id);
 
-        if ($request->hasSession()) {
-            $request->session()->put('tenant_id', $user->tenant_id);
-        }
+        $sessionStore->put('tenant_id', $user->tenant_id);
         $currentTenant->set($tenant);
         app()->instance('tenant', $tenant);
 

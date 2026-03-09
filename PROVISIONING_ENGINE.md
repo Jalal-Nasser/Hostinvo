@@ -70,7 +70,7 @@ interface ProvisioningDriverInterface
 
     public function changePackage(string $username, string $package): bool;
 
-    public function resetPassword(string $username, string $newPassword): bool;
+    public function resetPassword(string $username, string $serviceId): bool;
 
     public function syncUsage(string $username): UsageData;
 
@@ -109,7 +109,6 @@ readonly class ProvisionPayload
         public string  $username,
         public string  $domain,
         public string  $email,
-        public string  $password,       // generated, stored encrypted after provisioning
         public string  $packageName,    // panel-specific package name from server_packages
         public string  $ip,
         public ?string $contactEmail = null,
@@ -117,7 +116,7 @@ readonly class ProvisionPayload
 }
 ```
 
-> **Rule:** `ProvisionPayload` must never be logged with `password` present. `ProvisioningLogger` must sanitize the payload before writing to `provisioning_logs`.
+> **Rule:** `ProvisionPayload` must never contain plaintext credentials. Account passwords are generated or accepted before queue dispatch, encrypted into `service_credentials.value`, and retrieved inside the driver at runtime via `Crypt::decrypt()`.
 
 ---
 
@@ -193,6 +192,8 @@ class ProvisioningJobDispatcher
 }
 ```
 
+> **Rule:** `ProvisionAccountJob` receives `service_id` only. It must not serialize plaintext passwords or credential blobs into `jobs.payload` or `failed_jobs.payload`.
+
 ---
 
 ## ProvisioningLogger
@@ -251,15 +252,17 @@ Order payment confirmed
     → ProvisioningService::handleOrderPaid() listener invoked
     → ServerSelector::pickServer($productId) selects lowest-account server
     → DriverFactory::make($server->panel_type) resolves driver
-    → ProvisionAccountJob dispatched to 'critical' queue
+    → Password generated or accepted and stored encrypted in service_credentials
+    → ProvisionAccountJob(service_id) dispatched to 'critical' queue
         → Queue worker picks up job
         → Check: is service.status already 'active'? → skip if so (idempotency)
         → ProvisioningLogger::logStart()
+        → ProvisioningService builds ProvisionPayload without password
         → $driver->createAccount($payload)
         → On success:
             service.status = active
             service.username = $result->username
-            service_credentials populated (all values encrypted)
+            service_credentials retained/updated (all values encrypted)
             ProvisioningLogger::logSuccess()
             NotificationService sends 'account_created' email (EN or AR per client locale)
         → On failure (attempt 1–3):
