@@ -18,6 +18,9 @@ use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
+    private const FALLBACK_PASSWORD_HASH = '$2y$12$lEBCPmlo6p5znFWRF.DExeU3Ucag47VDbZsyNMysMKSPp/XQdDXwy';
+    private const FALLBACK_RESET_TOKEN_HASH = '$2y$12$/px4jSB6T67lc9JasXYKp.ahKn5px5rMHuOPcqyt5zrK06qcO5YF.';
+
     public function __construct(
         private readonly UserRepositoryInterface $users,
         private readonly PasswordResetTenantContext $passwordResetTenantContext,
@@ -26,29 +29,22 @@ class AuthService
     public function login(array $payload, Request $request): User
     {
         $user = $this->users->findByEmail($payload['email']);
+        $passwordValid = $this->verifyPasswordInConstantTime($user, (string) $payload['password']);
 
-        $this->ensureLoginAllowed($user);
-
-        if (! Auth::attempt([
-            'email' => $payload['email'],
-            'password' => $payload['password'],
-            'is_active' => true,
-        ], (bool) ($payload['remember'] ?? false))) {
+        if (! $user || ! $passwordValid) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
         }
 
+        $this->ensureLoginAllowed($user);
+
+        Auth::guard('web')->login($user, (bool) ($payload['remember'] ?? false));
         $request->session()->regenerate();
-
-        $user = $request->user() instanceof User
-            ? $request->user()
-            : $this->users->findByEmail($payload['email']);
-
-        $request->session()->put('tenant_id', $user?->tenant_id);
         $user->forceFill([
             'last_login_at' => now(),
         ]);
+        $request->session()->put('tenant_id', $user->tenant_id);
 
         $this->users->save($user);
 
@@ -74,16 +70,11 @@ class AuthService
     public function sendPasswordResetLink(string $email, Request $request): string
     {
         $tenantId = $this->passwordResetTenantContext->resolveTenantIdFromRequest($request);
+        $user = $tenantId ? $this->users->findByEmailForTenant($email, $tenantId) : null;
 
-        if (! $tenantId) {
-            throw ValidationException::withMessages([
-                'email' => [__('auth.password_reset_tenant_required')],
-            ]);
-        }
+        if (! $tenantId || ! $user || ! $user->is_active) {
+            $this->equalizeForgotPasswordTiming();
 
-        $user = $this->users->findByEmailForTenant($email, $tenantId);
-
-        if (! $user || ! $user->is_active) {
             return trans('passwords.sent');
         }
 
@@ -130,12 +121,20 @@ class AuthService
             ->first();
 
         $expiresAt = now()->subMinutes((int) config('auth.passwords.users.expire', 60));
+        $tokenValid = $this->verifyResetTokenInConstantTime(
+            recordHash: is_string($record?->token ?? null) ? $record->token : null,
+            incomingToken: (string) $payload['token'],
+            createdAt: $record?->created_at,
+            expiresAt: $expiresAt,
+        );
 
-        if (! $record
-            || blank($record->token)
-            || ! Hash::check($payload['token'], $record->token)
-            || blank($record->created_at)
-            || Carbon::parse($record->created_at)->lt($expiresAt)) {
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'email' => [trans('passwords.user')],
+            ]);
+        }
+
+        if (! $record || ! $tokenValid) {
             throw ValidationException::withMessages([
                 'email' => [trans('passwords.token')],
             ]);
@@ -175,5 +174,33 @@ class AuthService
                 'email' => [__('auth.tenant_inactive')],
             ]);
         }
+    }
+
+    private function verifyPasswordInConstantTime(?User $user, string $plainPassword): bool
+    {
+        $hash = is_string($user?->password ?? null) && $user->password !== ''
+            ? $user->password
+            : self::FALLBACK_PASSWORD_HASH;
+
+        return Hash::check($plainPassword, $hash);
+    }
+
+    private function verifyResetTokenInConstantTime(
+        ?string $recordHash,
+        string $incomingToken,
+        mixed $createdAt,
+        Carbon $expiresAt
+    ): bool {
+        $hash = filled($recordHash) ? $recordHash : self::FALLBACK_RESET_TOKEN_HASH;
+        $createdAtValue = Carbon::parse($createdAt ?: '1970-01-01T00:00:00+00:00');
+
+        return Hash::check($incomingToken, $hash)
+            && $createdAtValue->gte($expiresAt)
+            && filled($recordHash);
+    }
+
+    private function equalizeForgotPasswordTiming(): void
+    {
+        usleep(random_int(100_000, 200_000));
     }
 }
