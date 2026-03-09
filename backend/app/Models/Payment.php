@@ -29,7 +29,6 @@ class Payment extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'invoice_id',
         'client_id',
         'user_id',
@@ -42,6 +41,10 @@ class Payment extends Model
         'paid_at',
         'notes',
         'metadata',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected function casts(): array

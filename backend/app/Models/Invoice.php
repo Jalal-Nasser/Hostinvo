@@ -32,7 +32,6 @@ class Invoice extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'client_id',
         'order_id',
         'user_id',
@@ -59,6 +58,10 @@ class Invoice extends Model
         'balance_due_minor',
         'notes',
         'metadata',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected function casts(): array

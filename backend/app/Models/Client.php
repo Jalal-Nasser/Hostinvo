@@ -30,7 +30,6 @@ class Client extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'user_id',
         'client_type',
         'first_name',
@@ -43,6 +42,10 @@ class Client extends Model
         'preferred_locale',
         'currency',
         'notes',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected function displayName(): Attribute

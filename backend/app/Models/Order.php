@@ -32,7 +32,6 @@ class Order extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'client_id',
         'user_id',
         'reference_number',
@@ -51,6 +50,10 @@ class Order extends Model
         'accepted_at',
         'completed_at',
         'cancelled_at',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected function casts(): array

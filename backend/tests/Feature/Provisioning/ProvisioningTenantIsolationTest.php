@@ -57,7 +57,7 @@ class ProvisioningTenantIsolationTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $clientB = Client::query()->create([
+        $clientB = Client::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Tenant B Client',

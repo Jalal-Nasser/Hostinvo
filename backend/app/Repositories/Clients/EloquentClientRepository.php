@@ -67,7 +67,11 @@ class EloquentClientRepository implements ClientRepositoryInterface
 
     public function create(array $attributes): Client
     {
-        return Client::query()->create($attributes);
+        $client = new Client();
+        $client->forceFill($attributes);
+        $client->save();
+
+        return $client;
     }
 
     public function update(Client $client, array $attributes): Client

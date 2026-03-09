@@ -3,8 +3,11 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Client;
+use App\Models\Invoice;
+use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Product;
+use App\Models\ProductPricing;
 use App\Models\Role;
 use App\Models\Server;
 use App\Models\Service;
@@ -76,6 +79,44 @@ class MassAssignmentProtectionTest extends TestCase
         $this->assertSame('Provision me.', $service->notes);
     }
 
+    public function test_invoice_model_discards_tenant_id_on_fill(): void
+    {
+        $invoice = new Invoice();
+        $invoice->fill([
+            'tenant_id' => 'tenant-123',
+            'client_id' => 'client-123',
+            'reference_number' => 'INV-100',
+            'status' => Invoice::STATUS_UNPAID,
+            'currency' => 'USD',
+            'subtotal_minor' => 1000,
+            'total_minor' => 1000,
+        ]);
+
+        $this->assertNull($invoice->tenant_id);
+        $this->assertSame('client-123', $invoice->client_id);
+        $this->assertSame('INV-100', $invoice->reference_number);
+        $this->assertSame(1000, $invoice->subtotal_minor);
+        $this->assertSame(1000, $invoice->total_minor);
+    }
+
+    public function test_client_model_discards_tenant_id_on_fill(): void
+    {
+        $client = new Client();
+        $client->fill([
+            'tenant_id' => 'tenant-123',
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Example Corp',
+            'email' => 'billing@example.test',
+            'status' => Client::STATUS_ACTIVE,
+        ]);
+
+        $this->assertNull($client->tenant_id);
+        $this->assertSame(Client::TYPE_COMPANY, $client->client_type);
+        $this->assertSame('Example Corp', $client->company_name);
+        $this->assertSame('billing@example.test', $client->email);
+        $this->assertSame(Client::STATUS_ACTIVE, $client->status);
+    }
+
     public function test_permission_and_tenant_user_models_discard_scoped_identity_fields(): void
     {
         $permission = new Permission();
@@ -105,7 +146,7 @@ class MassAssignmentProtectionTest extends TestCase
     {
         [$tenant, $user] = $this->actingTenantAdmin();
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Acme Hosting',
@@ -191,18 +232,145 @@ class MassAssignmentProtectionTest extends TestCase
         $this->assertNull(Server::query()->findOrFail($serverId)->last_tested_at);
     }
 
+    public function test_client_create_ignores_crafted_tenant_id(): void
+    {
+        [$tenant] = $this->actingTenantAdmin();
+        $foreignTenant = $this->createTenant('foreign-client-tenant');
+
+        $response = $this->postJson('/api/v1/admin/clients', [
+            'tenant_id' => $foreignTenant->id,
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Crafted Tenant Client',
+            'email' => 'crafted-client@example.test',
+            'country' => 'US',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'USD',
+        ]);
+
+        $clientId = $response->json('data.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.tenant_id', $tenant->id);
+
+        $this->assertDatabaseHas('clients', [
+            'id' => $clientId,
+            'tenant_id' => $tenant->id,
+        ]);
+    }
+
+    public function test_order_create_ignores_crafted_tenant_id(): void
+    {
+        [$tenant] = $this->actingTenantAdmin();
+        $foreignTenant = $this->createTenant('foreign-order-tenant');
+
+        $client = Client::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Order Client',
+            'email' => 'order-client@example.test',
+            'country' => 'US',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'USD',
+        ]);
+
+        $product = Product::query()->create([
+            'tenant_id' => $tenant->id,
+            'type' => Product::TYPE_HOSTING,
+            'name' => 'Order Product',
+            'slug' => 'order-product',
+            'status' => Product::STATUS_ACTIVE,
+            'visibility' => Product::VISIBILITY_PUBLIC,
+            'display_order' => 0,
+            'is_featured' => false,
+        ]);
+
+        ProductPricing::query()->create([
+            'tenant_id' => $tenant->id,
+            'product_id' => $product->id,
+            'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
+            'currency' => 'USD',
+            'price' => '5.00',
+            'setup_fee' => '0.00',
+            'is_enabled' => true,
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/orders', [
+            'tenant_id' => $foreignTenant->id,
+            'client_id' => $client->id,
+            'currency' => 'USD',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
+                    'quantity' => 1,
+                    'configurable_options' => [],
+                ],
+            ],
+        ]);
+
+        $orderId = $response->json('data.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.tenant_id', $tenant->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $orderId,
+            'tenant_id' => $tenant->id,
+        ]);
+    }
+
+    public function test_invoice_create_ignores_crafted_tenant_id(): void
+    {
+        [$tenant] = $this->actingTenantAdmin();
+        $foreignTenant = $this->createTenant('foreign-invoice-tenant');
+
+        $client = Client::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Invoice Client',
+            'email' => 'invoice-client@example.test',
+            'country' => 'US',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'USD',
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/invoices', [
+            'tenant_id' => $foreignTenant->id,
+            'client_id' => $client->id,
+            'issue_date' => '2026-03-08',
+            'due_date' => '2026-03-15',
+            'items' => [
+                [
+                    'item_type' => 'service',
+                    'description' => 'Manual invoice line',
+                    'quantity' => 1,
+                    'unit_price_minor' => 1000,
+                ],
+            ],
+        ]);
+
+        $invoiceId = $response->json('data.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.tenant_id', $tenant->id);
+
+        $this->assertDatabaseHas('invoices', [
+            'id' => $invoiceId,
+            'tenant_id' => $tenant->id,
+        ]);
+    }
+
     private function actingTenantAdmin(): array
     {
         $this->seed(RolePermissionSeeder::class);
 
-        $tenant = Tenant::query()->create([
-            'name' => 'Security Tenant',
-            'slug' => 'security-tenant',
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
+        $tenant = $this->createTenant('security-tenant');
 
         $user = User::factory()->create([
             'tenant_id' => $tenant->id,
@@ -223,5 +391,17 @@ class MassAssignmentProtectionTest extends TestCase
         Sanctum::actingAs($user);
 
         return [$tenant, $user];
+    }
+
+    private function createTenant(string $slug): Tenant
+    {
+        return Tenant::query()->create([
+            'name' => str($slug)->replace('-', ' ')->title()->toString(),
+            'slug' => $slug,
+            'default_locale' => 'en',
+            'default_currency' => 'USD',
+            'timezone' => 'UTC',
+            'status' => 'active',
+        ]);
     }
 }

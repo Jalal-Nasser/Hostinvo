@@ -76,7 +76,7 @@ class SupportTenantIsolationTest extends TestCase
             'display_order' => 10,
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Foreign Client',

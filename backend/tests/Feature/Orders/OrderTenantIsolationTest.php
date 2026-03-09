@@ -56,7 +56,7 @@ class OrderTenantIsolationTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Foreign Client',
@@ -78,7 +78,7 @@ class OrderTenantIsolationTest extends TestCase
             'is_featured' => false,
         ]);
 
-        $order = Order::query()->create([
+        $order = Order::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_id' => $client->id,
             'reference_number' => 'ORD-FOREIGN-001',

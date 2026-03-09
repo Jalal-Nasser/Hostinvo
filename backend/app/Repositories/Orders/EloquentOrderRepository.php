@@ -65,7 +65,11 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
     public function create(array $attributes): Order
     {
-        return Order::query()->create($attributes);
+        $order = new Order();
+        $order->forceFill($attributes);
+        $order->save();
+
+        return $order;
     }
 
     public function update(Order $order, array $attributes): Order

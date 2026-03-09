@@ -54,7 +54,7 @@ class ClientTenantIsolationTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $foreignClient = Client::query()->create([
+        $foreignClient = Client::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Foreign Client',

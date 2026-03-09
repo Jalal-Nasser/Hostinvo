@@ -72,7 +72,8 @@ class PaymentService
                 'metadata' => $payload['metadata'] ?? null,
             ]);
 
-            Transaction::query()->create([
+            $transaction = new Transaction();
+            $transaction->forceFill([
                 'tenant_id' => $invoice->tenant_id,
                 'payment_id' => $payment->id,
                 'invoice_id' => $invoice->id,
@@ -87,6 +88,7 @@ class PaymentService
                 'request_payload' => $payload['request_payload'] ?? null,
                 'response_payload' => $payload['response_payload'] ?? null,
             ]);
+            $transaction->save();
 
             if ($status === Payment::STATUS_COMPLETED) {
                 $this->applyCompletedPaymentToInvoice($invoice->fresh(), $payment->fresh());
@@ -152,7 +154,8 @@ class PaymentService
                     ],
                 ]);
 
-                $transaction = Transaction::query()->create([
+                $transaction = new Transaction();
+                $transaction->forceFill([
                     'tenant_id' => $invoice->tenant_id,
                     'payment_id' => $payment->id,
                     'invoice_id' => $invoice->id,
@@ -170,6 +173,7 @@ class PaymentService
                     ],
                     'response_payload' => null,
                 ]);
+                $transaction->save();
 
                 $checkout = $this->gateways->resolve($gateway)->createCheckout(
                     $invoice,

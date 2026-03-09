@@ -62,7 +62,7 @@ class ProvisioningFoundationApiTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Acme Hosting',

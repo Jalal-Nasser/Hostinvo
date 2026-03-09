@@ -260,7 +260,7 @@ class PaymentGatewayApiTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Gateway Client',
@@ -271,7 +271,7 @@ class PaymentGatewayApiTest extends TestCase
             'currency' => 'USD',
         ]);
 
-        $invoice = Invoice::query()->create([
+        $invoice = Invoice::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'user_id' => $user->id,

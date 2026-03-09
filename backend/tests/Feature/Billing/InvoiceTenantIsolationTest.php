@@ -55,7 +55,7 @@ class InvoiceTenantIsolationTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Foreign Billing Client',
@@ -66,7 +66,7 @@ class InvoiceTenantIsolationTest extends TestCase
             'currency' => 'USD',
         ]);
 
-        $invoice = Invoice::query()->create([
+        $invoice = Invoice::query()->forceCreate([
             'tenant_id' => $tenantB->id,
             'client_id' => $client->id,
             'reference_number' => 'INV-FOREIGN-001',

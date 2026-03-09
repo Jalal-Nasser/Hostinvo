@@ -58,6 +58,10 @@ class EloquentPaymentRepository implements PaymentRepositoryInterface
 
     public function create(array $attributes): Payment
     {
-        return Payment::query()->create($attributes);
+        $payment = new Payment();
+        $payment->forceFill($attributes);
+        $payment->save();
+
+        return $payment;
     }
 }

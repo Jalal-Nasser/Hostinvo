@@ -75,7 +75,11 @@ class EloquentInvoiceRepository implements InvoiceRepositoryInterface
 
     public function create(array $attributes): Invoice
     {
-        return Invoice::query()->create($attributes);
+        $invoice = new Invoice();
+        $invoice->forceFill($attributes);
+        $invoice->save();
+
+        return $invoice;
     }
 
     public function update(Invoice $invoice, array $attributes): Invoice

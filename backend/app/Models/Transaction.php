@@ -29,7 +29,6 @@ class Transaction extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'tenant_id',
         'payment_id',
         'invoice_id',
         'client_id',
@@ -42,6 +41,10 @@ class Transaction extends Model
         'occurred_at',
         'request_payload',
         'response_payload',
+    ];
+
+    protected $guarded = [
+        'tenant_id',
     ];
 
     protected function casts(): array

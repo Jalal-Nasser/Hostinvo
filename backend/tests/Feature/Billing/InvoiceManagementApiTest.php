@@ -48,7 +48,7 @@ class InvoiceManagementApiTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        $client = Client::query()->create([
+        $client = Client::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_type' => Client::TYPE_COMPANY,
             'company_name' => 'Billing Client',
@@ -59,7 +59,7 @@ class InvoiceManagementApiTest extends TestCase
             'currency' => 'USD',
         ]);
 
-        $order = Order::query()->create([
+        $order = Order::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'user_id' => $user->id,
