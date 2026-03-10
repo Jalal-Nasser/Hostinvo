@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Clients;
 
+use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Models\Client;
 use App\Models\ClientAddress;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,12 +10,19 @@ use Illuminate\Validation\Rule;
 
 class StoreClientRequest extends FormRequest
 {
+    use SanitizesInputContent;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         return $this->user()->can('create', Client::class);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizePlainTextFields(['notes']);
     }
 
     /**

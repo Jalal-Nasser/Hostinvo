@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Orders;
 
+use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Http\Requests\Orders\Concerns\HasOrderPayloadRules;
 use App\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class PlaceOrderRequest extends FormRequest
 {
     use HasOrderPayloadRules;
+    use SanitizesInputContent;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -16,6 +18,11 @@ class PlaceOrderRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('create', Order::class);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizePlainTextFields(['notes']);
     }
 
     /**

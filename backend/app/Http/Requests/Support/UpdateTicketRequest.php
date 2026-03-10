@@ -2,17 +2,25 @@
 
 namespace App\Http\Requests\Support;
 
+use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Models\Ticket;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateTicketRequest extends FormRequest
 {
+    use SanitizesInputContent;
+
     public function authorize(): bool
     {
         $ticket = $this->route('ticket');
 
         return $ticket instanceof Ticket && $this->user()->can('update', $ticket);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizePlainTextFields(['subject']);
     }
 
     public function rules(): array

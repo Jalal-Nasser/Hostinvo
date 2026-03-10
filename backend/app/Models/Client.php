@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
+use App\Support\Security\ContentSanitizer;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,6 +61,13 @@ class Client extends Model
 
                 return $fullName !== '' ? $fullName : $this->email;
             }
+        );
+    }
+
+    protected function notes(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => app(ContentSanitizer::class)->plainText($value)
         );
     }
 

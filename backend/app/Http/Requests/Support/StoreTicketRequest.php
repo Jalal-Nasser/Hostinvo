@@ -2,15 +2,23 @@
 
 namespace App\Http\Requests\Support;
 
+use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Models\Ticket;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreTicketRequest extends FormRequest
 {
+    use SanitizesInputContent;
+
     public function authorize(): bool
     {
         return $this->user()->can('create', Ticket::class);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizePlainTextFields(['subject', 'message']);
     }
 
     public function rules(): array

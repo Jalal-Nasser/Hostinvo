@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\TenantAware;
+use App\Support\Security\ContentSanitizer;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -64,6 +66,13 @@ class Ticket extends Model
             'closed_at' => 'datetime',
             'metadata' => 'array',
         ];
+    }
+
+    protected function subject(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => app(ContentSanitizer::class)->plainText($value)
+        );
     }
 
     public static function priorities(): array

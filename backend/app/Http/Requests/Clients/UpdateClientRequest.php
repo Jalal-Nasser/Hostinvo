@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Clients;
 
+use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Models\Client;
 use App\Models\ClientAddress;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
+    use SanitizesInputContent;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -17,6 +20,11 @@ class UpdateClientRequest extends FormRequest
         $client = $this->route('client');
 
         return $client instanceof Client && $this->user()->can('update', $client);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->sanitizePlainTextFields(['notes']);
     }
 
     /**
