@@ -69,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
                 ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
         });
 
+        RateLimiter::for('domain-actions', function (Request $request) {
+            return Limit::perMinute(20)->by($request->user()?->getAuthIdentifier() ?: $request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
+        });
+
         Gate::before(function ($user, string $ability) {
             return $user->hasRole(Role::SUPER_ADMIN) ? true : null;
         });

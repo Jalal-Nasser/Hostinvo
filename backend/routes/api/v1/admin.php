@@ -36,7 +36,10 @@ Route::get('domains/{domain}/renewals', [DomainRenewalController::class, 'index'
 Route::post('domains/{domain}/renewals', [DomainRenewalController::class, 'store'])->name('domains.renewals.store');
 Route::get('domains/{domain}/registrar-logs', [RegistrarLogController::class, 'index'])->name('domains.registrar-logs.index');
 Route::apiResource('domains', DomainController::class)
-    ->middlewareFor('index', 'throttle:domain-list');
+    ->middlewareFor('index', 'throttle:domain-list')
+    ->middlewareFor('store', 'throttle:domain-actions')
+    ->middlewareFor('update', 'throttle:domain-actions')
+    ->middlewareFor('destroy', 'throttle:domain-actions');
 Route::get('invoices/{invoice}/gateway-options', [InvoiceGatewayController::class, 'index'])->name('invoices.gateway-options.index');
 Route::post('invoices/{invoice}/gateway-checkouts', [InvoiceGatewayController::class, 'store'])->name('invoices.gateway-checkouts.store');
 Route::post('invoices/{invoice}/gateway-checkouts/paypal/capture', [InvoiceGatewayController::class, 'capturePayPal'])->name('invoices.gateway-checkouts.paypal.capture');
