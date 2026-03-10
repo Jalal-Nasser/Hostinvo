@@ -2,14 +2,19 @@
 
 namespace App\Providers;
 
+use App\Queue\Failed\TenantAwareDatabaseUuidFailedJobProvider;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Session\TenantDatabaseSessionHandler;
 use App\Support\Auth\PasswordResetTenantContext;
+use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +27,21 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PasswordResetTenantContext::class);
+
+        $this->app->extend('queue.failer', function (FailedJobProviderInterface $failer, $app) {
+            $config = (array) $app['config']->get('queue.failed', []);
+
+            if (($config['driver'] ?? null) !== 'database-uuids') {
+                return $failer;
+            }
+
+            return new TenantAwareDatabaseUuidFailedJobProvider(
+                $app['db'],
+                (string) ($config['database'] ?? $app['config']->get('database.default')),
+                (string) ($config['table'] ?? 'failed_jobs'),
+                $app->make(CurrentTenant::class),
+            );
+        });
     }
 
     /**
@@ -36,6 +56,14 @@ class AppServiceProvider extends ServiceProvider
                 config('session.lifetime'),
                 $app,
             );
+        });
+
+        Queue::createPayloadUsing(function (): array {
+            $tenantId = $this->resolveQueueTenantId();
+
+            return filled($tenantId)
+                ? ['tenant_id' => $tenantId]
+                : [];
         });
 
         RateLimiter::for('api', function (Request $request) {
@@ -107,5 +135,24 @@ class AppServiceProvider extends ServiceProvider
                 'message' => 'Too many requests. Please try again later.',
             ]],
         ], 429, $headers);
+    }
+
+    private function resolveQueueTenantId(): ?string
+    {
+        $currentTenantId = app(CurrentTenant::class)->id();
+
+        if (filled($currentTenantId)) {
+            return $currentTenantId;
+        }
+
+        $tenant = app()->bound('tenant') ? app('tenant') : null;
+
+        if ($tenant instanceof Tenant && filled($tenant->getKey())) {
+            return (string) $tenant->getKey();
+        }
+
+        $user = auth()->user();
+
+        return filled($user?->tenant_id) ? (string) $user->tenant_id : null;
     }
 }

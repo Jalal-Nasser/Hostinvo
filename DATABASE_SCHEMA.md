@@ -893,11 +893,14 @@
 |--------|------|-------|
 | id | BIGSERIAL PK | |
 | uuid | VARCHAR(255) NOT NULL UNIQUE | |
+| tenant_id | UUID NULL FK → tenants.id | NULL = non-tenant/system context |
 | connection | TEXT NOT NULL | |
 | queue | TEXT NOT NULL | |
 | payload | TEXT NOT NULL | |
 | exception | TEXT NOT NULL | |
 | failed_at | TIMESTAMPTZ NOT NULL DEFAULT now() | |
+
+*Index: (tenant_id)*
 
 ---
 
