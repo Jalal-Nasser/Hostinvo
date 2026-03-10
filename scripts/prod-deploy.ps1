@@ -34,6 +34,7 @@ Invoke-Compose exec -T app php artisan optimize:clear
 Invoke-Compose exec -T app php artisan config:cache
 Invoke-Compose exec -T app php artisan route:cache
 Invoke-Compose exec -T app php artisan view:cache
+Invoke-Compose exec -T app php artisan storage:link --force
 Invoke-Compose exec -T app php artisan event:cache
 Invoke-Compose exec -T app php artisan queue:restart
 Invoke-Compose restart queue-worker scheduler

@@ -375,3 +375,10 @@ open http://localhost:8025
 - Arabic (`ar`) locale sets `dir="rtl"` — English (`en`) sets `dir="ltr"`
 - All backend user-facing strings use `Lang::get()` — never hardcoded PHP strings
 - Arabic email templates set `dir="rtl"` on the root element and use RTL-aware table layouts
+
+---
+
+## TLS Termination (Production)
+
+TLS is terminated by an upstream proxy (Traefik, Cloudflare, ALB, or Nginx gateway).
+The containerized Nginx listens on HTTP only and should not be exposed directly to the internet.
