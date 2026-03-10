@@ -35,7 +35,8 @@ Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update
 Route::get('domains/{domain}/renewals', [DomainRenewalController::class, 'index'])->name('domains.renewals.index');
 Route::post('domains/{domain}/renewals', [DomainRenewalController::class, 'store'])->name('domains.renewals.store');
 Route::get('domains/{domain}/registrar-logs', [RegistrarLogController::class, 'index'])->name('domains.registrar-logs.index');
-Route::apiResource('domains', DomainController::class);
+Route::apiResource('domains', DomainController::class)
+    ->middlewareFor('index', 'throttle:domain-list');
 Route::get('invoices/{invoice}/gateway-options', [InvoiceGatewayController::class, 'index'])->name('invoices.gateway-options.index');
 Route::post('invoices/{invoice}/gateway-checkouts', [InvoiceGatewayController::class, 'store'])->name('invoices.gateway-checkouts.store');
 Route::post('invoices/{invoice}/gateway-checkouts/paypal/capture', [InvoiceGatewayController::class, 'capturePayPal'])->name('invoices.gateway-checkouts.paypal.capture');
@@ -60,8 +61,11 @@ Route::post('services/{service}/operations/{operation}', [ServiceProvisioningCon
 Route::apiResource('services', ServiceController::class);
 Route::get('support/overview', SupportOverviewController::class)->name('support.overview.show');
 Route::get('ticket-statuses', [TicketStatusController::class, 'index'])->name('ticket-statuses.index');
-Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])->name('tickets.replies.store');
+Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])
+    ->middleware('throttle:ticket-reply')
+    ->name('tickets.replies.store');
 Route::apiResource('ticket-departments', TicketDepartmentController::class)->parameters([
     'ticket-departments' => 'ticketDepartment',
 ]);
-Route::apiResource('tickets', TicketController::class);
+Route::apiResource('tickets', TicketController::class)
+    ->middlewareFor('store', 'throttle:ticket-create');

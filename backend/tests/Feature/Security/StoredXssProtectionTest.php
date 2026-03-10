@@ -72,6 +72,61 @@ class StoredXssProtectionTest extends TestCase
         ]);
     }
 
+    public function test_ticket_reply_xss_is_sanitized_via_reply_endpoint(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$tenant, $user] = $this->createTenantAdminContext('xss-ticket-reply-tenant');
+        $client = Client::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Reply Client',
+            'email' => 'reply-client@example.test',
+            'country' => 'US',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'USD',
+        ]);
+
+        $contact = $client->contacts()->create([
+            'tenant_id' => $tenant->id,
+            'first_name' => 'Noura',
+            'last_name' => 'Salem',
+            'email' => 'noura@example.test',
+            'is_primary' => true,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $ticketResponse = $this->postJson('/api/v1/admin/tickets', [
+            'client_id' => $client->id,
+            'client_contact_id' => $contact->id,
+            'subject' => 'Reply sanitization check',
+            'priority' => 'medium',
+            'message' => 'Initial ticket message.',
+        ])->assertCreated();
+
+        $ticketId = $ticketResponse->json('data.id');
+
+        $response = $this->postJson("/api/v1/admin/tickets/{$ticketId}/replies", [
+            'message' => "<script>alert('xss')</script><img src=x onerror=alert(1)>Reply content",
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.replies.1.message', 'Reply content');
+
+        $responseBody = $response->getContent();
+
+        $this->assertIsString($responseBody);
+        $this->assertStringNotContainsString('<script', $responseBody);
+        $this->assertStringNotContainsString('onerror=', $responseBody);
+
+        $this->assertDatabaseHas('ticket_replies', [
+            'ticket_id' => $ticketId,
+            'message' => 'Reply content',
+        ]);
+    }
+
     public function test_client_notes_are_sanitized_before_storage_and_api_response(): void
     {
         $this->seed(RolePermissionSeeder::class);

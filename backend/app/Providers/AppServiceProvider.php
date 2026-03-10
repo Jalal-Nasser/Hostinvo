@@ -7,6 +7,7 @@ use App\Session\TenantDatabaseSessionHandler;
 use App\Support\Auth\PasswordResetTenantContext;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -40,15 +41,32 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(
                 $request->user()?->getAuthIdentifier() ?: $request->ip()
-            );
+            )->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
         });
 
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
         });
 
         RateLimiter::for('webhooks', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
+        });
+
+        RateLimiter::for('ticket-create', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->getAuthIdentifier() ?: $request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
+        });
+
+        RateLimiter::for('ticket-reply', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->getAuthIdentifier() ?: $request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
+        });
+
+        RateLimiter::for('domain-list', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->getAuthIdentifier() ?: $request->ip())
+                ->response(fn (Request $request, array $headers) => $this->throttleResponse($headers));
         });
 
         Gate::before(function ($user, string $ability) {
@@ -73,5 +91,16 @@ class AppServiceProvider extends ServiceProvider
                 $query,
             );
         });
+    }
+
+    private function throttleResponse(array $headers): JsonResponse
+    {
+        return response()->json([
+            'data' => null,
+            'meta' => (object) [],
+            'errors' => [[
+                'message' => 'Too many requests. Please try again later.',
+            ]],
+        ], 429, $headers);
     }
 }
