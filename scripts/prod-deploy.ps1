@@ -36,4 +36,4 @@ Invoke-Compose exec -T app php artisan route:cache
 Invoke-Compose exec -T app php artisan view:cache
 Invoke-Compose exec -T app php artisan event:cache
 Invoke-Compose exec -T app php artisan queue:restart
-Invoke-Compose restart queue-worker
+Invoke-Compose restart queue-worker scheduler
