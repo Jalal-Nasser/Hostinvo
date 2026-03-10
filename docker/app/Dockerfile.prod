@@ -1,0 +1,57 @@
+FROM composer:2 AS vendor
+
+WORKDIR /var/www/backend
+
+COPY backend/composer.json backend/composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --classmap-authoritative \
+    --no-scripts
+
+
+FROM php:8.3-fpm-alpine AS app
+
+RUN apk add --no-cache \
+        icu-dev \
+        libzip-dev \
+        oniguruma-dev \
+        postgresql-dev \
+        supervisor \
+    && docker-php-ext-install \
+        bcmath \
+        intl \
+        opcache \
+        pcntl \
+        pdo_pgsql \
+        zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis
+
+WORKDIR /var/www/backend
+
+COPY docker/app/php.prod.ini /usr/local/etc/php/conf.d/99-hostinvo.ini
+COPY docker/app/opcache.prod.ini /usr/local/etc/php/conf.d/99-opcache.ini
+COPY docker/app/supervisord.prod.conf /etc/supervisord.conf
+COPY docker/app/supervisor/queue-workers.prod.conf /etc/supervisor/conf.d/queue-workers.conf
+
+COPY backend ./
+COPY --from=vendor /var/www/backend/vendor ./vendor
+
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+USER www-data
+
+EXPOSE 9000
+
+CMD ["php-fpm", "-F"]

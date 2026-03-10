@@ -3,6 +3,7 @@
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Processor\PsrLogMessageProcessor;
 
 return [
@@ -58,6 +59,12 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'production' => [
+            'driver' => 'stack',
+            'channels' => explode(',', env('LOG_PRODUCTION_STACK', 'json_daily,stderr_json')),
+            'ignore_exceptions' => false,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
@@ -71,6 +78,19 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+        ],
+
+        'json_daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/production.json.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_DAILY_DAYS', 30),
+            'replace_placeholders' => true,
+            'formatter' => JsonFormatter::class,
+            'formatter_with' => [
+                'batch_mode' => JsonFormatter::BATCH_MODE_JSON,
+                'append_newline' => true,
+            ],
         ],
 
         'slack' => [
@@ -99,6 +119,21 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'formatter' => env('LOG_STDERR_FORMATTER'),
+            'with' => [
+                'stream' => 'php://stderr',
+            ],
+            'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'stderr_json' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'info'),
+            'handler' => StreamHandler::class,
+            'formatter' => JsonFormatter::class,
+            'formatter_with' => [
+                'batch_mode' => JsonFormatter::BATCH_MODE_JSON,
+                'append_newline' => true,
+            ],
             'with' => [
                 'stream' => 'php://stderr',
             ],

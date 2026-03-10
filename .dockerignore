@@ -1,5 +1,6 @@
 **/.git
 **/.next
+**/.env
 backend/vendor
 backend/node_modules
 backend/storage/logs

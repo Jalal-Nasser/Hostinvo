@@ -68,7 +68,7 @@ return [
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
             'retry_after' => env('REDIS_QUEUE_RETRY_AFTER', 90),
-            'block_for' => null,
+            'block_for' => env('REDIS_QUEUE_BLOCK_FOR', 5),
             'after_commit' => false,
         ],
 
@@ -77,19 +77,25 @@ return [
     'tiers' => [
         'critical' => [
             'queue' => env('QUEUE_TIER_CRITICAL', 'critical'),
-            'tries' => 3,
+            'tries' => (int) env('QUEUE_TIER_CRITICAL_TRIES', 3),
             'backoff' => [60, 300, 900],
         ],
         'default' => [
             'queue' => env('QUEUE_TIER_DEFAULT', 'default'),
-            'tries' => 3,
+            'tries' => (int) env('QUEUE_TIER_DEFAULT_TRIES', 3),
             'backoff' => [60, 180],
         ],
         'low' => [
             'queue' => env('QUEUE_TIER_LOW', 'low'),
-            'tries' => 2,
+            'tries' => (int) env('QUEUE_TIER_LOW_TRIES', 2),
             'backoff' => [120],
         ],
+    ],
+
+    'worker' => [
+        'sleep' => (int) env('QUEUE_WORKER_SLEEP', 3),
+        'timeout' => (int) env('QUEUE_WORKER_TIMEOUT', 120),
+        'max_time' => (int) env('QUEUE_WORKER_MAX_TIME', 3600),
     ],
 
     /*
