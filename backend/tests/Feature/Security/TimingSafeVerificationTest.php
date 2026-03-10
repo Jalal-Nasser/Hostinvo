@@ -156,4 +156,39 @@ class TimingSafeVerificationTest extends TestCase
 
         Notification::assertSentTo($user, ResetPassword::class);
     }
+
+    public function test_forgot_password_for_inactive_user_returns_same_generic_success(): void
+    {
+        Notification::fake();
+
+        $tenant = Tenant::query()->create([
+            'name' => 'Inactive Tenant',
+            'slug' => 'inactive-tenant',
+            'primary_domain' => 'inactive.example.test',
+            'default_locale' => 'en',
+            'default_currency' => 'USD',
+            'timezone' => 'UTC',
+            'status' => 'active',
+        ]);
+
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'inactive@example.test',
+            'is_active' => false,
+        ]);
+
+        $this->postJson('/api/v1/auth/forgot-password', [
+            'email' => $user->email,
+        ], [
+            'X-Tenant-Host' => 'inactive.example.test',
+        ])->assertOk()
+            ->assertJsonPath('data.message', trans('passwords.sent'));
+
+        Notification::assertNothingSent();
+
+        $this->assertDatabaseMissing('password_reset_tokens', [
+            'tenant_id' => $tenant->id,
+            'email' => $user->email,
+        ]);
+    }
 }
