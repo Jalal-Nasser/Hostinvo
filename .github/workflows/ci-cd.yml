@@ -1,0 +1,211 @@
+name: hostinvo-ci-cd
+
+on:
+  push:
+    branches:
+      - develop
+      - staging
+      - main
+  pull_request:
+    branches:
+      - develop
+      - staging
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: hostinvo-ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-quality:
+    name: Backend Quality and Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hostinvo_ci
+          POSTGRES_USER: hostinvo
+          POSTGRES_PASSWORD: hostinvo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hostinvo -d hostinvo_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      APP_URL: http://127.0.0.1
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: hostinvo_ci
+      DB_USERNAME: hostinvo
+      DB_PASSWORD: hostinvo
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+          extensions: bcmath, intl, pdo_pgsql, redis
+
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      - name: Install backend dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Generate app key
+        run: php artisan key:generate --ansi --force
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Verify Redis connectivity
+        run: php -r '$r = new Redis(); $r->connect(getenv("REDIS_HOST"), (int) getenv("REDIS_PORT")); echo $r->ping();'
+
+      - name: PHP lint
+        run: find app config routes database -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Install PHPStan
+        run: curl -Ls https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar -o phpstan.phar
+
+      - name: Static analysis
+        run: php phpstan.phar analyse app config routes database --level=0 --memory-limit=1G --no-progress
+
+      - name: Run unit tests
+        run: php artisan test --testsuite=Unit --without-tty
+
+      - name: Run feature tests
+        run: php artisan test --testsuite=Feature --without-tty
+
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: backend-quality
+    if: github.event_name == 'push'
+    outputs:
+      deploy_environment: ${{ steps.meta.outputs.deploy_environment }}
+      app_image: ${{ steps.meta.outputs.app_image }}
+      nginx_image: ${{ steps.meta.outputs.nginx_image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image metadata
+        id: meta
+        run: |
+          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+
+          case "${GITHUB_REF_NAME}" in
+            main)
+              deploy_environment="production"
+              ;;
+            staging)
+              deploy_environment="staging"
+              ;;
+            develop)
+              deploy_environment="development"
+              ;;
+            *)
+              deploy_environment="development"
+              ;;
+          esac
+
+          app_image="ghcr.io/${owner}/hostinvo-app:${deploy_environment}-latest"
+          nginx_image="ghcr.io/${owner}/hostinvo-nginx:${deploy_environment}-latest"
+          app_image_sha="ghcr.io/${owner}/hostinvo-app:${GITHUB_SHA}"
+          nginx_image_sha="ghcr.io/${owner}/hostinvo-nginx:${GITHUB_SHA}"
+
+          echo "deploy_environment=${deploy_environment}" >> "${GITHUB_OUTPUT}"
+          echo "app_image=${app_image}" >> "${GITHUB_OUTPUT}"
+          echo "nginx_image=${nginx_image}" >> "${GITHUB_OUTPUT}"
+          echo "app_image_sha=${app_image_sha}" >> "${GITHUB_OUTPUT}"
+          echo "nginx_image_sha=${nginx_image_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/app/Dockerfile.prod
+          push: true
+          provenance: false
+          tags: |
+            ${{ steps.meta.outputs.app_image }}
+            ${{ steps.meta.outputs.app_image_sha }}
+
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/nginx/Dockerfile.prod
+          push: true
+          provenance: false
+          tags: |
+            ${{ steps.meta.outputs.nginx_image }}
+            ${{ steps.meta.outputs.nginx_image_sha }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push'
+    environment: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'staging' && 'staging' || 'development' }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+          APP_IMAGE: ${{ needs.build-and-push.outputs.app_image }}
+          NGINX_IMAGE: ${{ needs.build-and-push.outputs.nginx_image }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          script_stop: true
+          envs: DEPLOY_PATH,DEPLOY_BRANCH,APP_IMAGE,NGINX_IMAGE
+          script: |
+            bash "${DEPLOY_PATH}/scripts/deploy/remote-deploy.sh"
