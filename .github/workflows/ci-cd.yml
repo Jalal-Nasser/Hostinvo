@@ -99,10 +99,10 @@ jobs:
         run: find app config routes database -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Install PHPStan
-        run: curl -Ls https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar -o phpstan.phar
+        run: composer require --dev phpstan/phpstan --no-interaction
 
       - name: Static analysis
-        run: php phpstan.phar analyse app config routes database --level=0 --memory-limit=1G --no-progress
+        run: vendor/bin/phpstan analyse app config routes --level=5 --memory-limit=1G
 
       - name: Run unit tests
         run: php artisan test --testsuite=Unit --without-tty
