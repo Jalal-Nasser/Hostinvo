@@ -63,6 +63,23 @@ class MonitoringAlertService
             ];
         }
 
+        $jobFailureRatePercent = (float) ($snapshot['job_failure_rate_percent'] ?? ((float) ($snapshot['job_failure_rate'] ?? 0) * 100));
+        $jobFailureRateThreshold = (float) config('monitoring.alerts.job_failure_rate_threshold', 10);
+
+        if ($jobFailureRatePercent >= $jobFailureRateThreshold) {
+            $alerts[] = [
+                'code' => 'job_failure_rate_threshold',
+                'severity' => 'warning',
+                'message' => 'Job failure rate threshold exceeded.',
+                'context' => [
+                    'job_failure_rate_percent' => $jobFailureRatePercent,
+                    'job_failure_rate_threshold_percent' => $jobFailureRateThreshold,
+                    'jobs_processed_total' => (int) ($snapshot['totals']['jobs_processed_total'] ?? 0),
+                    'jobs_failed_total' => (int) ($snapshot['totals']['jobs_failed_total'] ?? 0),
+                ],
+            ];
+        }
+
         return $alerts;
     }
 

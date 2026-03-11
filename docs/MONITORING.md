@@ -79,6 +79,8 @@ Configured in `config/monitoring.php`:
    - Trigger when `/health/database` check status is not `ok`
 3. Redis connectivity failure:
    - Trigger when `/health/redis` check status is not `ok`
+4. Job failure rate threshold:
+   - Trigger when job failure rate (%) >= `MONITORING_ALERT_JOB_FAILURE_RATE_THRESHOLD` (default: `10`)
 
 Alert execution:
 
@@ -96,5 +98,6 @@ Add these to deployment environment:
 - `MONITORING_METRICS_WINDOW_MINUTES`
 - `MONITORING_METRICS_RETENTION_SECONDS`
 - `MONITORING_ALERT_QUEUE_BACKLOG_THRESHOLD`
+- `MONITORING_ALERT_JOB_FAILURE_RATE_THRESHOLD`
 - `MONITORING_ALERT_LOG_CHANNEL`
 - `MONITORING_ALERT_WEBHOOK_URL`
