@@ -200,12 +200,13 @@ jobs:
           DEPLOY_BRANCH: ${{ github.ref_name }}
           APP_IMAGE: ${{ needs.build-and-push.outputs.app_image }}
           NGINX_IMAGE: ${{ needs.build-and-push.outputs.nginx_image }}
+          DEPLOY_COMPOSE_FILE: ${{ github.ref_name == 'staging' && 'docker-compose.staging.yml' || 'docker-compose.prod.yml' }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_SSH_PORT }}
           script_stop: true
-          envs: DEPLOY_PATH,DEPLOY_BRANCH,APP_IMAGE,NGINX_IMAGE
+          envs: DEPLOY_PATH,DEPLOY_BRANCH,APP_IMAGE,NGINX_IMAGE,DEPLOY_COMPOSE_FILE
           script: |
             bash "${DEPLOY_PATH}/scripts/deploy/remote-deploy.sh"

@@ -1,0 +1,150 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile.prod
+    image: ${APP_IMAGE:-hostinvo-app:staging}
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.staging
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "false"
+      DB_HOST: ${DB_HOST:-postgres}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - hostinvo-staging
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile.prod
+    image: ${NGINX_IMAGE:-hostinvo-nginx:staging}
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - "${STAGING_APP_HTTP_PORT:-8081}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - hostinvo-staging
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${STAGING_POSTGRES_DB:-hostinvo_staging}
+      POSTGRES_USER: ${STAGING_POSTGRES_USER:-hostinvo}
+      POSTGRES_PASSWORD: ${STAGING_POSTGRES_PASSWORD:-change-this}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${STAGING_POSTGRES_USER:-hostinvo} -d ${STAGING_POSTGRES_DB:-hostinvo_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql/data
+    networks:
+      - hostinvo-staging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+      - --requirepass
+      - ${REDIS_PASSWORD:-change-this}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-change-this} ping > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-staging-data:/data
+    networks:
+      - hostinvo-staging
+
+  queue-worker:
+    image: ${APP_IMAGE:-hostinvo-app:staging}
+    restart: unless-stopped
+    command: ["supervisord", "-n", "-c", "/etc/supervisord.conf"]
+    env_file:
+      - ./backend/.env.staging
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "false"
+      DB_HOST: ${DB_HOST:-postgres}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      QUEUE_WORKER_CRITICAL_PROCS: ${QUEUE_WORKER_CRITICAL_PROCS:-1}
+      QUEUE_WORKER_DEFAULT_PROCS: ${QUEUE_WORKER_DEFAULT_PROCS:-1}
+      QUEUE_WORKER_LOW_PROCS: ${QUEUE_WORKER_LOW_PROCS:-1}
+    depends_on:
+      app:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "supervisorctl status | grep -E 'RUNNING' > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - hostinvo-staging
+
+  scheduler:
+    image: ${APP_IMAGE:-hostinvo-app:staging}
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
+    env_file:
+      - ./backend/.env.staging
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "false"
+      DB_HOST: ${DB_HOST:-postgres}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+    depends_on:
+      app:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep \"[p]hp artisan schedule:work\" > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - hostinvo-staging
+
+volumes:
+  postgres-staging-data:
+  redis-staging-data:
+
+networks:
+  hostinvo-staging:
+    driver: bridge
