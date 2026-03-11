@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Queue\Failed\TenantAwareDatabaseUuidFailedJobProvider;
+use App\Services\Monitoring\MetricsService;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Session\TenantDatabaseSessionHandler;
@@ -13,6 +14,8 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
@@ -64,6 +67,14 @@ class AppServiceProvider extends ServiceProvider
             return filled($tenantId)
                 ? ['tenant_id' => $tenantId]
                 : [];
+        });
+
+        Queue::after(function (JobProcessed $event): void {
+            app(MetricsService::class)->recordJobProcessed($event->job->getQueue());
+        });
+
+        Queue::failing(function (JobFailed $event): void {
+            app(MetricsService::class)->recordJobFailed($event->job->getQueue());
         });
 
         RateLimiter::for('api', function (Request $request) {

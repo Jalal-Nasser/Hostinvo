@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AuthorizeMetricsAccess;
+use App\Http\Middleware\CaptureRequestMetrics;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\Auth\EnsureUserHasPermission;
 use App\Http\Middleware\Auth\EnsureUserHasRole;
@@ -15,10 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(CaptureRequestMetrics::class);
         $middleware->statefulApi();
         $middleware->throttleApi(redis: extension_loaded('redis'));
 
         $middleware->alias([
+            'metrics.auth' => AuthorizeMetricsAccess::class,
             'permission' => EnsureUserHasPermission::class,
             'resolve.tenant' => ResolveTenant::class,
             'role' => EnsureUserHasRole::class,

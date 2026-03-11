@@ -11,6 +11,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     networks:
       - hostinvo
 
@@ -24,6 +30,12 @@ services:
       - ./backend:/var/www/backend
     depends_on:
       - app
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     networks:
       - hostinvo
 
@@ -52,6 +64,11 @@ services:
       - "${FORWARD_REDIS_PORT:-63790}:6379"
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - hostinvo
 
@@ -70,6 +87,12 @@ services:
         condition: service_started
       app:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "ps -o args= 1 | grep -q 'queue:work' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     networks:
       - hostinvo
 
@@ -88,6 +111,12 @@ services:
         condition: service_started
       app:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "ps -o args= 1 | grep -q 'schedule:run' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     networks:
       - hostinvo
 
