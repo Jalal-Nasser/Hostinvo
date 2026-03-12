@@ -4,15 +4,18 @@ namespace App\Repositories\Catalog;
 
 use App\Contracts\Repositories\Catalog\ProductGroupRepositoryInterface;
 use App\Models\ProductGroup;
+use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class EloquentProductGroupRepository implements ProductGroupRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return ProductGroup::query()
             ->withCount('products')

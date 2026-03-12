@@ -21,6 +21,8 @@ class MetricsController extends Controller
     {
         $snapshot = $this->metrics->snapshot();
         $queueDepth = (array) ($snapshot['queue_depth']['queues'] ?? []);
+        $queueProcessed = (array) ($snapshot['queues']['processed_total'] ?? []);
+        $queueFailed = (array) ($snapshot['queues']['failed_total'] ?? []);
         $lines = [
             '# HELP hostinvo_request_latency_ms_avg Average HTTP request latency in milliseconds.',
             '# TYPE hostinvo_request_latency_ms_avg gauge',
@@ -50,6 +52,20 @@ class MetricsController extends Controller
         $lines[] = '# HELP hostinvo_job_failures_total Total failed jobs in metric window.';
         $lines[] = '# TYPE hostinvo_job_failures_total gauge';
         $lines[] = sprintf('hostinvo_job_failures_total %d', (int) ($snapshot['totals']['jobs_failed_total'] ?? 0));
+
+        $lines[] = '# HELP hostinvo_queue_jobs_processed_total Total processed jobs per queue in metric window.';
+        $lines[] = '# TYPE hostinvo_queue_jobs_processed_total gauge';
+        foreach ($queueProcessed as $queueName => $count) {
+            $escapedQueue = str_replace(['\\', '"'], ['\\\\', '\"'], (string) $queueName);
+            $lines[] = sprintf('hostinvo_queue_jobs_processed_total{queue="%s"} %d', $escapedQueue, (int) $count);
+        }
+
+        $lines[] = '# HELP hostinvo_queue_jobs_failed_total Total failed jobs per queue in metric window.';
+        $lines[] = '# TYPE hostinvo_queue_jobs_failed_total gauge';
+        foreach ($queueFailed as $queueName => $count) {
+            $escapedQueue = str_replace(['\\', '"'], ['\\\\', '\"'], (string) $queueName);
+            $lines[] = sprintf('hostinvo_queue_jobs_failed_total{queue="%s"} %d', $escapedQueue, (int) $count);
+        }
 
         return response(implode("\n", $lines)."\n", 200, [
             'Content-Type' => 'text/plain; version=0.0.4; charset=utf-8',

@@ -3,18 +3,20 @@
 namespace App\Repositories\Catalog;
 
 use App\Contracts\Repositories\Catalog\ProductRepositoryInterface;
+use App\Repositories\Concerns\ResolvesPagination;
 use App\Models\ConfigurableOption;
 use App\Models\Product;
-use App\Models\ProductPricing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class EloquentProductRepository implements ProductRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Product::query()
             ->with(['group', 'pricing'])

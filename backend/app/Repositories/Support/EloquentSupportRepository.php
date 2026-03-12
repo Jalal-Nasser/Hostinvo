@@ -3,6 +3,7 @@
 namespace App\Repositories\Support;
 
 use App\Contracts\Repositories\Support\SupportRepositoryInterface;
+use App\Repositories\Concerns\ResolvesPagination;
 use App\Models\Ticket;
 use App\Models\TicketDepartment;
 use App\Models\TicketReply;
@@ -13,9 +14,11 @@ use Illuminate\Support\Collection;
 
 class EloquentSupportRepository implements SupportRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginateTickets(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Ticket::query()
             ->with(['department', 'status', 'client', 'assignedTo'])
@@ -103,7 +106,7 @@ class EloquentSupportRepository implements SupportRepositoryInterface
 
     public function paginateDepartments(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return TicketDepartment::query()
             ->withCount('tickets')

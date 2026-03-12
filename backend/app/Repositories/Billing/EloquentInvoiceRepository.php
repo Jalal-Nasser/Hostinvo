@@ -4,18 +4,21 @@ namespace App\Repositories\Billing;
 
 use App\Contracts\Repositories\Billing\InvoiceRepositoryInterface;
 use App\Models\Invoice;
+use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class EloquentInvoiceRepository implements InvoiceRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Invoice::query()
-            ->with(['client', 'order'])
+            ->with(['client', 'order', 'owner'])
             ->withCount(['items', 'payments'])
             ->when(
                 filled($filters['search'] ?? null),

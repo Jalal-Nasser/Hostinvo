@@ -4,14 +4,17 @@ namespace App\Repositories\Provisioning;
 
 use App\Contracts\Repositories\Provisioning\ServiceRepositoryInterface;
 use App\Models\Service;
+use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class EloquentServiceRepository implements ServiceRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Service::query()
             ->with(['client', 'product', 'server'])

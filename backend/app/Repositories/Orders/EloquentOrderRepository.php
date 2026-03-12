@@ -4,18 +4,21 @@ namespace App\Repositories\Orders;
 
 use App\Contracts\Repositories\Orders\OrderRepositoryInterface;
 use App\Models\Order;
+use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class EloquentOrderRepository implements OrderRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Order::query()
-            ->with('client')
+            ->with(['client', 'owner'])
             ->withCount('items')
             ->when(
                 filled($filters['search'] ?? null),

@@ -5,17 +5,21 @@ namespace App\Repositories\Clients;
 use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
 use App\Models\Client;
 use App\Models\ClientActivityLog;
+use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class EloquentClientRepository implements ClientRepositoryInterface
 {
+    use ResolvesPagination;
+
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $perPage = (int) ($filters['per_page'] ?? 15);
+        $perPage = $this->resolvePerPage($filters);
 
         return Client::query()
+            ->with('owner')
             ->withCount(['contacts', 'addresses'])
             ->when(
                 filled($filters['search'] ?? null),

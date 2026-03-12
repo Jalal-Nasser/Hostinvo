@@ -41,6 +41,7 @@ class MetricsService
     {
         $requestTotals = $this->aggregateRequestMetrics();
         $jobTotals = $this->aggregateJobMetrics();
+        $queueJobTotals = $this->aggregateQueueJobMetrics();
         $queueDepth = $this->queueDepth();
 
         $requestCount = (int) $requestTotals['requests_total'];
@@ -79,6 +80,10 @@ class MetricsService
                 'errors_total' => $errorCount,
                 'jobs_processed_total' => $processedCount,
                 'jobs_failed_total' => $failedCount,
+            ],
+            'queues' => [
+                'processed_total' => $queueJobTotals['processed'],
+                'failed_total' => $queueJobTotals['failed'],
             ],
         ];
     }
@@ -125,6 +130,44 @@ class MetricsService
 
                 $totals['jobs_processed_total'] += (int) ($fields['jobs_processed_total'] ?? 0);
                 $totals['jobs_failed_total'] += (int) ($fields['jobs_failed_total'] ?? 0);
+            }
+        } catch (Throwable) {
+            return $totals;
+        }
+
+        return $totals;
+    }
+
+    /**
+     * @return array{processed:array<string,int>, failed:array<string,int>}
+     */
+    private function aggregateQueueJobMetrics(): array
+    {
+        $totals = [
+            'processed' => [],
+            'failed' => [],
+        ];
+
+        try {
+            foreach ($this->windowTimestamps() as $timestamp) {
+                $fields = Redis::connection()->hgetall($this->jobMetricKey($timestamp));
+
+                foreach ($fields as $key => $value) {
+                    if (! is_string($key) || ! is_numeric($value)) {
+                        continue;
+                    }
+
+                    if (preg_match('/^queue_(.+)_jobs_processed_total$/', $key, $matches) === 1) {
+                        $queueName = $matches[1];
+                        $totals['processed'][$queueName] = ($totals['processed'][$queueName] ?? 0) + (int) $value;
+                        continue;
+                    }
+
+                    if (preg_match('/^queue_(.+)_jobs_failed_total$/', $key, $matches) === 1) {
+                        $queueName = $matches[1];
+                        $totals['failed'][$queueName] = ($totals['failed'][$queueName] ?? 0) + (int) $value;
+                    }
+                }
             }
         } catch (Throwable) {
             return $totals;

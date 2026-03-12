@@ -30,11 +30,11 @@ class ClientResource extends JsonResource
             'notes' => $this->notes,
             'contacts_count' => $this->whenCounted('contacts'),
             'addresses_count' => $this->whenCounted('addresses'),
-            'owner' => $this->when($this->owner, [
-                'id' => $this->owner?->id,
-                'name' => $this->owner?->name,
-                'email' => $this->owner?->email,
-            ]),
+            'owner' => $this->whenLoaded('owner', fn () => $this->owner ? [
+                'id' => $this->owner->id,
+                'name' => $this->owner->name,
+                'email' => $this->owner->email,
+            ] : null),
             'contacts' => ClientContactResource::collection($this->whenLoaded('contacts')),
             'addresses' => ClientAddressResource::collection($this->whenLoaded('addresses')),
             'activity_logs' => ClientActivityLogResource::collection($this->whenLoaded('activityLogs')),

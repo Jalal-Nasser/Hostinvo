@@ -5,6 +5,8 @@ namespace App\Services\Catalog;
 use App\Contracts\Repositories\Catalog\ProductGroupRepositoryInterface;
 use App\Models\ProductGroup;
 use App\Models\User;
+use App\Support\Cache\TenantCache;
+use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -16,6 +18,8 @@ class ProductGroupService
 {
     public function __construct(
         private readonly ProductGroupRepositoryInterface $groups,
+        private readonly CurrentTenant $currentTenant,
+        private readonly TenantCache $cache,
     ) {
     }
 
@@ -26,7 +30,15 @@ class ProductGroupService
 
     public function allForSelection(): Collection
     {
-        return $this->groups->allForSelection();
+        $tenantId = $this->currentTenant->id();
+
+        return $this->cache->remember(
+            $tenantId,
+            'catalog',
+            'product-groups:selection',
+            $this->selectionCacheTtl(),
+            fn (): Collection => $this->groups->allForSelection()
+        );
     }
 
     public function getForDisplay(ProductGroup $group): ProductGroup
@@ -36,12 +48,18 @@ class ProductGroupService
 
     public function create(array $payload, User $actor): ProductGroup
     {
-        return $this->groups->create($this->normalizeAttributes($payload, $actor));
+        $group = $this->groups->create($this->normalizeAttributes($payload, $actor));
+        $this->flushSelectionCache($actor->tenant_id);
+
+        return $group;
     }
 
     public function update(ProductGroup $group, array $payload, User $actor): ProductGroup
     {
-        return $this->groups->update($group, $this->normalizeAttributes($payload, $actor, $group));
+        $updated = $this->groups->update($group, $this->normalizeAttributes($payload, $actor, $group));
+        $this->flushSelectionCache($group->tenant_id);
+
+        return $updated;
     }
 
     public function delete(ProductGroup $group): void
@@ -50,6 +68,8 @@ class ProductGroupService
             $this->groups->detachProducts($group);
             $this->groups->delete($group);
         });
+
+        $this->flushSelectionCache($group->tenant_id);
     }
 
     private function normalizeAttributes(array $payload, User $actor, ?ProductGroup $group = null): array
@@ -79,5 +99,15 @@ class ProductGroupService
                 'slug' => $slug,
             ]
         );
+    }
+
+    private function flushSelectionCache(?string $tenantId): void
+    {
+        $this->cache->forget($tenantId, 'catalog', 'product-groups:selection');
+    }
+
+    private function selectionCacheTtl(): int
+    {
+        return max(60, (int) config('hostinvo.performance.cache.catalog_selection_ttl_seconds', 300));
     }
 }
