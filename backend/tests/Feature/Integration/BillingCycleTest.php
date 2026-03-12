@@ -9,11 +9,13 @@ use App\Models\ProductPricing;
 use App\Models\Service;
 use App\Models\Subscription;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Bus;
 use Laravel\Sanctum\Sanctum;
+use ReflectionClass;
 
 class BillingCycleTest extends IntegrationTestCase
 {
-    public function test_subscription_renewal_invoice_payment_and_follow_up_recurring_invoice_flow(): void
+    public function test_subscription_renewal_invoice_payment_and_automation_progression(): void
     {
         $tenant = $this->createTenant('integration-billing-cycle');
         $tenantAdmin = $this->createTenantAdmin($tenant, 'integration-billing-admin@example.test');
@@ -117,40 +119,65 @@ class BillingCycleTest extends IntegrationTestCase
             ->assertJsonPath('data.status', Invoice::STATUS_PAID)
             ->assertJsonPath('data.balance_due_minor', 0);
 
-        $nextBillingDate = $initialNextBillingDate->copy()->addMonthNoOverflow()->toDateString();
-
-        $followUpRenewalInvoiceResponse = $this->postJson('/api/v1/admin/invoices', [
-            'client_id' => $client->id,
-            'currency' => 'USD',
-            'issue_date' => Carbon::now()->toDateString(),
-            'due_date' => Carbon::now()->addDays(5)->toDateString(),
-            'recurring_cycle' => ProductPricing::CYCLE_MONTHLY,
-            'next_invoice_date' => $nextBillingDate,
-            'items' => [
-                [
-                    'item_type' => 'manual',
-                    'description' => 'Monthly renewal follow-up for recurring hosting plan',
-                    'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
-                    'quantity' => 1,
-                    'unit_price_minor' => 1999,
-                    'discount_amount_minor' => 0,
-                    'tax_amount_minor' => 0,
-                    'metadata' => [
-                        'subscription_id' => $subscription->id,
-                        'service_id' => $service->id,
-                    ],
-                ],
-            ],
-        ]);
-
-        $followUpRenewalInvoiceResponse
-            ->assertCreated()
-            ->assertJsonPath('data.recurring_cycle', ProductPricing::CYCLE_MONTHLY)
-            ->assertJsonPath('data.next_invoice_date', $nextBillingDate);
+        $this->runSubscriptionRenewalAutomation($subscription);
 
         $subscription->refresh();
 
-        $this->assertSame($initialNextBillingDate->toDateString(), $subscription->next_billing_date?->toDateString());
-        $this->assertNull($subscription->last_billed_at);
+        $this->assertSame(
+            $initialNextBillingDate->copy()->addMonthNoOverflow()->toDateString(),
+            $subscription->next_billing_date?->toDateString()
+        );
+        $this->assertNotNull($subscription->last_billed_at);
+    }
+
+    private function runSubscriptionRenewalAutomation(Subscription $subscription): void
+    {
+        $subscriptionRenewalServiceClass = 'App\\Services\\Billing\\SubscriptionRenewalService';
+        $processSubscriptionRenewalJobClass = 'App\\Jobs\\Billing\\ProcessSubscriptionRenewal';
+
+        if (class_exists($subscriptionRenewalServiceClass)) {
+            $service = app($subscriptionRenewalServiceClass);
+
+            if (method_exists($service, 'renew')) {
+                $service->renew($subscription->fresh());
+
+                return;
+            }
+        }
+
+        if (class_exists($processSubscriptionRenewalJobClass)) {
+            $reflection = new ReflectionClass($processSubscriptionRenewalJobClass);
+            $constructor = $reflection->getConstructor();
+
+            if ($constructor === null || $constructor->getNumberOfRequiredParameters() === 0) {
+                Bus::dispatch($reflection->newInstance());
+
+                return;
+            }
+
+            if ($constructor->getNumberOfRequiredParameters() === 1) {
+                $parameter = $constructor->getParameters()[0];
+                $parameterType = $parameter->getType();
+                $parameterTypeName = $parameterType?->getName();
+
+                if ($parameterTypeName === Subscription::class) {
+                    Bus::dispatch($reflection->newInstance($subscription->fresh()));
+
+                    return;
+                }
+
+                if ($parameterTypeName === 'string') {
+                    Bus::dispatch($reflection->newInstance((string) $subscription->id));
+
+                    return;
+                }
+            }
+        }
+
+        $this->fail(
+            'Subscription renewal automation path was not found. '
+            .'Expected SubscriptionRenewalService::renew($subscription) '
+            .'or ProcessSubscriptionRenewal job dispatch.'
+        );
     }
 }
