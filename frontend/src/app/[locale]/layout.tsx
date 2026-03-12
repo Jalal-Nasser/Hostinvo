@@ -22,7 +22,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Hostinvo",
   description:
-    "Hostinvo foundation scaffold for a multi-tenant SaaS hosting automation platform.",
+    "Hostinvo launch-ready multi-tenant SaaS hosting automation platform with licensing and provider onboarding.",
 };
 
 export default async function LocaleLayout({

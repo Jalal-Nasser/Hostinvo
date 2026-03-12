@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\HealthCheckController;
+use App\Http\Controllers\Api\V1\LicensingController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,5 +34,13 @@ Route::middleware(['api'])
                 Route::post('{gateway}', WebhookController::class)
                     ->whereIn('gateway', $supportedWebhookGateways)
                     ->name('handle');
+            });
+
+        Route::prefix('licensing')
+            ->name('licensing.')
+            ->middleware('throttle:auth')
+            ->group(function (): void {
+                Route::post('validate', [LicensingController::class, 'validateLicense'])->name('validate');
+                Route::post('activate', [LicensingController::class, 'activate'])->name('activate');
             });
     });
