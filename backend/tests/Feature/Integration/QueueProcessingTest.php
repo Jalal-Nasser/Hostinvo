@@ -7,31 +7,23 @@ use App\Models\Client;
 use App\Models\Product;
 use App\Models\ProvisioningJob;
 use App\Models\ProvisioningLog;
-use App\Models\Role;
 use App\Models\Server;
 use App\Models\ServerPackage;
 use App\Models\Service;
 use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
 use App\Services\Automation\FailedJobInspectionService;
-use App\Services\Provisioning\ProvisioningService;
-use App\Support\Tenancy\CurrentTenant;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Laravel\Sanctum\Sanctum;
 use Tests\Fixtures\Jobs\FailingTenantAwareJob;
-use Tests\TestCase;
 
-class QueueProcessingTest extends TestCase
+class QueueProcessingTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
-    public function test_redis_queue_dispatch_and_provisioning_job_processing_flow(): void
+    public function test_redis_queue_dispatch_and_provisioning_job_processing_flow_with_live_worker(): void
     {
-        $this->seed(RolePermissionSeeder::class);
+        if (! $this->redisAvailable()) {
+            $this->markTestSkipped('Redis is required for live queue processing integration tests.');
+        }
 
         config([
             'queue.default' => 'redis',
@@ -39,7 +31,8 @@ class QueueProcessingTest extends TestCase
             'provisioning.queue.name' => 'critical',
         ]);
 
-        Queue::fake();
+        Redis::connection(config('queue.connections.redis.connection', 'default'))
+            ->del('queues:critical');
 
         Http::fake([
             '*' => Http::response([
@@ -130,17 +123,31 @@ class QueueProcessingTest extends TestCase
 
         $jobId = $dispatchResponse->json('data.id');
 
-        Queue::assertPushed(ProvisionAccountJob::class, function (ProvisionAccountJob $job): bool {
-            return $job->serviceId !== '';
-        });
-
         $this->assertDatabaseHas('provisioning_jobs', [
             'id' => $jobId,
             'service_id' => $serviceId,
             'status' => ProvisioningJob::STATUS_QUEUED,
+            'queue_name' => 'critical',
         ]);
 
-        app(ProvisioningService::class)->processCreateAccountForService($serviceId, 1);
+        $queuedPayloads = Redis::connection(config('queue.connections.redis.connection', 'default'))
+            ->lrange('queues:critical', 0, -1);
+
+        $this->assertNotEmpty($queuedPayloads);
+
+        $serializedJob = json_decode($queuedPayloads[0], true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('critical', $serializedJob['queue'] ?? null);
+        $this->assertSame(ProvisionAccountJob::class, $serializedJob['displayName'] ?? null);
+        $this->assertStringContainsString($serviceId, (string) ($serializedJob['data']['command'] ?? ''));
+
+        $this->artisan('queue:work', [
+            'connection' => 'redis',
+            '--once' => true,
+            '--queue' => 'critical',
+            '--tries' => 1,
+            '--sleep' => 0,
+        ])->run();
 
         $this->assertDatabaseHas('provisioning_jobs', [
             'id' => $jobId,
@@ -194,39 +201,6 @@ class QueueProcessingTest extends TestCase
         $this->assertNull($inspection->findForTenant($tenantA->id, (string) $tenantBJobs->first()->uuid));
     }
 
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
-    }
-
     private function dispatchFailingJobForTenant(Tenant $tenant, string $reason): void
     {
         $this->setTenantContext($tenant);
@@ -242,15 +216,12 @@ class QueueProcessingTest extends TestCase
         ])->run();
     }
 
-    private function setTenantContext(Tenant $tenant): void
+    private function redisAvailable(): bool
     {
-        app(CurrentTenant::class)->set($tenant);
-        app()->instance('tenant', $tenant);
-    }
-
-    private function clearTenantContext(): void
-    {
-        app(CurrentTenant::class)->clear();
-        app()->forgetInstance('tenant');
+        try {
+            return (bool) Redis::connection(config('queue.connections.redis.connection', 'default'))->ping();
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

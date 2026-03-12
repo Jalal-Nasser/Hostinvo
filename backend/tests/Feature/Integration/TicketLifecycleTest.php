@@ -4,27 +4,16 @@ namespace Tests\Feature\Integration;
 
 use App\Models\Client;
 use App\Models\ClientContact;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\TenantUser;
 use App\Models\Ticket;
 use App\Models\TicketDepartment;
 use App\Models\TicketReply;
 use App\Models\TicketStatus;
-use App\Models\User;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class TicketLifecycleTest extends TestCase
+class TicketLifecycleTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
     public function test_ticket_create_reply_status_change_and_tenant_isolation(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         $tenantA = $this->createTenant('integration-ticket-tenant-a');
         $tenantB = $this->createTenant('integration-ticket-tenant-b');
 
@@ -141,38 +130,5 @@ class TicketLifecycleTest extends TestCase
 
         $this->getJson("/api/v1/admin/tickets/{$foreignTicket->id}")
             ->assertNotFound();
-    }
-
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
     }
 }

@@ -6,26 +6,15 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ProductPricing;
-use App\Models\Role;
 use App\Models\Service;
 use App\Models\Subscription;
-use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
 use Carbon\Carbon;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class BillingCycleTest extends TestCase
+class BillingCycleTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
-    public function test_subscription_renewal_invoice_payment_and_next_billing_date_progression(): void
+    public function test_subscription_renewal_invoice_payment_and_follow_up_recurring_invoice_flow(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         $tenant = $this->createTenant('integration-billing-cycle');
         $tenantAdmin = $this->createTenantAdmin($tenant, 'integration-billing-admin@example.test');
 
@@ -130,47 +119,38 @@ class BillingCycleTest extends TestCase
 
         $nextBillingDate = $initialNextBillingDate->copy()->addMonthNoOverflow()->toDateString();
 
-        $subscription->forceFill([
-            'last_billed_at' => now(),
-            'next_billing_date' => $nextBillingDate,
-        ])->save();
+        $followUpRenewalInvoiceResponse = $this->postJson('/api/v1/admin/invoices', [
+            'client_id' => $client->id,
+            'currency' => 'USD',
+            'issue_date' => Carbon::now()->toDateString(),
+            'due_date' => Carbon::now()->addDays(5)->toDateString(),
+            'recurring_cycle' => ProductPricing::CYCLE_MONTHLY,
+            'next_invoice_date' => $nextBillingDate,
+            'items' => [
+                [
+                    'item_type' => 'manual',
+                    'description' => 'Monthly renewal follow-up for recurring hosting plan',
+                    'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
+                    'quantity' => 1,
+                    'unit_price_minor' => 1999,
+                    'discount_amount_minor' => 0,
+                    'tax_amount_minor' => 0,
+                    'metadata' => [
+                        'subscription_id' => $subscription->id,
+                        'service_id' => $service->id,
+                    ],
+                ],
+            ],
+        ]);
+
+        $followUpRenewalInvoiceResponse
+            ->assertCreated()
+            ->assertJsonPath('data.recurring_cycle', ProductPricing::CYCLE_MONTHLY)
+            ->assertJsonPath('data.next_invoice_date', $nextBillingDate);
 
         $subscription->refresh();
 
-        $this->assertSame($nextBillingDate, $subscription->next_billing_date?->toDateString());
-        $this->assertNotNull($subscription->last_billed_at);
-    }
-
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
+        $this->assertSame($initialNextBillingDate->toDateString(), $subscription->next_billing_date?->toDateString());
+        $this->assertNull($subscription->last_billed_at);
     }
 }

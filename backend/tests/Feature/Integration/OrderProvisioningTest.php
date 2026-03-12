@@ -11,25 +11,14 @@ use App\Models\Product;
 use App\Models\ProductPricing;
 use App\Models\ProvisioningJob;
 use App\Models\ProvisioningLog;
-use App\Models\Role;
 use App\Models\Service;
-use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class OrderProvisioningTest extends TestCase
+class OrderProvisioningTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
     public function test_order_to_invoice_payment_to_service_provisioning_flow(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         Http::fake([
             '*' => Http::response([
                 'metadata' => [
@@ -270,38 +259,5 @@ class OrderProvisioningTest extends TestCase
             'status' => Service::STATUS_ACTIVE,
             'provisioning_state' => Service::PROVISIONING_SYNCED,
         ]);
-    }
-
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
     }
 }

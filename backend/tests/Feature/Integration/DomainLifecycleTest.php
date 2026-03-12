@@ -6,23 +6,12 @@ use App\Models\Client;
 use App\Models\Domain;
 use App\Models\DomainRenewal;
 use App\Models\RegistrarLog;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class DomainLifecycleTest extends TestCase
+class DomainLifecycleTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
     public function test_domain_register_renew_and_registrar_log_flow_with_tenant_isolation(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         $tenantA = $this->createTenant('integration-domain-tenant-a');
         $tenantB = $this->createTenant('integration-domain-tenant-b');
 
@@ -178,38 +167,5 @@ class DomainLifecycleTest extends TestCase
 
         $this->getJson("/api/v1/admin/domains/{$foreignDomain->id}")
             ->assertNotFound();
-    }
-
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
     }
 }

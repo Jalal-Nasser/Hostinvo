@@ -3,23 +3,12 @@
 namespace Tests\Feature\Integration;
 
 use App\Models\Client;
-use App\Models\Role;
-use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class ClientLifecycleTest extends TestCase
+class ClientLifecycleTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
     public function test_client_lifecycle_create_update_delete_and_tenant_isolation(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         $tenantA = $this->createTenant('integration-client-tenant-a');
         $tenantB = $this->createTenant('integration-client-tenant-b');
 
@@ -127,38 +116,5 @@ class ClientLifecycleTest extends TestCase
         $this->assertSoftDeleted('clients', [
             'id' => $clientId,
         ]);
-    }
-
-    private function createTenant(string $slug): Tenant
-    {
-        return Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-    }
-
-    private function createTenantAdmin(Tenant $tenant, string $email): User
-    {
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $email,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $user->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
-
-        return $user;
     }
 }

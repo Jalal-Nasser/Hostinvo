@@ -6,25 +6,15 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\ProductPricing;
-use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\TenantUser;
-use App\Models\User;
 use App\Services\Tenancy\TenantSettingService;
-use Database\Seeders\Auth\RolePermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
-use Tests\TestCase;
 
-class WebhookProcessingTest extends TestCase
+class WebhookProcessingTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
-
     public function test_stripe_webhook_processes_payment_and_transaction_to_completion(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         [$tenant, $tenantAdmin, $invoice] = $this->createBillingContext(
             'integration-webhook-stripe',
             'integration-webhook-stripe-admin@example.test',
@@ -100,8 +90,6 @@ class WebhookProcessingTest extends TestCase
 
     public function test_paypal_webhook_processes_payment_and_transaction_to_completion(): void
     {
-        $this->seed(RolePermissionSeeder::class);
-
         [$tenant, $tenantAdmin, $invoice] = $this->createBillingContext(
             'integration-webhook-paypal',
             'integration-webhook-paypal-admin@example.test',
@@ -187,30 +175,8 @@ class WebhookProcessingTest extends TestCase
         string $invoiceReference,
         int $amountMinor
     ): array {
-        $tenant = Tenant::query()->create([
-            'name' => str_replace('-', ' ', ucfirst($slug)),
-            'slug' => $slug,
-            'default_locale' => 'en',
-            'default_currency' => 'USD',
-            'timezone' => 'UTC',
-            'status' => 'active',
-        ]);
-
-        $tenantAdmin = User::factory()->create([
-            'tenant_id' => $tenant->id,
-            'email' => $adminEmail,
-        ]);
-
-        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
-        $tenantAdmin->roles()->attach($role);
-
-        TenantUser::query()->forceCreate([
-            'tenant_id' => $tenant->id,
-            'user_id' => $tenantAdmin->id,
-            'role_id' => $role->id,
-            'is_primary' => true,
-            'joined_at' => now(),
-        ]);
+        $tenant = $this->createTenant($slug);
+        $tenantAdmin = $this->createTenantAdmin($tenant, $adminEmail);
 
         $client = Client::query()->forceCreate([
             'tenant_id' => $tenant->id,
