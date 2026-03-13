@@ -1,68 +1,47 @@
 # Production Launch
 
-This checklist governs Hostinvo go-live for the first commercial production launch.
+> **Phase 25 — Official Go-Live Document**
+> Hostinvo · Laravel + PostgreSQL + Redis + Next.js · Multi-Tenant SaaS
+
+This document governs the official production launch of Hostinvo.
+It is the final gate before the platform is open to paying customers.
+
+---
 
 ## 1. Go-Live Checklist
 
-- [ ] `backend/.env.production` and `.env.production` are complete with production-only secrets
-- [ ] `APP_ENV=production` and `APP_DEBUG=false`
-- [ ] PostgreSQL and Redis passwords are non-default and rotated
-- [ ] `docker-compose.prod.yml` services are healthy
-- [ ] Migrations executed with `--force`
-- [ ] Cache warmup complete (`config`, `route`, `view`, `event`)
-- [ ] `storage:link --force` executed
-- [ ] Queue worker and scheduler running
-- [ ] Health endpoints return success:
-  - `/health`
-  - `/health/database`
-  - `/health/redis`
-  - `/health/queue`
-- [ ] Metrics endpoints reachable with token:
-  - `/metrics`
-  - `/metrics/json`
-- [ ] Backup scripts and retention cron enabled
-- [ ] Stripe/PayPal live mode intentionally verified (or disabled for phased rollout)
+Complete all items. Each must be verified by a human, not assumed.
 
-## 2. Rollout Strategy
+### 1.1 Infrastructure
 
-1. Deploy during low-traffic window.
-2. Use rolling service startup order:
-   - postgres/redis
-   - app/nginx
-   - queue-worker/scheduler
-3. Run post-deploy smoke tests:
-   - tenant auth
-   - invoice read and payment flow
-   - queue dispatch + processing
-   - webhook endpoint acceptance for supported gateways
-4. Keep enhanced monitoring active for first 24 hours.
+- [ ] docker-compose.prod.yml services are all healthy (docker compose ps)
+- [ ] Upstream TLS proxy is active and serving HTTPS
+- [ ] APP_URL uses https:// in backend/.env.production
+- [ ] DNS A record points to production server
+- [ ] Port 443 is open on the host firewall
+- [ ] Port 5432 (PostgreSQL) is NOT publicly exposed
+- [ ] Port 6379 (Redis) is NOT publicly exposed
 
-## 3. Rollback Strategy
+### 1.2 Application Configuration
 
-If launch checks fail:
+- [ ] APP_ENV=production
+- [ ] APP_DEBUG=false
+- [ ] APP_KEY is set and non-default
+- [ ] DB_PASSWORD is strong and non-default
+- [ ] REDIS_PASSWORD is strong and non-default
+- [ ] METRICS_AUTH_TOKEN is set and non-default
+- [ ] MAIL_* credentials are production SMTP values
+- [ ] Payment gateway credentials are in LIVE mode (not sandbox)
 
-1. Put app into maintenance mode:
-   - `php artisan down`
-2. Roll back to previous known-good image tags.
-3. Restore database from latest verified backup if schema/data integrity is affected.
-4. Restart queue workers and clear stale cache.
-5. Validate health endpoints before reopening traffic.
+### 1.3 Database
 
-Detailed commands: [DISASTER_RECOVERY.md](./DISASTER_RECOVERY.md).
+- [ ] Migrations executed with --force (php artisan migrate --force)
+- [ ] php artisan migrate:status shows no pending migrations
+- [ ] Pre-deploy database backup was taken and verified
 
-## 4. Post-Launch Monitoring Checklist
+### 1.4 Cache and Workers
 
-- [ ] Track request latency and error rate on `/metrics` and `/metrics/json`
-- [ ] Monitor queue backlog and failure rate alerts
-- [ ] Monitor database connectivity and query error logs
-- [ ] Monitor Redis connectivity and memory pressure
-- [ ] Verify webhook verification failures stay within expected baseline
-- [ ] Verify tenant isolation anomalies are zero in logs/alerts
-- [ ] Confirm no critical alerts for at least 60 minutes after go-live
-
-## 5. Ownership
-
-- Release owner: coordinates deployment and rollback decisions.
-- Platform owner: validates infrastructure and observability.
-- Application owner: validates business-critical user flows.
-- Security owner: validates secrets, webhook integrity, and rate-limit behavior.
+- [ ] Cache warmup complete (config, route, view, event)
+- [ ] storage:link --force executed and symlink verified
+- [ ] Queue worker container is running and processing jobs
+- [ ] Scheduler container is running
