@@ -1,7 +1,7 @@
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { routing } from "./src/i18n/routing";
+import { routing } from "./i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 const sessionCookieName =
@@ -22,6 +22,13 @@ function stripLocale(pathname: string, locale: string): string {
 }
 
 export default function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${routing.defaultLocale}`;
+
+    return NextResponse.redirect(url);
+  }
+
   const response = intlMiddleware(request);
   const locale = extractLocale(request.nextUrl.pathname);
 

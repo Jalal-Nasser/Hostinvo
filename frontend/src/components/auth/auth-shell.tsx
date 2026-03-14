@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { BrandLogo } from "@/components/layout/brand-logo";
+
 type AuthShellProps = {
   children: React.ReactNode;
   locale: string;
@@ -21,9 +23,11 @@ export async function AuthShell({
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="glass-card flex flex-col justify-between gap-6 p-6 md:p-8">
           <div>
-            <p className="font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.32em] text-accent">
-              Hostinvo
-            </p>
+            <BrandLogo
+              href={`/${locale}`}
+              priority
+              className="block w-full max-w-[15rem]"
+            />
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-foreground">
               {title}
             </h1>

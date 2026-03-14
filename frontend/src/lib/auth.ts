@@ -27,8 +27,14 @@ export type AuthenticatedUser = {
 
 export type WorkspaceMode = "admin" | "portal";
 
-export const apiBaseUrl =
+const publicApiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+
+const internalApiBaseUrl =
+  process.env.INTERNAL_API_BASE_URL ?? publicApiBaseUrl;
+
+export const apiBaseUrl =
+  typeof window === "undefined" ? internalApiBaseUrl : publicApiBaseUrl;
 
 export const backendOrigin = new URL(apiBaseUrl).origin;
 

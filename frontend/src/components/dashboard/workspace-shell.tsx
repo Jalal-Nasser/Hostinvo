@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/dashboard/logout-button";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import {
@@ -273,9 +274,10 @@ export async function WorkspaceShell({
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
-                <p className="font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.3em] text-accent">
-                  Hostinvo
-                </p>
+                <BrandLogo
+                  href={localePath(locale, "/")}
+                  className="block w-[11rem] shrink-0"
+                />
                 <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
                   {workspaceBadge}
                 </span>

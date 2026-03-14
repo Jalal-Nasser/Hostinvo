@@ -4,7 +4,12 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\MetricsController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    return response()->json([
+        'service' => 'Hostinvo API',
+        'status' => 'ok',
+    ]);
+});
 
 Route::prefix('health')
     ->name('health.')

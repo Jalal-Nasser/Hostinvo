@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
@@ -37,7 +38,12 @@ export async function MarketingShell({
         <header className="glass-card p-6 md:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.32em] text-accent">
+              <BrandLogo
+                href={localePath(locale, "/")}
+                priority
+                className="block w-full max-w-[17rem]"
+              />
+              <p className="mt-4 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.32em] text-accent">
                 {content.badge}
               </p>
               <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-foreground md:text-5xl">

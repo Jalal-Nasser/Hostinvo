@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->foreignUuid('product_group_id')->nullable()->constrained('product_groups')->nullOnDelete();
+            $table->foreignId('product_group_id')->nullable()->constrained('product_groups')->nullOnDelete();
             $table->string('type', 32)->default('hosting');
             $table->string('name');
             $table->string('slug');
