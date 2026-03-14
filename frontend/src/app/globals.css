@@ -3,13 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --background: #f4efe6;
-  --foreground: #162129;
-  --card: rgba(255, 250, 242, 0.88);
-  --line: rgba(22, 33, 41, 0.14);
-  --accent: #0f5e78;
-  --accent-soft: #d8e7ec;
-  --muted: #5d6a72;
+  /* Brand palette */
+  --brand-blue: #048dfe;
+  --brand-blue-dark: #036deb;
+  --brand-navy: #002d8e;
+  --brand-accent: #0054c5;
+
+  /* Background & Surface */
+  --background: #f7faff;
+  --foreground: #0a1628;
+  --card: rgba(255, 255, 255, 0.92);
+  --card-hover: rgba(255, 255, 255, 1);
+  --line: rgba(4, 141, 254, 0.14);
+  --line-subtle: rgba(0, 45, 142, 0.08);
+
+  /* Accent mappings (Tailwind tokens) */
+  --accent: #048dfe;
+  --accent-dark: #036deb;
+  --accent-soft: #e0f0ff;
+  --accent-soft-hover: #c8e4ff;
+
+  /* Text */
+  --muted: #4a5e7a;
+  --muted-light: #7a95b5;
 }
 
 * {
@@ -18,9 +34,8 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top, rgba(15, 94, 120, 0.14), transparent 32rem),
-    linear-gradient(180deg, #fbf7ef 0%, #f4efe6 100%);
+  background: #f7faff;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -47,12 +62,40 @@ button {
 }
 
 ::selection {
-  background: var(--accent);
-  color: #fffaf2;
+  background: var(--brand-blue);
+  color: #ffffff;
 }
 
 @layer components {
   .glass-card {
-    @apply rounded-[2rem] border border-line bg-card shadow-[0_24px_80px_rgba(22,33,41,0.12)] backdrop-blur;
+    @apply rounded-[2rem] border border-line bg-card shadow-[0_8px_32px_rgba(4,141,254,0.08)] backdrop-blur-sm;
+  }
+
+  .glass-nav {
+    @apply border-b border-[rgba(4,141,254,0.1)] bg-[rgba(247,250,255,0.88)] backdrop-blur-xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#048dfe] to-[#036deb] px-6 py-3 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(4,141,254,0.4)] transition-all duration-200 hover:shadow-[0_6px_28px_rgba(4,141,254,0.55)] hover:brightness-110;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-full border border-[rgba(4,141,254,0.3)] bg-white px-6 py-3 text-sm font-semibold text-[#048dfe] transition-all duration-200 hover:border-[#048dfe] hover:bg-[#e0f0ff];
+  }
+
+  .section-label {
+    @apply inline-flex items-center gap-2 rounded-full border border-[rgba(4,141,254,0.2)] bg-[#e0f0ff] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#036deb];
+  }
+
+  .feature-card {
+    @apply rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-6 shadow-[0_2px_16px_rgba(4,141,254,0.06)] transition-all duration-200 hover:border-[rgba(4,141,254,0.3)] hover:shadow-[0_8px_32px_rgba(4,141,254,0.12)] hover:-translate-y-1;
+  }
+
+  .pricing-card {
+    @apply rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-8 shadow-[0_2px_16px_rgba(4,141,254,0.06)] transition-all duration-200;
+  }
+
+  .pricing-card-featured {
+    @apply rounded-2xl border-2 border-[#048dfe] bg-gradient-to-b from-[#048dfe] to-[#036deb] p-8 shadow-[0_16px_48px_rgba(4,141,254,0.4)] relative;
   }
 }

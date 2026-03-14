@@ -1,13 +1,15 @@
 import { type AppLocale } from "@/i18n/routing";
 
 export type LaunchPlan = {
-  key: "starter" | "professional" | "enterprise";
+  key: "starter" | "growth" | "professional" | "enterprise";
   name: string;
   price: string;
   description: string;
   limits: string[];
   ctaLabel: string;
+  featured?: boolean;
 };
+
 
 export type LaunchFeature = {
   title: string;
@@ -62,12 +64,12 @@ export type LaunchContent = {
 
 const launchContentByLocale: Record<AppLocale, LaunchContent> = {
   en: {
-    badge: "Phase 24 - Launch Preparation",
-    heroTitle: "Commercial-ready hosting automation platform",
+    badge: "Hosting automation platform",
+    heroTitle: "Hosting automation for modern providers",
     heroDescription:
-      "Hostinvo is ready for provider launch with licensing controls, production-grade infrastructure, tenant isolation, and modular operations for hosting businesses.",
+      "Run your hosting business with automated billing, service provisioning, domain management, and support — all in one platform.",
     primaryCta: "Start Provider Onboarding",
-    secondaryCta: "Explore Pricing",
+    secondaryCta: "View Features",
     nav: {
       home: "Home",
       pricing: "Pricing",
@@ -78,43 +80,52 @@ const launchContentByLocale: Record<AppLocale, LaunchContent> = {
       login: "Login",
     },
     sections: {
-      plansTitle: "License pricing tiers",
+      plansTitle: "Simple, transparent pricing",
       plansDescription:
-        "Choose the plan that matches your client volume and infrastructure growth stage.",
-      featuresTitle: "Launch-ready feature set",
+        "Choose the plan that fits your hosting business. Lower cost than WHMCS — more automation built in.",
+      featuresTitle: "Platform features",
       featuresDescription:
-        "Everything needed to run a hosting SaaS operation with billing, support, domains, and provisioning.",
-      docsTitle: "Launch documentation",
+        "Everything needed to run a hosting SaaS business with billing, support, domains, and provisioning.",
+      docsTitle: "Documentation",
       docsDescription:
         "Operational runbooks and launch guidance for onboarding, production deployment, and monitoring.",
       contactTitle: "Talk to sales",
       contactDescription:
-        "Reach the launch team for pricing guidance, enterprise onboarding, and migration planning.",
+        "Reach the team for pricing guidance, enterprise onboarding, and migration planning.",
     },
     plans: [
       {
         key: "starter",
         name: "Starter",
-        price: "$49 / month",
-        description: "For early-stage providers launching managed hosting operations.",
-        limits: ["250 clients", "5 servers", "Single production activation"],
-        ctaLabel: "Choose Starter",
+        price: "$9",
+        description: "Perfect for launching your first hosting business.",
+        limits: ["Up to 100 clients", "1 server", "Basic billing automation", "Email support"],
+        ctaLabel: "Get started free",
+      },
+      {
+        key: "growth",
+        name: "Growth",
+        price: "$29",
+        description: "For growing providers with more clients and servers to manage.",
+        limits: ["Up to 500 clients", "5 servers", "Advanced billing + provisioning", "Priority support"],
+        ctaLabel: "Start growing",
+        featured: true,
       },
       {
         key: "professional",
         name: "Professional",
-        price: "$149 / month",
-        description: "For growing providers with multi-team operations and larger client bases.",
-        limits: ["1000 clients", "20 servers", "Up to 3 activations"],
-        ctaLabel: "Choose Professional",
+        price: "$69",
+        description: "Full automation stack for serious hosting operations.",
+        limits: ["Up to 2,000 clients", "20 servers", "Full automation stack", "Dedicated support"],
+        ctaLabel: "Go professional",
       },
       {
         key: "enterprise",
         name: "Enterprise",
         price: "Custom",
-        description: "For high-scale providers needing unrestricted usage and custom support.",
-        limits: ["Unlimited clients", "Unlimited servers", "Unlimited activations"],
-        ctaLabel: "Contact Enterprise Sales",
+        description: "Unlimited scale with custom SLAs and dedicated infrastructure.",
+        limits: ["Unlimited clients", "Unlimited servers", "Custom integrations", "White-glove onboarding"],
+        ctaLabel: "Contact sales",
       },
     ],
     features: [
@@ -196,12 +207,12 @@ const launchContentByLocale: Record<AppLocale, LaunchContent> = {
     },
   },
   ar: {
-    badge: "المرحلة 24 - التحضير للإطلاق",
-    heroTitle: "منصة أتمتة استضافة جاهزة للإطلاق التجاري",
+    badge: "منصة أتمتة الاستضافة",
+    heroTitle: "أتمتة الاستضافة للمزودين الحديثين",
     heroDescription:
-      "Hostinvo جاهز لإطلاق مزودي الاستضافة عبر نظام تراخيص، بنية إنتاجية، عزل متعدد المستأجرين، وتشغيل معياري متكامل.",
+      "أدر أعمال الاستضافة بالكامل — فوترة تلقائية، تزويد خدمات، إدارة نطاقات، ودعم — كل ذلك في منصة واحدة.",
     primaryCta: "ابدأ إعداد مزود الخدمة",
-    secondaryCta: "استعرض الأسعار",
+    secondaryCta: "استعرض المزايا",
     nav: {
       home: "الرئيسية",
       pricing: "الأسعار",
@@ -212,42 +223,51 @@ const launchContentByLocale: Record<AppLocale, LaunchContent> = {
       login: "تسجيل الدخول",
     },
     sections: {
-      plansTitle: "باقات تراخيص Hostinvo",
-      plansDescription: "اختر الباقة المناسبة لحجم عملائك وتوسع البنية التحتية لديك.",
-      featuresTitle: "مزايا جاهزة للإطلاق",
+      plansTitle: "أسعار شفافة وبسيطة",
+      plansDescription: "اختر الباقة المناسبة لعملك. تكلفة أقل من WHMCS — أتمتة أكثر.",
+      featuresTitle: "مزايا المنصة",
       featuresDescription:
         "كل ما تحتاجه لتشغيل منصة استضافة SaaS تشمل الفوترة والدعم والنطاقات والتزويد.",
-      docsTitle: "توثيق الإطلاق",
+      docsTitle: "التوثيق",
       docsDescription:
         "أدلة تشغيلية وخطط إطلاق لتجهيز الإعداد، الإنتاج، والمراقبة.",
       contactTitle: "تواصل مع المبيعات",
       contactDescription:
-        "تواصل مع فريق الإطلاق للمساعدة في اختيار الباقة، إعداد المؤسسة، وخطط الترحيل.",
+        "تواصل مع الفريق للمساعدة في اختيار الباقة، إعداد المؤسسة، وخطط الترحيل.",
     },
     plans: [
       {
         key: "starter",
         name: "Starter",
-        price: "49 دولار / شهريًا",
-        description: "مناسبة لمزودي الاستضافة في مرحلة الإطلاق الأولي.",
-        limits: ["250 عميل", "5 خوادم", "تفعيل إنتاجي واحد"],
-        ctaLabel: "اختر Starter",
+        price: "$9",
+        description: "مثالية للبدء بأعمال استضافة جديدة.",
+        limits: ["حتى 100 عميل", "خادم واحد", "أتمتة فوترة أساسية", "دعم عبر البريد"],
+        ctaLabel: "ابدأ مجانًا",
+      },
+      {
+        key: "growth",
+        name: "Growth",
+        price: "$29",
+        description: "للمزودين في مرحلة النمو مع عملاء وخوادم أكثر.",
+        limits: ["حتى 500 عميل", "5 خوادم", "فوترة وتزويد متقدم", "دعم مُفضَّل"],
+        ctaLabel: "ابدأ النمو",
+        featured: true,
       },
       {
         key: "professional",
         name: "Professional",
-        price: "149 دولار / شهريًا",
-        description: "مناسبة للمزودين في مرحلة النمو وتعدد فرق التشغيل.",
-        limits: ["1000 عميل", "20 خادمًا", "حتى 3 تفعيلات"],
-        ctaLabel: "اختر Professional",
+        price: "$69",
+        description: "أتمتة كاملة لعمليات الاستضافة الاحترافية.",
+        limits: ["حتى 2,000 عميل", "20 خادمًا", "حزمة أتمتة كاملة", "دعم مخصص"],
+        ctaLabel: "انتقل للاحتراف",
       },
       {
         key: "enterprise",
         name: "Enterprise",
-        price: "سعر مخصص",
-        description: "للمزودين على نطاق كبير مع متطلبات تشغيل ودعم متقدمة.",
-        limits: ["عملاء غير محدودين", "خوادم غير محدودة", "تفعيلات غير محدودة"],
-        ctaLabel: "تواصل لمؤسستك",
+        price: "مخصص",
+        description: "توسع غير محدود مع اتفاقيات مستوى خدمة مخصصة.",
+        limits: ["عملاء غير محدودين", "خوادم غير محدودة", "تكاملات مخصصة", "إعداد مُدار"],
+        ctaLabel: "تواصل مع المبيعات",
       },
     ],
     features: [
