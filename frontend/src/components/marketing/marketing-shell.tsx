@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -9,90 +10,137 @@ import { getLaunchContent } from "@/lib/launch-content";
 type MarketingShellProps = {
   locale: AppLocale;
   currentPath: string;
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   children: React.ReactNode;
 };
 
-export async function MarketingShell({
-  locale,
-  currentPath,
-  title,
-  description,
-  children,
-}: MarketingShellProps) {
+export async function MarketingShell({ locale, currentPath, title, description, children }: MarketingShellProps) {
   const content = getLaunchContent(locale);
+  const isHome = currentPath === "/";
 
-  const navItems = [
-    { href: localePath(locale, "/"), label: content.nav.home },
-    { href: localePath(locale, "/pricing"), label: content.nav.pricing },
+  const headerNav = [
     { href: localePath(locale, "/features"), label: content.nav.features },
+    { href: localePath(locale, "/features"), label: content.nav.automation },
+    { href: localePath(locale, "/pricing"), label: content.nav.pricing },
+    { href: localePath(locale, "/features"), label: content.nav.integrations },
+  ];
+
+  const footerProduct = [
+    { href: localePath(locale, "/features"), label: content.nav.features },
+    { href: localePath(locale, "/features"), label: content.footer.automation },
+    { href: localePath(locale, "/pricing"), label: content.nav.pricing },
+    { href: localePath(locale, "/features"), label: content.footer.integrations },
+    { href: localePath(locale, "/features"), label: content.footer.security },
+  ];
+  const footerResources = [
     { href: localePath(locale, "/documentation"), label: content.nav.documentation },
+    { href: localePath(locale, "/api-reference"), label: content.footer.apiReference },
+    { href: localePath(locale, "/guides"), label: content.footer.guides },
+    { href: localePath(locale, "/changelog"), label: content.footer.changelog },
+  ];
+  const footerCompany = [
+    { href: localePath(locale, "/about"), label: content.footer.about },
     { href: localePath(locale, "/contact"), label: content.nav.contact },
-    { href: localePath(locale, "/onboarding"), label: content.nav.onboarding },
+    { href: localePath(locale, "/careers"), label: content.footer.careers },
+    { href: localePath(locale, "/blog"), label: content.footer.blog },
+  ];
+  const footerLegal = [
+    { href: localePath(locale, "/legal/privacy"), label: content.footer.privacy },
+    { href: localePath(locale, "/legal/terms"), label: content.footer.terms },
+    { href: localePath(locale, "/legal/cookies"), label: content.footer.cookies },
   ];
 
   return (
-    <main className="min-h-screen px-6 py-8 md:px-10 md:py-10">
-      <div className="mx-auto grid max-w-6xl gap-6">
-        <header className="glass-card p-6 md:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-3xl">
-              <BrandLogo
-                href={localePath(locale, "/")}
-                priority
-                className="block w-full max-w-[17rem]"
-              />
-              <p className="mt-4 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.32em] text-accent">
-                {content.badge}
-              </p>
-              <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-foreground md:text-5xl">
-                {title}
-              </h1>
-              <p className="mt-4 text-sm leading-7 text-muted md:text-base">{description}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href={localePath(locale, "/onboarding")}
-                  className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-                >
-                  {content.nav.onboarding}
+    <div className="min-h-screen flex flex-col bg-[#f7faff]">
+      <header className="sticky top-0 z-50 border-b border-[rgba(4,141,254,0.1)] bg-[rgba(247,250,255,0.92)] backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3 lg:px-8">
+          <BrandLogo href={localePath(locale, "/")} priority className="block w-36 shrink-0" />
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
+            {headerNav.map((item) => {
+              const active = item.href === localePath(locale, currentPath);
+              return (
+                <Link key={item.label} href={item.href} className={["rounded-lg px-3.5 py-2 text-sm font-medium transition-colors", active ? "bg-[#e0f0ff] text-[#048dfe]" : "text-[#4a5e7a] hover:bg-[#f0f7ff] hover:text-[#048dfe]"].join(" ")}>
+                  {item.label}
                 </Link>
-                <Link
-                  href={localePath(locale, "/auth/login")}
-                  className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                >
-                  {content.nav.login}
-                </Link>
-              </div>
-            </div>
-
+              );
+            })}
+          </nav>
+          <div className="flex items-center gap-3">
             <LocaleSwitcher currentLocale={locale} path={currentPath} />
+            <Link href={localePath(locale, "/auth/login")} className="hidden rounded-lg px-4 py-2 text-sm font-medium text-[#4a5e7a] transition hover:text-[#048dfe] lg:block">{content.nav.login}</Link>
+            <Link href={localePath(locale, "/onboarding")} className="btn-primary text-sm px-5 py-2.5">{content.nav.startOnboarding}</Link>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <nav className="flex flex-wrap gap-3" aria-label="Marketing navigation">
-          {navItems.map((item) => {
-            const active = item.href === localePath(locale, currentPath);
+      {!isHome && title && (
+        <div className="border-b border-[rgba(4,141,254,0.08)] bg-white">
+          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+            <p className="section-label mb-4">{content.badge}</p>
+            <h1 className="text-4xl font-bold tracking-tight text-[#0a1628] md:text-5xl">{title}</h1>
+            {description && <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#4a5e7a]">{description}</p>}
+          </div>
+        </div>
+      )}
+      <main className="flex-1">{children}</main>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={[
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition",
-                  active
-                    ? "border-accent bg-accent text-white"
-                    : "border-line bg-white/75 text-foreground hover:bg-accentSoft",
-                ].join(" ")}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {children}
-      </div>
-    </main>
+      {/* ── Footer ── */}
+      <footer className="border-t border-[rgba(4,141,254,0.1)] bg-[#0a1628]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="grid gap-14 lg:grid-cols-[2.2fr_1fr_1fr_1fr_1fr]">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <Image src="/icon.png" alt="Hostinvo" width={44} height={44} className="rounded-xl" />
+                <span className="text-xl font-bold text-white tracking-tight">Hostinvo</span>
+              </div>
+              <p className="max-w-xs text-[15px] leading-7 text-[#8aaac8]">{content.heroDescription}</p>
+              <Link href={localePath(locale, "/onboarding")} className="btn-primary mt-6 inline-flex text-sm px-5 py-2.5">{content.nav.startOnboarding}</Link>
+            </div>
+            {/* Product */}
+            <div>
+              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.productGroup}</p>
+              <ul className="space-y-3.5">
+                {footerProduct.map((item) => (
+                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            {/* Resources */}
+            <div>
+              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.resourcesGroup}</p>
+              <ul className="space-y-3.5">
+                {footerResources.map((item) => (
+                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            {/* Company */}
+            <div>
+              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.companyGroup}</p>
+              <ul className="space-y-3.5">
+                {footerCompany.map((item) => (
+                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+            {/* Legal */}
+            <div>
+              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.legalGroup}</p>
+              <ul className="space-y-3.5">
+                {footerLegal.map((item) => (
+                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[rgba(255,255,255,0.07)] pt-8 lg:flex-row">
+            <p className="text-sm text-[#4a5e7a]">{content.footer.copyright}</p>
+            <p className="text-sm text-[#4a5e7a]">{content.footer.techStack}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

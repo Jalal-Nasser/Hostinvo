@@ -8,45 +8,57 @@ import { getLaunchContent } from "@/lib/launch-content";
 
 export default async function PricingPage({
   params,
-}: Readonly<{
-  params: { locale: string };
-}>) {
+}: Readonly<{ params: { locale: string } }>) {
   setRequestLocale(params.locale);
-
   const locale = params.locale as AppLocale;
   const content = getLaunchContent(locale);
 
   return (
     <MarketingShell
       currentPath="/pricing"
-      description={content.sections.plansDescription}
       locale={locale}
       title={content.sections.plansTitle}
+      description={content.sections.plansDescription}
     >
-      <section className="grid gap-4 lg:grid-cols-3">
-        {content.plans.map((plan) => (
-          <article key={plan.key} className="glass-card p-6 md:p-8">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-2xl font-semibold text-foreground">{plan.name}</h2>
-              <span className="text-sm font-semibold text-accent">{plan.price}</span>
-            </div>
-            <p className="mt-3 text-sm leading-7 text-muted">{plan.description}</p>
-            <ul className="mt-5 grid gap-3 text-sm text-muted">
-              {plan.limits.map((limit) => (
-                <li key={limit} className="flex items-start gap-3 rounded-2xl border border-line bg-white/80 px-4 py-3">
-                  <span className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-                  <span>{limit}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href={localePath(locale, "/onboarding")}
-              className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-            >
-              {plan.ctaLabel}
-            </Link>
-          </article>
-        ))}
+      <section className="bg-[#f7faff] py-20">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mb-6 rounded-full border border-[rgba(4,141,254,0.2)] bg-[#e0f0ff] px-5 py-2 text-center text-sm font-semibold text-[#0054c5] inline-block">
+            WHMCS starts at $15.95/mo — Hostinvo starts at $9/mo
+          </div>
+          <div className="grid gap-6 lg:grid-cols-4">
+            {content.plans.map((plan) => (
+              <div key={plan.key} className={plan.featured ? "pricing-card-featured relative" : "pricing-card"}>
+                {plan.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
+                    Most Popular
+                  </div>
+                )}
+                <p className={`text-sm font-semibold uppercase tracking-widest ${plan.featured ? "text-[rgba(255,255,255,0.7)]" : "text-[#048dfe]"}`}>
+                  {plan.name}
+                </p>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className={`text-5xl font-extrabold ${plan.featured ? "text-white" : "text-[#0a1628]"}`}>{plan.price}</span>
+                  {plan.price !== "Custom" && <span className={`text-sm ${plan.featured ? "text-[rgba(255,255,255,0.6)]" : "text-[#7a95b5]"}`}>/mo</span>}
+                </div>
+                <p className={`mt-2 text-sm ${plan.featured ? "text-[rgba(255,255,255,0.75)]" : "text-[#4a5e7a]"}`}>{plan.description}</p>
+                <ul className="mt-6 space-y-3">
+                  {plan.limits.map((limit) => (
+                    <li key={limit} className={`flex items-center gap-2 text-sm ${plan.featured ? "text-[rgba(255,255,255,0.85)]" : "text-[#4a5e7a]"}`}>
+                      <svg className={`h-4 w-4 shrink-0 ${plan.featured ? "text-white" : "text-[#048dfe]"}`} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                      {limit}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={localePath(locale, plan.price === "Custom" ? "/contact" : "/onboarding")}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-white text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary justify-center"}`}
+                >
+                  {plan.ctaLabel}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
     </MarketingShell>
   );
