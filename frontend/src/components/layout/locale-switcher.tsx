@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { routing, type AppLocale } from "@/i18n/routing";
 
@@ -8,11 +10,11 @@ type LocaleSwitcherProps = {
   path?: string;
 };
 
-export async function LocaleSwitcher({
+export function LocaleSwitcher({
   currentLocale,
   path = "/",
 }: LocaleSwitcherProps) {
-  const t = await getTranslations("LocaleSwitcher");
+  const t = useTranslations("LocaleSwitcher");
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   return (

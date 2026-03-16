@@ -65,7 +65,17 @@
     "loggingOut": "جارٍ تسجيل الخروج...",
     "logoutError": "تعذر تسجيل الخروج.",
     "serviceUnavailable": "تعذر الوصول إلى خدمة المصادقة.",
-    "notAvailable": "غير متاح"
+    "notAvailable": "غير متاح",
+    "noAccount": "ليس لديك حساب؟",
+    "startFreeOnboarding": "ابدأ الإعداد مجاناً",
+    "orDivider": "أو",
+    "signInInstead": "تسجيل الدخول بدلاً من ذلك",
+    "alreadyHaveAccount": "لديك حساب بالفعل؟",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "passwordConfirmationPlaceholder": "أكد كلمة المرور"
   },
   "Dashboard": {
     "overviewTitle": "لوحة المستأجر",

@@ -21,6 +21,7 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthShell
+      currentPath="/auth/reset-password"
       description={t("resetPasswordDescription")}
       locale={params.locale}
       title={t("resetPasswordTitle")}

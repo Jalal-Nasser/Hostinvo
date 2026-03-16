@@ -98,4 +98,13 @@ button {
   .pricing-card-featured {
     @apply rounded-2xl border-2 border-[#048dfe] bg-gradient-to-b from-[#048dfe] to-[#036deb] p-8 shadow-[0_16px_48px_rgba(4,141,254,0.4)] relative;
   }
+
+  /* Auth pages */
+  .auth-input {
+    @apply w-full rounded-xl border border-[rgba(4,141,254,0.2)] bg-white px-4 py-3 text-sm text-[#0a1628] placeholder-[#a0b4cc] outline-none transition focus:border-[#048dfe] focus:ring-2 focus:ring-[rgba(4,141,254,0.12)];
+  }
+
+  .auth-btn-primary {
+    @apply w-full rounded-xl bg-gradient-to-r from-[#048dfe] to-[#036deb] py-3.5 text-base font-semibold text-white shadow-[0_4px_20px_rgba(4,141,254,0.35)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60;
+  }
 }

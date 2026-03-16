@@ -14,6 +14,7 @@ export default async function LoginPage({
 
   return (
     <AuthShell
+      currentPath="/auth/login"
       description={t("loginDescription")}
       locale={params.locale}
       title={t("loginTitle")}

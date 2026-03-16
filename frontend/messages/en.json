@@ -65,7 +65,17 @@
     "loggingOut": "Signing out...",
     "logoutError": "Unable to log out.",
     "serviceUnavailable": "Unable to reach the authentication service.",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "noAccount": "Don't have an account?",
+    "startFreeOnboarding": "Start free onboarding",
+    "orDivider": "or",
+    "signInInstead": "Sign in instead",
+    "alreadyHaveAccount": "Already have an account?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Enter your password",
+    "passwordConfirmationPlaceholder": "Confirm your password"
   },
   "Dashboard": {
     "overviewTitle": "Tenant dashboard",

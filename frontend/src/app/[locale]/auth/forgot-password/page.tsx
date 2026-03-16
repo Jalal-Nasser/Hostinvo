@@ -14,6 +14,7 @@ export default async function ForgotPasswordPage({
 
   return (
     <AuthShell
+      currentPath="/auth/forgot-password"
       description={t("forgotPasswordDescription")}
       locale={params.locale}
       title={t("forgotPasswordTitle")}

@@ -1,10 +1,57 @@
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
+import { siCpanel, siLinux, siPlesk } from "simple-icons";
 
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
+
+type CompatibilityPlatform = {
+  key: "cpanel" | "plesk" | "linux";
+  label: string;
+  description: string;
+};
+
+function CompatibilityLogo({
+  platform,
+}: Readonly<{ platform: CompatibilityPlatform["key"] }>) {
+  const icon =
+    platform === "cpanel" ? siCpanel : platform === "plesk" ? siPlesk : siLinux;
+  const badgeClass =
+    platform === "cpanel"
+      ? "bg-[linear-gradient(135deg,#fff1e8,#fff8f4)]"
+      : platform === "plesk"
+        ? "bg-[linear-gradient(135deg,#eef5ff,#f8fbff)]"
+        : "bg-[linear-gradient(135deg,#f4f7fb,#fcfdff)]";
+  const brandClass =
+    platform === "cpanel"
+      ? "text-[#FF6C2C]"
+      : platform === "plesk"
+        ? "text-[#0057D8]"
+        : "text-[#0a1628]";
+
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className={`flex h-12 w-12 items-center justify-center rounded-[1rem] border border-[#dbe8f7] shadow-[0_12px_28px_rgba(8,55,120,0.08)] ${badgeClass}`}
+      >
+        <svg
+          className="h-6 w-6"
+          viewBox="0 0 24 24"
+          role="img"
+          aria-label={icon.title}
+          fill={`#${icon.hex}`}
+        >
+          <path d={icon.path} />
+        </svg>
+      </div>
+      <div className={`text-xl font-semibold tracking-[-0.03em] ${brandClass}`}>
+        {platform === "cpanel" ? "cPanel" : platform === "plesk" ? "Plesk" : "Linux"}
+      </div>
+    </div>
+  );
+}
 
 export default async function LocaleHomePage({
   params,
@@ -12,6 +59,60 @@ export default async function LocaleHomePage({
   setRequestLocale(params.locale);
   const locale = params.locale as AppLocale;
   const content = getLaunchContent(locale);
+  const compatibility =
+    locale === "ar"
+      ? {
+          label: "الميزات المتوافقة",
+          title: "ابدأ على البيئة التي يعمل عليها فريقك بالفعل",
+          description:
+            "صمم Hostinvo لمزودي الخدمة الذين يديرون cPanel وPlesk وبنية استضافة مبنية على Linux من اليوم الأول.",
+          platforms: [
+            {
+              key: "cpanel" as const,
+              label: "cPanel / WHM",
+              description:
+                "هيئ حسابات الاستضافة المشتركة ونفذ عمليات دورة الحياة من خلال أتمتة cPanel المألوفة.",
+            },
+            {
+              key: "plesk" as const,
+              label: "Plesk",
+              description:
+                "اربط بيئات Plesk على Linux أو Windows مع إدارة خدمات قائمة على الخطط والباقات.",
+            },
+            {
+              key: "linux" as const,
+              label: "Linux",
+              description:
+                "شغل المنصة على بنية Linux للمزودين مع Docker والطوابير والخدمات الجاهزة للإنتاج.",
+            },
+          ] satisfies CompatibilityPlatform[],
+        }
+      : {
+          label: "Compatible features",
+          title: "Deploy on the stack your team already trusts",
+          description:
+            "Hostinvo is designed for providers running cPanel, Plesk, and Linux-based hosting infrastructure from day one.",
+          platforms: [
+            {
+              key: "cpanel" as const,
+              label: "cPanel / WHM",
+              description:
+                "Provision shared-hosting accounts and manage lifecycle actions through familiar cPanel automation.",
+            },
+            {
+              key: "plesk" as const,
+              label: "Plesk",
+              description:
+                "Connect Windows or Linux-ready Plesk environments with package-driven service orchestration.",
+            },
+            {
+              key: "linux" as const,
+              label: "Linux",
+              description:
+                "Run on Linux-based provider infrastructure with Docker, queue workers, and production-ready services.",
+            },
+          ] satisfies CompatibilityPlatform[],
+        };
 
   return (
     <MarketingShell currentPath="/" locale={locale}>
@@ -135,6 +236,40 @@ export default async function LocaleHomePage({
       </section>
 
       {/* ════ CAPABILITIES ════ */}
+      <section className="bg-[#f7faff] pb-10">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="overflow-hidden rounded-[2rem] border border-[#dbe8f7] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,255,0.96))] p-8 shadow-[0_24px_60px_rgba(8,55,120,0.08)] md:p-10 xl:grid xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] xl:items-center xl:gap-10">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#5f7ca5]">
+                {compatibility.label}
+              </div>
+              <h2 className="mt-4 max-w-xl text-[2rem] font-semibold leading-[1.1] tracking-[-0.04em] text-[#0a1628] md:text-[2.5rem]">
+                {compatibility.title}
+              </h2>
+              <p className="mt-5 max-w-2xl text-[15px] leading-8 text-[#58718c] md:text-base">
+                {compatibility.description}
+              </p>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-3 xl:mt-0">
+              {compatibility.platforms.map((platform) => (
+                <div
+                  key={platform.key}
+                  className="rounded-[1.5rem] border border-[#dce9f7] bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(247,250,255,0.92))] p-5 shadow-[0_18px_40px_rgba(8,55,120,0.05)]"
+                >
+                  <CompatibilityLogo platform={platform.key} />
+                  <div className="mt-4 text-sm font-semibold text-[#0a1628]">
+                    {platform.label}
+                  </div>
+                  <div className="mt-3 text-sm leading-7 text-[#58718c]">
+                    {platform.description}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="overflow-hidden bg-white py-8">
         {/* Provisioning */}
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
