@@ -7,6 +7,7 @@ use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
 use App\Contracts\Repositories\Support\SupportRepositoryInterface;
 use App\Models\Client;
 use App\Models\ClientContact;
+use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\TicketDepartment;
 use App\Models\TicketReply;
@@ -37,14 +38,22 @@ class SupportService
     {
         $this->ensureSupportCatalog($actor);
 
-        return $this->support->paginateTickets($filters);
+        return $this->support->paginateTickets(
+            $this->applyActorVisibilityFilters($filters, $actor)
+        );
     }
 
     public function getTicketForDisplay(Ticket $ticket, User $actor): Ticket
     {
         $this->ensureSupportCatalog($actor);
 
-        return $this->support->findTicketByIdForDisplay($ticket->getKey()) ?? $ticket;
+        $ticketForDisplay = $this->support->findTicketByIdForDisplay($ticket->getKey()) ?? $ticket;
+
+        if (! $this->isSupportStaff($actor)) {
+            $this->stripInternalRepliesForPortal($ticketForDisplay);
+        }
+
+        return $ticketForDisplay;
     }
 
     public function createTicket(array $payload, User $actor): Ticket
@@ -61,6 +70,11 @@ class SupportService
                 required: false,
             );
             $assignee = $this->resolveAssignee($payload['assigned_to_user_id'] ?? null, $actor->tenant_id);
+            $service = $this->resolveService(
+                $payload['service_id'] ?? null,
+                $client,
+                $actor->tenant_id,
+            );
             $source = $this->resolveSource($actor, $payload['source'] ?? null);
 
             $ticket = $this->support->createTicket([
@@ -72,6 +86,7 @@ class SupportService
                 'client_contact_id' => $clientContact?->id,
                 'opened_by_user_id' => $actor->id,
                 'assigned_to_user_id' => $assignee?->id,
+                'service_id' => $service?->id,
                 'ticket_number' => $this->generateTicketNumber(),
                 'subject' => trim((string) $payload['subject']),
                 'priority' => $payload['priority'],
@@ -82,6 +97,7 @@ class SupportService
             $reply = $this->support->createReply($ticket, [
                 'tenant_id' => $ticket->tenant_id,
                 'user_id' => $actor->id,
+                'client_id' => $client->id,
                 'client_contact_id' => $clientContact?->id,
                 'reply_type' => $this->resolveReplyType($actor, false),
                 'is_internal' => false,
@@ -95,6 +111,16 @@ class SupportService
 
             return $this->getTicketForDisplay($ticket, $actor);
         });
+    }
+
+    public function createTicketForPortal(array $payload, User $actor): Ticket
+    {
+        $client = $this->resolveActorClient($actor);
+
+        return $this->createTicket(array_merge($payload, [
+            'client_id' => $client->id,
+            'source' => Ticket::SOURCE_PORTAL,
+        ]), $actor);
     }
 
     public function updateTicket(Ticket $ticket, array $payload, User $actor): Ticket
@@ -160,6 +186,7 @@ class SupportService
             $reply = $this->support->createReply($ticket, [
                 'tenant_id' => $ticket->tenant_id,
                 'user_id' => $actor->id,
+                'client_id' => $client->id,
                 'client_contact_id' => $clientContact?->id,
                 'reply_type' => $replyType,
                 'is_internal' => $isInternal,
@@ -236,15 +263,55 @@ class SupportService
         return $this->support->listStatuses();
     }
 
+    public function listPortalServices(User $actor): Collection
+    {
+        $client = $this->resolveActorClient($actor);
+
+        return Service::query()
+            ->with('product:id,name')
+            ->where('client_id', $client->id)
+            ->latest()
+            ->get();
+    }
+
     public function getOverview(User $actor): array
     {
         $this->ensureSupportCatalog($actor);
 
+        $filters = $this->applyActorVisibilityFilters([], $actor);
+        $ticketsQuery = Ticket::query();
+
+        if (filled($filters['client_id'] ?? null)) {
+            $ticketsQuery->where('client_id', $filters['client_id']);
+        }
+
+        $recentTickets = (clone $ticketsQuery)
+            ->with(['department', 'status', 'client', 'assignedTo', 'service'])
+            ->withCount('replies')
+            ->latest('last_reply_at')
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return [
-            'stats' => $this->support->ticketStats(),
+            'stats' => [
+                'total' => (clone $ticketsQuery)->count(),
+                'open' => (clone $ticketsQuery)
+                    ->whereHas('status', fn ($query) => $query->where('is_closed', false))
+                    ->count(),
+                'closed' => (clone $ticketsQuery)
+                    ->whereHas('status', fn ($query) => $query->where('is_closed', true))
+                    ->count(),
+                'urgent' => (clone $ticketsQuery)
+                    ->where('priority', Ticket::PRIORITY_URGENT)
+                    ->count(),
+                'unassigned' => (clone $ticketsQuery)
+                    ->whereNull('assigned_to_user_id')
+                    ->count(),
+            ],
             'departments' => $this->support->listDepartments(),
             'statuses' => $this->support->listStatuses(),
-            'recent_tickets' => $this->support->recentTickets(),
+            'recent_tickets' => $recentTickets,
         ];
     }
 
@@ -422,6 +489,70 @@ class SupportService
         }
 
         return $user;
+    }
+
+    private function resolveService(mixed $serviceId, Client $client, string $tenantId): ?Service
+    {
+        if (! filled($serviceId)) {
+            return null;
+        }
+
+        $service = Service::query()->find((string) $serviceId);
+
+        if (! $service || $service->tenant_id !== $tenantId || $service->client_id !== $client->id) {
+            throw ValidationException::withMessages([
+                'service_id' => ['The selected service is invalid for the selected client.'],
+            ]);
+        }
+
+        return $service;
+    }
+
+    private function resolveActorClient(User $actor): Client
+    {
+        $client = Client::query()
+            ->where('tenant_id', $actor->tenant_id)
+            ->where('user_id', $actor->id)
+            ->first();
+
+        if (! $client) {
+            throw ValidationException::withMessages([
+                'client' => ['No client profile is linked to the authenticated portal user.'],
+            ]);
+        }
+
+        return $client;
+    }
+
+    private function applyActorVisibilityFilters(array $filters, User $actor): array
+    {
+        if ($this->isSupportStaff($actor)) {
+            return $filters;
+        }
+
+        $client = $this->resolveActorClient($actor);
+        $filters['client_id'] = $client->id;
+
+        return $filters;
+    }
+
+    private function isSupportStaff(User $actor): bool
+    {
+        return $actor->hasPermissionTo(['tickets.manage', 'support.access']);
+    }
+
+    private function stripInternalRepliesForPortal(Ticket $ticket): void
+    {
+        if (! $ticket->relationLoaded('replies')) {
+            return;
+        }
+
+        $visibleReplies = $ticket->replies
+            ->filter(fn (TicketReply $reply): bool => ! $reply->is_internal)
+            ->values();
+
+        $ticket->setRelation('replies', $visibleReplies);
+        $ticket->setAttribute('replies_count', $visibleReplies->count());
     }
 
     private function resolveSource(User $actor, ?string $requestedSource): string

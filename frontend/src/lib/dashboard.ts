@@ -154,8 +154,8 @@ export async function fetchPortalDashboardSummary(
   const [services, invoices, tickets, supportOverview, provisioning] = await Promise.all([
     canViewServices ? fetchServicesFromCookies(cookieHeader, { per_page: "1" }) : Promise.resolve(null),
     canViewInvoices ? fetchInvoicesFromCookies(cookieHeader, { per_page: "1" }) : Promise.resolve(null),
-    canViewTickets ? fetchTicketsFromCookies(cookieHeader, { per_page: "4" }) : Promise.resolve(null),
-    canViewTickets ? fetchSupportOverviewFromCookies(cookieHeader) : Promise.resolve(null),
+    canViewTickets ? fetchTicketsFromCookies(cookieHeader, { per_page: "4" }, "client") : Promise.resolve(null),
+    canViewTickets ? fetchSupportOverviewFromCookies(cookieHeader, "client") : Promise.resolve(null),
     canViewProvisioning
       ? fetchProvisioningJobsFromCookies(cookieHeader, { per_page: "1", status: "queued" })
       : Promise.resolve(null),

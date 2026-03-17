@@ -20,6 +20,7 @@ export default async function ServiceDetailsPage({
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Provisioning");
+  const supportT = await getTranslations("Support");
   const service = await fetchServiceFromCookies(cookies().toString(), params.serviceId);
 
   if (!service) {
@@ -55,6 +56,12 @@ export default async function ServiceDetailsPage({
     <DashboardShell
       actions={
         <div className="flex flex-wrap gap-3">
+          <Link
+            className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+            href={localePath(params.locale, `/dashboard/tickets/new?service_id=${service.id}`)}
+          >
+            {supportT("newTicketButton")}
+          </Link>
           {service.server?.id ? (
             <Link
               className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"

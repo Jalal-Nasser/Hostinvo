@@ -7,7 +7,10 @@ import { useState, useTransition } from "react";
 import { backendOrigin } from "@/lib/auth";
 import { type TicketRecord, type TicketStatusRecord } from "@/lib/support";
 
+type TicketReplyFormMode = "admin" | "client";
+
 type TicketReplyFormProps = {
+  mode?: TicketReplyFormMode;
   ticket: TicketRecord;
   statuses: TicketStatusRecord[];
 };
@@ -43,7 +46,7 @@ function firstErrorFromPayload(payload: {
   return firstField?.[0] ?? null;
 }
 
-export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
+export function TicketReplyForm({ mode = "admin", ticket, statuses }: TicketReplyFormProps) {
   const t = useTranslations("Support");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -62,8 +65,20 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
         await ensureCsrfCookie();
 
         const xsrfToken = readCookie("XSRF-TOKEN");
+        const endpointMode = mode === "client" ? "client" : "admin";
+        const body =
+          mode === "client"
+            ? {
+                message: message.trim(),
+              }
+            : {
+                message: message.trim(),
+                status_id: statusId || null,
+                is_internal: isInternal,
+              };
+
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/tickets/${ticket.id}/replies`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/${endpointMode}/tickets/${ticket.id}/replies`,
           {
             method: "POST",
             credentials: "include",
@@ -73,11 +88,7 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
               "X-Requested-With": "XMLHttpRequest",
               ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
             },
-            body: JSON.stringify({
-              message: message.trim(),
-              status_id: statusId || null,
-              is_internal: isInternal,
-            }),
+            body: JSON.stringify(body),
           },
         );
 
@@ -116,32 +127,34 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
           />
         </label>
 
-        <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("statusLabel")}</span>
-            <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setStatusId(event.target.value)}
-              value={statusId}
-            >
-              {statuses.map((status) => (
-                <option key={status.id} value={status.id}>
-                  {status.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        {mode === "admin" ? (
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+            <label className="grid gap-2 text-sm font-medium text-foreground">
+              <span>{t("statusLabel")}</span>
+              <select
+                className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                onChange={(event) => setStatusId(event.target.value)}
+                value={statusId}
+              >
+                {statuses.map((status) => (
+                  <option key={status.id} value={status.id}>
+                    {status.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="inline-flex items-center gap-3 rounded-2xl border border-line bg-[#faf9f5]/80 px-4 py-3 text-sm font-medium text-foreground">
-            <input
-              checked={isInternal}
-              className="size-4"
-              onChange={(event) => setIsInternal(event.target.checked)}
-              type="checkbox"
-            />
-            <span>{t("internalNoteLabel")}</span>
-          </label>
-        </div>
+            <label className="inline-flex items-center gap-3 rounded-2xl border border-line bg-[#faf9f5]/80 px-4 py-3 text-sm font-medium text-foreground">
+              <input
+                checked={isInternal}
+                className="size-4"
+                onChange={(event) => setIsInternal(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("internalNoteLabel")}</span>
+            </label>
+          </div>
+        ) : null}
       </div>
 
       {error ? (

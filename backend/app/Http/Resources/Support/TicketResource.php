@@ -27,6 +27,9 @@ class TicketResource extends JsonResource
         $assignedTo = $this->resource->relationLoaded('assignedTo')
             ? $this->resource->getRelation('assignedTo')
             : null;
+        $service = $this->resource->relationLoaded('service')
+            ? $this->resource->getRelation('service')
+            : null;
 
         return [
             'id' => $this->id,
@@ -37,6 +40,7 @@ class TicketResource extends JsonResource
             'client_contact_id' => $this->client_contact_id,
             'opened_by_user_id' => $this->opened_by_user_id,
             'assigned_to_user_id' => $this->assigned_to_user_id,
+            'service_id' => $this->service_id,
             'ticket_number' => $this->ticket_number,
             'subject' => $this->subject,
             'priority' => $this->priority,
@@ -83,6 +87,12 @@ class TicketResource extends JsonResource
                 'id' => $assignedTo->id,
                 'name' => $assignedTo->name,
                 'email' => $assignedTo->email,
+            ] : null,
+            'service' => $service ? [
+                'id' => $service->id,
+                'reference_number' => $service->reference_number,
+                'status' => $service->status,
+                'domain' => $service->domain,
             ] : null,
             'replies' => TicketReplyResource::collection($this->whenLoaded('replies')),
             'created_at' => optional($this->created_at)?->toIso8601String(),

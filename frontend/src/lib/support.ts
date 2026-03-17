@@ -4,6 +4,7 @@ import { type ClientRecord } from "@/lib/clients";
 export const ticketPriorities = ["low", "medium", "high", "urgent"] as const;
 
 export type TicketPriority = (typeof ticketPriorities)[number];
+export type TicketApiMode = "admin" | "client";
 
 export type TicketDepartmentRecord = {
   id: string;
@@ -66,6 +67,7 @@ export type TicketRecord = {
   client_contact_id: string | null;
   opened_by_user_id: string | null;
   assigned_to_user_id: string | null;
+  service_id: string | null;
   ticket_number: string;
   subject: string;
   priority: TicketPriority;
@@ -107,14 +109,21 @@ export type TicketRecord = {
     name: string;
     email: string;
   } | null;
+  service?: {
+    id: string;
+    reference_number: string;
+    status: string;
+    domain: string | null;
+  } | null;
   replies?: TicketReplyRecord[];
   created_at: string | null;
   updated_at: string | null;
 };
 
 export type TicketFormPayload = {
-  client_id: string;
+  client_id?: string;
   department_id?: string | null;
+  service_id?: string | null;
   subject: string;
   priority: TicketPriority;
   message: string;
@@ -142,6 +151,17 @@ type PaginatedResponse<T> = {
   };
 };
 
+export type TicketServiceRecord = {
+  id: string;
+  reference_number: string;
+  status: string;
+  domain: string | null;
+  product?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
 type SupportOverviewResponse = {
   data: {
     stats: {
@@ -157,6 +177,10 @@ type SupportOverviewResponse = {
   };
 };
 
+function endpoint(mode: TicketApiMode): string {
+  return `${apiBaseUrl}/${mode}`;
+}
+
 export async function fetchTicketsFromCookies(
   cookieHeader: string,
   filters: {
@@ -167,8 +191,9 @@ export async function fetchTicketsFromCookies(
     page?: string;
     per_page?: string;
   } = {},
+  mode: TicketApiMode = "admin",
 ): Promise<PaginatedResponse<TicketRecord> | null> {
-  const url = new URL(`${apiBaseUrl}/admin/tickets`);
+  const url = new URL(`${endpoint(mode)}/tickets`);
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value) {
@@ -194,8 +219,9 @@ export async function fetchTicketsFromCookies(
 export async function fetchTicketFromCookies(
   cookieHeader: string,
   ticketId: string,
+  mode: TicketApiMode = "admin",
 ): Promise<TicketRecord | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/tickets/${ticketId}`, {
+  const response = await fetch(`${endpoint(mode)}/tickets/${ticketId}`, {
     cache: "no-store",
     headers: {
       Accept: "application/json",
@@ -220,8 +246,9 @@ export async function fetchTicketDepartmentsFromCookies(
     page?: string;
     per_page?: string;
   } = {},
+  mode: TicketApiMode = "admin",
 ): Promise<PaginatedResponse<TicketDepartmentRecord> | null> {
-  const url = new URL(`${apiBaseUrl}/admin/ticket-departments`);
+  const url = new URL(`${endpoint(mode)}/ticket-departments`);
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value) {
@@ -246,8 +273,9 @@ export async function fetchTicketDepartmentsFromCookies(
 
 export async function fetchTicketStatusesFromCookies(
   cookieHeader: string,
+  mode: TicketApiMode = "admin",
 ): Promise<TicketStatusRecord[] | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/ticket-statuses`, {
+  const response = await fetch(`${endpoint(mode)}/ticket-statuses`, {
     cache: "no-store",
     headers: {
       Accept: "application/json",
@@ -266,8 +294,9 @@ export async function fetchTicketStatusesFromCookies(
 
 export async function fetchSupportOverviewFromCookies(
   cookieHeader: string,
+  mode: TicketApiMode = "admin",
 ): Promise<SupportOverviewResponse["data"] | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/support/overview`, {
+  const response = await fetch(`${endpoint(mode)}/support/overview`, {
     cache: "no-store",
     headers: {
       Accept: "application/json",
@@ -280,6 +309,26 @@ export async function fetchSupportOverviewFromCookies(
   }
 
   const payload = (await response.json()) as SupportOverviewResponse;
+
+  return payload.data;
+}
+
+export async function fetchTicketServicesFromCookies(
+  cookieHeader: string,
+): Promise<TicketServiceRecord[] | null> {
+  const response = await fetch(`${endpoint("client")}/ticket-services`, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      Cookie: cookieHeader,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { data: TicketServiceRecord[] };
 
   return payload.data;
 }

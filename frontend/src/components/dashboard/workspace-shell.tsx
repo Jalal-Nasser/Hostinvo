@@ -248,11 +248,11 @@ export async function WorkspaceShell({
       visible: hasAnyPermission(user, ["invoices.view", "invoices.manage"]),
     },
     {
-      href: localePath(locale, "/dashboard/tickets"),
+      href: localePath(locale, "/portal/tickets"),
       label: portalT("ticketsLink"),
       active:
-        currentPath === "/dashboard/tickets" ||
-        currentPath.startsWith("/dashboard/tickets/"),
+        currentPath === "/portal/tickets" ||
+        currentPath.startsWith("/portal/tickets/"),
       visible: hasAnyPermission(user, ["tickets.view", "tickets.manage", "tickets.reply"]),
     },
     {

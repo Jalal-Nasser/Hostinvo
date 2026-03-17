@@ -13,11 +13,20 @@ import {
   type TicketFormPayload,
   type TicketPriority,
   type TicketRecord,
+  type TicketServiceRecord,
 } from "@/lib/support";
 
+type TicketFormMode = "admin" | "client";
+
 type TicketFormProps = {
-  clients: ClientRecord[];
+  mode?: TicketFormMode;
+  clients?: ClientRecord[];
   departments: TicketDepartmentRecord[];
+  services?: TicketServiceRecord[];
+  ticketsPath: string;
+  serviceLabel: string;
+  noServiceOptionLabel: string;
+  initialServiceId?: string;
 };
 
 function readCookie(name: string): string | null {
@@ -51,13 +60,23 @@ function firstErrorFromPayload(payload: {
   return firstField?.[0] ?? null;
 }
 
-export function TicketForm({ clients, departments }: TicketFormProps) {
+export function TicketForm({
+  mode = "admin",
+  clients = [],
+  departments,
+  services = [],
+  ticketsPath,
+  serviceLabel,
+  noServiceOptionLabel,
+  initialServiceId = "",
+}: TicketFormProps) {
   const t = useTranslations("Support");
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [clientId, setClientId] = useState(clients[0]?.id ?? "");
+  const [clientId, setClientId] = useState(mode === "admin" ? clients[0]?.id ?? "" : "");
   const [departmentId, setDepartmentId] = useState(departments[0]?.id ?? "");
+  const [serviceId, setServiceId] = useState(initialServiceId);
   const [priority, setPriority] = useState<TicketPriority>("medium");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -72,13 +91,19 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
   };
 
   function buildPayload(): TicketFormPayload {
-    return {
-      client_id: clientId,
+    const payload: TicketFormPayload = {
       department_id: departmentId || null,
+      service_id: serviceId || null,
       subject: subject.trim(),
       priority,
       message: message.trim(),
     };
+
+    if (mode === "admin") {
+      payload.client_id = clientId;
+    }
+
+    return payload;
   }
 
   function handleSubmit() {
@@ -90,7 +115,8 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
         await ensureCsrfCookie();
 
         const xsrfToken = readCookie("XSRF-TOKEN");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/tickets`, {
+        const endpointMode = mode === "client" ? "client" : "admin";
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${endpointMode}/tickets`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -114,7 +140,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
         const payload = (await response.json()) as { data: TicketRecord };
 
         setSuccess(t("createSuccess"));
-        router.replace(localePath(locale, `/dashboard/tickets/${payload.data.id}`));
+        router.replace(localePath(locale, `${ticketsPath}/${payload.data.id}`));
         router.refresh();
       } catch {
         setError(t("serviceUnavailable"));
@@ -126,20 +152,22 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
     <div className="grid gap-6">
       <section className="glass-card p-6 md:p-8">
         <div className="grid gap-6 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("clientLabel")}</span>
-            <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setClientId(event.target.value)}
-              value={clientId}
-            >
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.display_name}
-                </option>
-              ))}
-            </select>
-          </label>
+          {mode === "admin" ? (
+            <label className="grid gap-2 text-sm font-medium text-foreground">
+              <span>{t("clientLabel")}</span>
+              <select
+                className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                onChange={(event) => setClientId(event.target.value)}
+                value={clientId}
+              >
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.display_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("departmentLabel")}</span>
@@ -151,6 +179,22 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
               {departments.map((department) => (
                 <option key={department.id} value={department.id}>
                   {department.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{serviceLabel}</span>
+            <select
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setServiceId(event.target.value)}
+              value={serviceId}
+            >
+              <option value="">{noServiceOptionLabel}</option>
+              {services.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.domain ?? service.reference_number}
                 </option>
               ))}
             </select>
@@ -216,7 +260,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
 
           <Link
             className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-            href={localePath(locale, "/dashboard/tickets")}
+            href={localePath(locale, ticketsPath)}
           >
             {t("cancelButton")}
           </Link>

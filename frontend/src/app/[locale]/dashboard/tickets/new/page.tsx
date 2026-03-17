@@ -13,12 +13,15 @@ export const dynamic = "force-dynamic";
 
 export default async function NewTicketPage({
   params,
+  searchParams,
 }: Readonly<{
   params: { locale: string };
+  searchParams?: { service_id?: string };
 }>) {
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Support");
+  const domainsT = await getTranslations("Domains");
   const cookieHeader = cookies().toString();
   const [clientsResponse, departmentsResponse] = await Promise.all([
     fetchClientsFromCookies(cookieHeader, { per_page: "100", status: "active" }),
@@ -57,7 +60,15 @@ export default async function NewTicketPage({
           </div>
         </section>
       ) : (
-        <TicketForm clients={clients} departments={departments} />
+        <TicketForm
+          mode="admin"
+          clients={clients}
+          departments={departments}
+          ticketsPath="/dashboard/tickets"
+          serviceLabel={domainsT("serviceLabel")}
+          noServiceOptionLabel={domainsT("noServiceOption")}
+          initialServiceId={searchParams?.service_id}
+        />
       )}
     </DashboardShell>
   );

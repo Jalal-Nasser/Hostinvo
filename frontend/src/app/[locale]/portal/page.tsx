@@ -45,7 +45,7 @@ export default async function PortalPage({
         summary.modules.tickets.accessible ? (
           <Link
             className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-            href={localePath(params.locale, "/dashboard/tickets")}
+            href={localePath(params.locale, "/portal/tickets")}
           >
             {t("openTicketsButton")}
           </Link>
@@ -79,7 +79,7 @@ export default async function PortalPage({
           accessible={summary.modules.tickets.accessible}
           availableLabel={workspaceT("availableLabel")}
           description={t("ticketsCardDescription")}
-          href={localePath(params.locale, "/dashboard/tickets")}
+          href={localePath(params.locale, "/portal/tickets")}
           restrictedLabel={workspaceT("restrictedLabel")}
           title={t("ticketsLink")}
           total={summary.modules.tickets.total}
@@ -140,7 +140,7 @@ export default async function PortalPage({
           {summary.modules.tickets.accessible ? (
             <Link
               className="text-sm font-semibold text-accent transition hover:opacity-80"
-              href={localePath(params.locale, "/dashboard/tickets")}
+              href={localePath(params.locale, "/portal/tickets")}
             >
               {t("viewAllLink")}
             </Link>
@@ -152,7 +152,7 @@ export default async function PortalPage({
               <Link
                 key={ticket.id}
                 className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
-                href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
+                href={localePath(params.locale, `/portal/tickets/${ticket.id}`)}
               >
                 <p className="text-sm font-semibold text-foreground">{ticket.subject}</p>
                 <p className="mt-2 text-sm text-muted">

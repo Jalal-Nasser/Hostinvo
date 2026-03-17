@@ -21,7 +21,7 @@ class EloquentSupportRepository implements SupportRepositoryInterface
         $perPage = $this->resolvePerPage($filters);
 
         return Ticket::query()
-            ->with(['department', 'status', 'client', 'assignedTo'])
+            ->with(['department', 'status', 'client', 'assignedTo', 'service'])
             ->withCount('replies')
             ->when(
                 filled($filters['search'] ?? null),
@@ -52,6 +52,10 @@ class EloquentSupportRepository implements SupportRepositoryInterface
                 filled($filters['department_id'] ?? null),
                 fn (Builder $query) => $query->where('department_id', $filters['department_id'])
             )
+            ->when(
+                filled($filters['client_id'] ?? null),
+                fn (Builder $query) => $query->where('client_id', $filters['client_id'])
+            )
             ->latest('last_reply_at')
             ->latest()
             ->paginate($perPage)
@@ -73,6 +77,7 @@ class EloquentSupportRepository implements SupportRepositoryInterface
                 'clientContact',
                 'openedBy',
                 'assignedTo',
+                'service',
                 'replies' => fn ($query) => $query
                     ->with(['user', 'clientContact'])
                     ->oldest(),
