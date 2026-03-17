@@ -116,17 +116,17 @@ export default async function PortalPage({
         <aside className="glass-card p-6 md:p-8">
           <h2 className="text-2xl font-semibold text-foreground">{t("accountSummaryTitle")}</h2>
           <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("tenantLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {user.tenant?.name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("emailLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{user.email}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("localeLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{user.locale}</p>
             </div>
@@ -151,7 +151,7 @@ export default async function PortalPage({
             {summary.recent_tickets.slice(0, 4).map((ticket) => (
               <Link
                 key={ticket.id}
-                className="rounded-[1.5rem] border border-line bg-white/80 p-5 transition hover:bg-[#fffdf8]"
+                className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
                 href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
               >
                 <p className="text-sm font-semibold text-foreground">{ticket.subject}</p>

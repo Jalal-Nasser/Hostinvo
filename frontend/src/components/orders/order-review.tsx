@@ -171,7 +171,7 @@ export function OrderReview() {
         <p className="mt-3 text-sm leading-7 text-muted">{error ?? t("reviewError")}</p>
         <div className="mt-6">
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(locale, "/dashboard/orders/new")}
           >
             {t("backToCreateButton")}
@@ -190,7 +190,7 @@ export function OrderReview() {
             {preview.items.map((item, index) => (
               <div
                 key={`${item.product_id}-${index}`}
-                className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
@@ -221,23 +221,23 @@ export function OrderReview() {
         <aside className="glass-card p-6 md:p-8">
           <h2 className="text-2xl font-semibold text-foreground">{t("summaryTitle")}</h2>
           <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("clientLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{preview.client.display_name}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("subtotalLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(preview.subtotal_minor, preview.currency, locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("discountLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(preview.discount_amount_minor, preview.currency, locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("taxLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(preview.tax_amount_minor, preview.currency, locale)}
@@ -270,7 +270,7 @@ export function OrderReview() {
         </button>
 
         <button
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isPending}
           onClick={() => submit("draft")}
           type="button"
@@ -279,7 +279,7 @@ export function OrderReview() {
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={localePath(locale, "/dashboard/orders/new")}
         >
           {t("backToCreateButton")}

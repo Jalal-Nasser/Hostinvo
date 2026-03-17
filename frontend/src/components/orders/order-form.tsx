@@ -324,7 +324,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("clientLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => {
                 const nextClientId = event.target.value;
                 const client = clients.find((item) => item.id === nextClientId);
@@ -345,7 +345,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("currencyLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
               maxLength={3}
               onChange={(event) => setCurrency(event.target.value)}
               value={currency}
@@ -355,7 +355,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("couponCodeLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setCouponCode(event.target.value)}
               value={couponCode}
             />
@@ -364,7 +364,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("discountTypeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDiscountType(event.target.value as DiscountType | "")}
               value={discountType}
             >
@@ -380,7 +380,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("discountValueLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDiscountValue(event.target.value)}
               placeholder={discountType === "percentage" ? "10" : "10.00"}
               value={discountValue}
@@ -390,7 +390,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("taxRateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setTaxRate(event.target.value)}
               placeholder="15.00"
               value={taxRate}
@@ -400,7 +400,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("notesLabel")}</span>
             <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setNotes(event.target.value)}
               value={notes}
             />
@@ -416,7 +416,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
           </div>
 
           <button
-            className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             onClick={() => setItems((current) => [...current, emptyItem()])}
             type="button"
           >
@@ -435,7 +435,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
             return (
               <article
                 key={`${item.product_id || "item"}-${index}`}
-                className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
               >
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <p className="text-sm font-semibold text-foreground">
@@ -458,7 +458,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                     <span>{t("productLabel")}</span>
                     <select
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => void handleProductChange(index, event.target.value)}
                       value={item.product_id}
                     >
@@ -474,7 +474,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("quantityLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       min={1}
                       onChange={(event) => updateItem(index, { quantity: Number(event.target.value) || 1 })}
                       type="number"
@@ -485,7 +485,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-3">
                     <span>{t("billingCycleLabel")}</span>
                     <select
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) =>
                         updateItem(index, {
                           billing_cycle: event.target.value as BillingCycle,
@@ -523,7 +523,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                           <label key={option.id} className="grid gap-2 text-sm font-medium text-foreground">
                             <span>{option.name}</span>
                             <select
-                              className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                              className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                               onChange={(event) => updateSelection(index, option.id as string, event.target.value)}
                               value={String(currentSelection?.selected_value ?? "")}
                             >
@@ -542,7 +542,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                           <label key={option.id} className="grid gap-2 text-sm font-medium text-foreground">
                             <span>{option.name}</span>
                             <input
-                              className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                              className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                               min={0}
                               onChange={(event) =>
                                 updateSelection(index, option.id as string, Number(event.target.value) || 0)
@@ -558,7 +558,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
                         <label key={option.id} className="grid gap-2 text-sm font-medium text-foreground">
                           <span>{option.name}</span>
                           <select
-                            className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                            className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                             onChange={(event) =>
                               updateSelection(index, option.id as string, event.target.value === "true")
                             }
@@ -603,7 +603,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
         </button>
 
         <button
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isPending}
           onClick={saveDraft}
           type="button"
@@ -612,7 +612,7 @@ export function OrderForm({ clients, products }: OrderFormProps) {
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={localePath(locale, "/dashboard/orders")}
         >
           {t("cancelButton")}

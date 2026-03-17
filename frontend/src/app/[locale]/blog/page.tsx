@@ -31,12 +31,12 @@ export default async function BlogPage({ params }: Readonly<{ params: { locale: 
           {/* Categories */}
           <div className="mb-10 flex flex-wrap gap-2">
             {categories.map((cat) => (
-              <span key={cat} className="rounded-full border border-[rgba(4,141,254,0.2)] bg-white px-4 py-1.5 text-sm font-medium text-[#4a5e7a] cursor-pointer hover:bg-[#e0f0ff] hover:text-[#048dfe] transition-colors">{cat}</span>
+              <span key={cat} className="rounded-full border border-[rgba(4,141,254,0.2)] bg-[#faf9f5] px-4 py-1.5 text-sm font-medium text-[#4a5e7a] cursor-pointer hover:bg-[#e0f0ff] hover:text-[#048dfe] transition-colors">{cat}</span>
             ))}
           </div>
 
           {/* Coming soon */}
-          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-16 text-center">
+          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-16 text-center">
             <span className="text-5xl">✍️</span>
             <h2 className="mt-6 text-xl font-extrabold text-[#0a1628]">{isAr ? "المدونة قريباً" : "Blog coming soon"}</h2>
             <p className="mt-3 text-[#4a5e7a]">{p.blogComingSoon}</p>

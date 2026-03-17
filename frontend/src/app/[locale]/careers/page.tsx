@@ -44,14 +44,14 @@ export default async function CareersPage({ params }: Readonly<{ params: { local
           {/* Open positions */}
           <div>
             <h2 className="text-2xl font-extrabold text-[#0a1628] mb-6">{p.careersOpenTitle}</h2>
-            <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-10 text-center">
+            <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-10 text-center">
               <span className="text-4xl">📭</span>
               <p className="mt-4 text-[#4a5e7a]">{p.careersNoOpenings}</p>
             </div>
           </div>
 
           {/* Speculative */}
-          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-8">
+          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-8">
             <h2 className="text-xl font-extrabold text-[#0a1628] mb-3">{p.careersSpecTitle}</h2>
             <p className="text-[#4a5e7a] text-sm leading-7">{p.careersSpecDesc}</p>
             <a href={`mailto:${content.contact.email}`} className="btn-primary mt-6 inline-flex px-6 py-3 text-sm">

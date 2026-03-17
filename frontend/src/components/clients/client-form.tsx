@@ -305,7 +305,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("typeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setClientType(event.target.value as ClientType)}
               value={clientType}
             >
@@ -320,7 +320,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setStatus(event.target.value as ClientStatus)}
               value={status}
             >
@@ -335,7 +335,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("companyNameLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setCompanyName(event.target.value)}
               value={companyName}
             />
@@ -344,7 +344,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("firstNameLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setFirstName(event.target.value)}
               value={firstName}
             />
@@ -353,7 +353,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("lastNameLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setLastName(event.target.value)}
               value={lastName}
             />
@@ -362,7 +362,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("emailLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setEmail(event.target.value)}
               required
               type="email"
@@ -373,7 +373,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("phoneLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setPhone(event.target.value)}
               value={phone}
             />
@@ -382,7 +382,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("countryLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
               maxLength={2}
               onChange={(event) => setCountry(event.target.value)}
               required
@@ -393,7 +393,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("currencyLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
               maxLength={3}
               onChange={(event) => setCurrency(event.target.value)}
               required
@@ -404,7 +404,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("localeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setPreferredLocale(event.target.value)}
               value={preferredLocale}
             >
@@ -416,7 +416,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("notesLabel")}</span>
             <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setNotes(event.target.value)}
               value={notes}
             />
@@ -432,7 +432,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           </div>
 
           <button
-            className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             onClick={() => setContacts((current) => [...current, emptyContact()])}
             type="button"
           >
@@ -447,7 +447,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
             {contacts.map((contact, index) => (
               <article
                 key={contact.id ?? `contact-${index}`}
-                className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
               >
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <p className="text-sm font-semibold text-foreground">
@@ -468,7 +468,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("firstNameLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateContact(index, "first_name", event.target.value)}
                       value={contact.first_name}
                     />
@@ -477,7 +477,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("lastNameLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateContact(index, "last_name", event.target.value)}
                       value={contact.last_name}
                     />
@@ -486,7 +486,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("emailLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateContact(index, "email", event.target.value)}
                       type="email"
                       value={contact.email}
@@ -496,7 +496,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("phoneLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateContact(index, "phone", event.target.value)}
                       value={contact.phone}
                     />
@@ -505,7 +505,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                     <span>{t("jobTitleLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateContact(index, "job_title", event.target.value)}
                       value={contact.job_title}
                     />
@@ -535,7 +535,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
           </div>
 
           <button
-            className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             onClick={() => setAddresses((current) => [...current, emptyAddress()])}
             type="button"
           >
@@ -550,7 +550,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
             {addresses.map((address, index) => (
               <article
                 key={address.id ?? `address-${index}`}
-                className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
               >
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <p className="text-sm font-semibold text-foreground">
@@ -571,7 +571,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("addressTypeLabel")}</span>
                     <select
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) =>
                         updateAddress(index, "type", event.target.value as ClientAddress["type"])
                       }
@@ -588,7 +588,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("countryLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 uppercase outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 uppercase outline-none transition focus:border-accent"
                       maxLength={2}
                       onChange={(event) => updateAddress(index, "country", event.target.value)}
                       value={address.country}
@@ -598,7 +598,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                     <span>{t("addressLine1Label")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateAddress(index, "line_1", event.target.value)}
                       value={address.line_1}
                     />
@@ -607,7 +607,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                     <span>{t("addressLine2Label")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateAddress(index, "line_2", event.target.value)}
                       value={address.line_2 ?? ""}
                     />
@@ -616,7 +616,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("cityLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateAddress(index, "city", event.target.value)}
                       value={address.city}
                     />
@@ -625,7 +625,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("stateLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateAddress(index, "state", event.target.value)}
                       value={address.state ?? ""}
                     />
@@ -634,7 +634,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{t("postalCodeLabel")}</span>
                     <input
-                      className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                      className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                       onChange={(event) => updateAddress(index, "postal_code", event.target.value)}
                       value={address.postal_code ?? ""}
                     />
@@ -685,7 +685,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={cancelHref}
         >
           {t("cancelButton")}

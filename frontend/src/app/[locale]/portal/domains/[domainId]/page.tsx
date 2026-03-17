@@ -35,7 +35,7 @@ export default async function PortalDomainDetailsPage({
             {t("contactsButton")}
           </Link>
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, `/portal/domains/${domain.id}/renewals`)}
           >
             {t("renewalHistoryButton")}
@@ -50,19 +50,19 @@ export default async function PortalDomainDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.status}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("registrarLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.registrar ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("registrationDateLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.registration_date ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("expiryDateLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.expiry_date ?? t("notAvailable")}</p>
             </div>
@@ -71,15 +71,15 @@ export default async function PortalDomainDetailsPage({
 
         <aside className="glass-card p-6 md:p-8">
           <div className="grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("autoRenewLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.auto_renew ? t("yesLabel") : t("noLabel")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("dnsManagementLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.dns_management ? t("yesLabel") : t("noLabel")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("idProtectionLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{domain.id_protection ? t("yesLabel") : t("noLabel")}</p>
             </div>

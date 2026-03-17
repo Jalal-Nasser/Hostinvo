@@ -31,7 +31,7 @@ export default async function OrderDetailsPage({
         <div className="flex flex-wrap gap-3">
           {order.status === "draft" ? <PlaceOrderButton orderId={order.id} /> : null}
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/orders")}
           >
             {t("backToOrdersButton")}
@@ -46,23 +46,23 @@ export default async function OrderDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(`status${order.status.charAt(0).toUpperCase()}${order.status.slice(1)}`)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("clientLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {order.client?.display_name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("currencyLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{order.currency}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("createdAtLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {new Intl.DateTimeFormat(params.locale, {
@@ -83,19 +83,19 @@ export default async function OrderDetailsPage({
 
         <aside className="glass-card p-6 md:p-8">
           <div className="grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("subtotalLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(order.subtotal_minor, order.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("discountLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(order.discount_amount_minor, order.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("taxLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(order.tax_amount_minor, order.currency, params.locale)}
@@ -117,7 +117,7 @@ export default async function OrderDetailsPage({
           {order.items?.map((item, index) => (
             <article
               key={item.id ?? `${item.product_id}-${index}`}
-              className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+              className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>

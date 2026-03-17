@@ -332,7 +332,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("clientLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => {
                 const nextClientId = event.target.value;
                 const client = clients.find((item) => item.id === nextClientId);
@@ -353,7 +353,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("orderLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => void handleOrderChange(event.target.value)}
               value={orderId}
             >
@@ -369,7 +369,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setStatus(event.target.value as typeof status)}
               value={status}
             >
@@ -384,7 +384,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("currencyLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
               maxLength={3}
               onChange={(event) => setCurrency(event.target.value)}
               value={currency}
@@ -394,7 +394,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("issueDateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setIssueDate(event.target.value)}
               type="date"
               value={issueDate}
@@ -404,7 +404,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("dueDateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDueDate(event.target.value)}
               type="date"
               value={dueDate}
@@ -414,7 +414,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("recurringCycleLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setRecurringCycle(event.target.value as BillingCycle | "")}
               value={recurringCycle}
             >
@@ -430,7 +430,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("nextInvoiceDateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setNextInvoiceDate(event.target.value)}
               type="date"
               value={nextInvoiceDate}
@@ -440,7 +440,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("discountTypeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDiscountType(event.target.value as "fixed" | "percentage" | "")}
               value={discountType}
             >
@@ -453,7 +453,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("discountValueLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDiscountValue(event.target.value)}
               placeholder={discountType === "percentage" ? "10" : "10.00"}
               value={discountValue}
@@ -463,7 +463,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("creditAppliedLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setCreditApplied(event.target.value)}
               value={creditApplied}
             />
@@ -472,7 +472,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("taxRateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setTaxRate(event.target.value)}
               value={taxRate}
             />
@@ -481,7 +481,7 @@ export function InvoiceForm({
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("notesLabel")}</span>
             <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setNotes(event.target.value)}
               value={notes}
             />
@@ -497,7 +497,7 @@ export function InvoiceForm({
           </div>
 
           <button
-            className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             onClick={() => setItems((current) => [...current, emptyItem()])}
             type="button"
           >
@@ -509,7 +509,7 @@ export function InvoiceForm({
           {items.map((item, index) => (
             <article
               key={item.id ?? item.order_item_id ?? `invoice-item-${index}`}
-              className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+              className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
             >
               <div className="mb-4 flex items-center justify-between gap-4">
                 <div>
@@ -537,7 +537,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   <span>{t("descriptionLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateItem(index, "description", event.target.value)}
                     value={item.description}
                   />
@@ -546,7 +546,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("itemTypeLabel")}</span>
                   <select
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) =>
                       updateItem(index, "item_type", event.target.value as InvoiceItemType)
                     }
@@ -563,7 +563,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("billingCycleLabel")}</span>
                   <select
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) =>
                       updateItem(index, "billing_cycle", event.target.value as BillingCycle | "")
                     }
@@ -581,7 +581,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("quantityLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     min={1}
                     onChange={(event) => updateItem(index, "quantity", Number(event.target.value) || 1)}
                     type="number"
@@ -592,7 +592,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("unitPriceLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateItem(index, "unit_price", event.target.value)}
                     value={item.unit_price}
                   />
@@ -601,7 +601,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("periodStartLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateItem(index, "billing_period_starts_at", event.target.value)}
                     type="date"
                     value={item.billing_period_starts_at}
@@ -611,7 +611,7 @@ export function InvoiceForm({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("periodEndLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateItem(index, "billing_period_ends_at", event.target.value)}
                     type="date"
                     value={item.billing_period_ends_at}
@@ -655,7 +655,7 @@ export function InvoiceForm({
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={cancelHref}
         >
           {t("cancelButton")}

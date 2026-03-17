@@ -55,7 +55,7 @@ export default async function TicketsPage({
           </Link>
           <Link
             href={localePath(params.locale, "/dashboard/support")}
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           >
             {t("supportViewButton")}
           </Link>
@@ -71,7 +71,7 @@ export default async function TicketsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("searchPlaceholder")}
@@ -81,7 +81,7 @@ export default async function TicketsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.status_id ?? ""}
               name="status_id"
             >
@@ -97,7 +97,7 @@ export default async function TicketsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("priorityLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.priority ?? ""}
               name="priority"
             >
@@ -118,7 +118,7 @@ export default async function TicketsPage({
               {t("searchButton")}
             </button>
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, "/dashboard/tickets")}
             >
               {t("clearFilters")}
@@ -140,7 +140,7 @@ export default async function TicketsPage({
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-semibold text-foreground">{ticket.subject}</h2>
-                    <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                       {ticket.ticket_number}
                     </span>
                   </div>
@@ -153,7 +153,7 @@ export default async function TicketsPage({
                     {ticket.status?.name ?? t("notAvailable")}
                   </span>
                   <Link
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                     href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
                   >
                     {t("viewTicketButton")}
@@ -162,15 +162,15 @@ export default async function TicketsPage({
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-4">
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("priorityLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{priorityLabels[ticket.priority]}</p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("repliesLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{ticket.replies_count ?? 0}</p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("lastReplyLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {ticket.last_reply_at
@@ -181,7 +181,7 @@ export default async function TicketsPage({
                       : t("notAvailable")}
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("assignedToLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {ticket.assigned_to?.name ?? t("unassignedLabel")}

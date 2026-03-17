@@ -51,7 +51,7 @@ export default async function ChangelogPage({ params }: Readonly<{ params: { loc
                   <span className="rounded-full px-3 py-1 text-xs font-bold text-white" style={{ background: release.badgeColor }}>{release.badge}</span>
                   <span className="text-sm text-[#7a95b5]">{release.date}</span>
                 </div>
-                <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-6">
+                <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-6">
                   <ul className="space-y-2.5">
                     {release.items.map((item) => (
                       <li key={item} className="flex items-start gap-3 text-sm text-[#4a5e7a]">

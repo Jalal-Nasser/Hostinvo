@@ -19,7 +19,7 @@ async function ensureCsrfCookie() {
 }
 
 const fieldClass =
-  "w-full rounded-[1rem] border border-[#cfe0f4] bg-white px-4 py-3.5 text-sm text-[#0a1628] shadow-[0_10px_26px_rgba(10,55,120,0.04)] outline-none transition placeholder:text-[#8ea6c3] focus:border-[#048dfe] focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
+  "w-full rounded-[1rem] border border-[#cfe0f4] bg-[#faf9f5] px-4 py-3.5 text-sm text-[#0a1628] shadow-[0_10px_26px_rgba(10,55,120,0.04)] outline-none transition placeholder:text-[#8ea6c3] focus:border-[#048dfe] focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
 
 type ResetPasswordFormProps = {
   initialEmail?: string;

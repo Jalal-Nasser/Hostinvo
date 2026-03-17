@@ -198,7 +198,7 @@ export async function AuthShell({
                 priority
                 className="block w-full max-w-[13.5rem] brightness-0 invert"
               />
-              <div className="mt-10 inline-flex rounded-full border border-white/15 bg-white/8 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#d7ebff]">
+              <div className="mt-10 inline-flex rounded-full border border-white/15 bg-[#faf9f5]/8 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#d7ebff]">
                 {shellCopy.badge}
               </div>
               <h1 className="mt-8 max-w-lg text-[2.65rem] font-semibold leading-[1.08] tracking-[-0.05em] text-white">
@@ -232,7 +232,7 @@ export async function AuthShell({
               </div>
             </div>
 
-            <div className="relative mt-10 rounded-[1.75rem] border border-white/10 bg-white/[0.08] px-6 py-6 backdrop-blur-md">
+            <div className="relative mt-10 rounded-[1.75rem] border border-white/10 bg-[#faf9f5]/[0.08] px-6 py-6 backdrop-blur-md">
               <div className="grid grid-cols-3 gap-4">
                 {shellCopy.stats.map((stat) => (
                   <div key={stat.label}>

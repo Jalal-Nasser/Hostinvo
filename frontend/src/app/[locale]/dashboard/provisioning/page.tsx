@@ -40,13 +40,13 @@ export default async function ProvisioningPage({
         <div className="flex flex-wrap gap-3">
           <Link
             href={localePath(params.locale, "/dashboard/servers")}
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           >
             {t("serversTitle")}
           </Link>
           <Link
             href={localePath(params.locale, "/dashboard/services")}
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           >
             {t("servicesTitle")}
           </Link>
@@ -62,7 +62,7 @@ export default async function ProvisioningPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("jobsSearchPlaceholder")}
@@ -72,7 +72,7 @@ export default async function ProvisioningPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("jobStatusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.status ?? ""}
               name="status"
             >
@@ -87,7 +87,7 @@ export default async function ProvisioningPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("operationLabelText")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.operation ?? ""}
               name="operation"
             >
@@ -112,7 +112,7 @@ export default async function ProvisioningPage({
             </button>
 
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, "/dashboard/provisioning")}
             >
               {t("clearFilters")}
@@ -140,7 +140,7 @@ export default async function ProvisioningPage({
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <h2 className="text-2xl font-semibold text-foreground">{t(`operationLabel.${job.operation}`)}</h2>
-                      <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                      <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                         {t(`jobStatus${job.status.charAt(0).toUpperCase()}${job.status.slice(1)}`)}
                       </span>
                     </div>
@@ -151,7 +151,7 @@ export default async function ProvisioningPage({
                   <div className="flex flex-wrap gap-3">
                     {job.service?.id ? (
                       <Link
-                        className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                        className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                         href={localePath(params.locale, `/dashboard/services/${job.service.id}`)}
                       >
                         {t("viewServiceButton")}
@@ -169,7 +169,7 @@ export default async function ProvisioningPage({
                   </div>
                 </div>
 
-                <div className="mt-6 rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div className="mt-6 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <p className="text-sm text-muted">
                     {job.error_message ?? resultMessage ?? t("jobPlaceholderMessage")}
                   </p>

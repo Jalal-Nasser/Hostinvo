@@ -32,7 +32,7 @@ export default async function PricingPage({
                 className={plan.featured ? "pricing-card-featured relative" : "pricing-card"}
               >
                 {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#faf9f5] px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
                     {content.mostPopular}
                   </div>
                 )}
@@ -83,7 +83,7 @@ export default async function PricingPage({
                 </ul>
                 <Link
                   href={localePath(locale, "/onboarding")}
-                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-white text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary justify-center"}`}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-[#faf9f5] text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary justify-center"}`}
                 >
                   {plan.ctaLabel}
                 </Link>

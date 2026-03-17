@@ -129,7 +129,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("clientLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setClientId(event.target.value)}
               value={clientId}
             >
@@ -144,7 +144,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("departmentLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDepartmentId(event.target.value)}
               value={departmentId}
             >
@@ -159,7 +159,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("priorityLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setPriority(event.target.value as TicketPriority)}
               value={priority}
             >
@@ -174,7 +174,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("subjectLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setSubject(event.target.value)}
               placeholder={t("subjectPlaceholder")}
               value={subject}
@@ -184,7 +184,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("messageLabel")}</span>
             <textarea
-              className="min-h-40 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-40 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setMessage(event.target.value)}
               placeholder={t("messagePlaceholder")}
               value={message}
@@ -215,7 +215,7 @@ export function TicketForm({ clients, departments }: TicketFormProps) {
           </button>
 
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(locale, "/dashboard/tickets")}
           >
             {t("cancelButton")}

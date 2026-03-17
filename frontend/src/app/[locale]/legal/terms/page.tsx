@@ -29,7 +29,7 @@ export default async function TermsPage({ params }: Readonly<{ params: { locale:
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="bg-[#faf9f5] py-16">
         <div className="mx-auto max-w-4xl px-6 lg:px-8">
           <div className="space-y-10">
             {isAr ? (

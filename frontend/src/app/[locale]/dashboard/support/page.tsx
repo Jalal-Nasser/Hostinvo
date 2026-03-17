@@ -31,7 +31,7 @@ export default async function SupportOverviewPage({
           </Link>
           <Link
             href={localePath(params.locale, "/dashboard/tickets/new")}
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           >
             {t("newTicketButton")}
           </Link>
@@ -71,7 +71,7 @@ export default async function SupportOverviewPage({
           {(overview?.departments.length ?? 0) > 0 ? (
             <div className="mt-6 grid gap-4">
               {overview?.departments.map((department) => (
-                <div key={department.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={department.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">{department.name}</p>
                     <p className="text-sm text-muted">{department.tickets_count ?? 0}</p>
@@ -90,7 +90,7 @@ export default async function SupportOverviewPage({
           {(overview?.statuses.length ?? 0) > 0 ? (
             <div className="mt-6 grid gap-4">
               {overview?.statuses.map((status) => (
-                <div key={status.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={status.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">{status.name}</p>
                     <p className="text-sm text-muted">{status.tickets_count ?? 0}</p>
@@ -112,7 +112,7 @@ export default async function SupportOverviewPage({
         {(overview?.recent_tickets.length ?? 0) > 0 ? (
           <div className="mt-6 grid gap-4">
             {overview?.recent_tickets.map((ticket) => (
-              <article key={ticket.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+              <article key={ticket.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-lg font-semibold text-foreground">{ticket.subject}</p>
@@ -121,7 +121,7 @@ export default async function SupportOverviewPage({
                     </p>
                   </div>
                   <Link
-                    className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5] px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                     href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
                   >
                     {t("viewTicketButton")}

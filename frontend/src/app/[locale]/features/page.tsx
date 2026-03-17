@@ -55,7 +55,7 @@ export default async function FeaturesPage({ params }: Readonly<{ params: { loca
       </section>
 
       {/* Stats bar */}
-      <section className="border-b border-[rgba(4,141,254,0.1)] bg-white">
+      <section className="border-b border-[rgba(4,141,254,0.1)] bg-[#faf9f5]">
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
           <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
             {content.stats.map(({ value, label }) => (
@@ -95,7 +95,7 @@ export default async function FeaturesPage({ params }: Readonly<{ params: { loca
       </section>
 
       {/* CTA */}
-      <section className="bg-white py-16 text-center border-t border-[rgba(4,141,254,0.08)]">
+      <section className="bg-[#faf9f5] py-16 text-center border-t border-[rgba(4,141,254,0.08)]">
         <div className="mx-auto max-w-2xl px-6">
           <h2 className="text-3xl font-extrabold text-[#0a1628]">{content.sections.ctaBandTitle}</h2>
           <p className="mt-3 text-[#4a5e7a]">{content.sections.ctaBandDescription}</p>

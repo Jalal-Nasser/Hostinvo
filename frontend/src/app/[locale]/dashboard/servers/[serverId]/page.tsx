@@ -56,13 +56,13 @@ export default async function ServerDetailsPage({
       actions={
         <div className="flex flex-wrap gap-3">
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/servers")}
           >
             {t("backToServersButton")}
           </Link>
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/provisioning")}
           >
             {t("jobsTitle")}
@@ -77,35 +77,35 @@ export default async function ServerDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("serverLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{server.hostname}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("panelTypeLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {server.panel_type === "cpanel" ? t("panelTypeCpanel") : t("panelTypePlesk")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("serverStatusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(`serverStatus${server.status.charAt(0).toUpperCase()}${server.status.slice(1)}`)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("lastTestedLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {server.last_tested_at ?? t("neverTestedLabel")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("apiEndpointLabel")}</p>
               <p className="mt-2 break-all text-sm font-semibold text-foreground">
                 {server.api_endpoint ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("credentialsLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {server.has_credentials ? t("credentialsConfigured") : t("credentialsMissing")}
@@ -125,7 +125,7 @@ export default async function ServerDetailsPage({
           <h2 className="text-2xl font-semibold text-foreground">{t("testConnectionTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">{t("testConnectionDescription")}</p>
 
-          <div className="mt-6 rounded-[1.5rem] border border-line bg-white/80 p-5">
+          <div className="mt-6 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
             <ServerConnectionTester
               serverId={server.id}
               buttonLabel={t("testConnectionButton")}
@@ -153,7 +153,7 @@ export default async function ServerDetailsPage({
           {server.packages && server.packages.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {server.packages.map((pkg) => (
-                <div key={pkg.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={pkg.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <p className="text-sm font-semibold text-foreground">
                     {pkg.display_name ?? pkg.panel_package_name}
                   </p>
@@ -172,12 +172,12 @@ export default async function ServerDetailsPage({
           {server.services && server.services.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {server.services.map((service) => (
-                <div key={service.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={service.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <p className="text-sm font-semibold text-foreground">{service.reference_number}</p>
                   <p className="mt-2 text-sm text-muted">{service.domain ?? t("notAvailable")}</p>
                   <div className="mt-4">
                     <Link
-                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                      className="rounded-full border border-line bg-[#faf9f5] px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                       href={localePath(params.locale, `/dashboard/services/${service.id}`)}
                     >
                       {t("viewServiceButton")}
@@ -198,7 +198,7 @@ export default async function ServerDetailsPage({
           {server.provisioning_jobs && server.provisioning_jobs.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {server.provisioning_jobs.map((job) => (
-                <div key={job.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={job.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{operationLabel(job.operation)}</p>
@@ -230,7 +230,7 @@ export default async function ServerDetailsPage({
           {server.provisioning_logs && server.provisioning_logs.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {server.provisioning_logs.map((log) => (
-                <div key={log.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={log.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <p className="text-sm font-semibold text-foreground">{operationLabel(log.operation)}</p>
                   <p className="mt-2 text-sm text-muted">{log.message}</p>
                   <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted">

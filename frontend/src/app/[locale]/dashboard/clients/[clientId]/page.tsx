@@ -42,15 +42,15 @@ export default async function ClientDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("emailLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.email}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("phoneLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.phone ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(
@@ -62,25 +62,25 @@ export default async function ClientDetailsPage({
                 )}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("typeLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(client.client_type === "company" ? "typeCompany" : "typeIndividual")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("countryLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.country}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("currencyLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.currency}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("localeLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.preferred_locale}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("ownerLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.owner?.name ?? t("notAvailable")}</p>
             </div>
@@ -104,11 +104,11 @@ export default async function ClientDetailsPage({
           </p>
 
           <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("contactsCountLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{client.contacts_count ?? client.contacts?.length ?? 0}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("addressesCountLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {client.addresses_count ?? client.addresses?.length ?? 0}
@@ -124,7 +124,7 @@ export default async function ClientDetailsPage({
           {client.contacts && client.contacts.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {client.contacts.map((contact) => (
-                <div key={contact.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={contact.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <div className="flex flex-wrap items-center gap-3">
                     <p className="text-sm font-semibold text-foreground">
                       {contact.first_name} {contact.last_name}
@@ -151,7 +151,7 @@ export default async function ClientDetailsPage({
           {client.addresses && client.addresses.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {client.addresses.map((address) => (
-                <div key={address.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+                <div key={address.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                   <div className="flex flex-wrap items-center gap-3">
                     <p className="text-sm font-semibold text-foreground">
                       {t(
@@ -189,7 +189,7 @@ export default async function ClientDetailsPage({
         {client.activity_logs && client.activity_logs.length > 0 ? (
           <div className="mt-6 grid gap-4">
             {client.activity_logs.map((activity) => (
-              <div key={activity.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+              <div key={activity.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm font-semibold text-foreground">{activity.description}</p>
                   <p className="text-xs uppercase tracking-[0.2em] text-muted">{activity.action}</p>

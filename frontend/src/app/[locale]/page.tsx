@@ -198,7 +198,7 @@ export default async function LocaleHomePage({
       </section>
 
       {/* ════ STATS BAR ════ */}
-      <section className="border-b border-[rgba(4,141,254,0.1)] bg-white">
+      <section className="border-b border-[rgba(4,141,254,0.1)] bg-[#faf9f5]">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
             {content.stats.map(({ value, label }) => (
@@ -270,7 +270,7 @@ export default async function LocaleHomePage({
         </div>
       </section>
 
-      <section className="overflow-hidden bg-white py-8">
+      <section className="overflow-hidden bg-[#faf9f5] py-8">
         {/* Provisioning */}
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
@@ -293,7 +293,7 @@ export default async function LocaleHomePage({
               <div className="overflow-hidden rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#f0f7ff] p-6 shadow-[0_16px_48px_rgba(4,141,254,0.12)]">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#048dfe]">{content.sections.provisioningBadge}</p>
                 {[["CREATE_ACCOUNT","domain.example.com","#28c840","Done"],["SUSPEND_SERVICE","client-482.net","#ffbd2e","Pending"],["TERMINATE_ACCOUNT","old-client.io","#ff5f57","Failed"],["RESET_PASSWORD","shop.provider.com","#048dfe","Running"]].map(([action,domain,color,status])=>(
-                  <div key={domain} className="mb-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
+                  <div key={domain} className="mb-3 flex items-center justify-between rounded-xl bg-[#faf9f5] px-4 py-3 shadow-sm">
                     <div>
                       <p className="text-xs font-semibold text-[#0a1628]">{action}</p>
                       <p className="text-xs text-[#7a95b5]">{domain}</p>
@@ -313,7 +313,7 @@ export default async function LocaleHomePage({
               <div className="overflow-hidden rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#f0f7ff] p-6 shadow-[0_16px_48px_rgba(4,141,254,0.12)]">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#048dfe]">{content.sections.billingBadge}</p>
                 {[["INV-2891","$49.00","Paid","#28c840"],["INV-2890","$149.00","Due Today","#ffbd2e"],["INV-2889","$29.00","Paid","#28c840"],["INV-2888","$299.00","Overdue","#ff5f57"]].map(([inv,amount,status,color])=>(
-                  <div key={inv} className="mb-3 flex items-center justify-between rounded-xl bg-white px-4 py-3 shadow-sm">
+                  <div key={inv} className="mb-3 flex items-center justify-between rounded-xl bg-[#faf9f5] px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#e0f0ff] text-xs font-bold text-[#048dfe]">$</div>
                       <div>
@@ -378,7 +378,7 @@ export default async function LocaleHomePage({
       </section>
 
       {/* ════ AUTOMATION WORKFLOW ════ */}
-      <section className="bg-white py-24">
+      <section className="bg-[#faf9f5] py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <span className="section-label mb-4">{content.sections.automationBadge}</span>
@@ -392,7 +392,7 @@ export default async function LocaleHomePage({
             <div className="grid gap-8 lg:grid-cols-5">
               {content.automationSteps.map(({ step, title, desc, icon }) => (
                 <div key={step} className="relative flex flex-col items-center text-center">
-                  <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[rgba(4,141,254,0.2)] bg-white text-2xl shadow-[0_4px_20px_rgba(4,141,254,0.12)]">
+                  <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[rgba(4,141,254,0.2)] bg-[#faf9f5] text-2xl shadow-[0_4px_20px_rgba(4,141,254,0.12)]">
                     {icon}
                   </div>
                   <div className="absolute top-0 -right-2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#048dfe] text-[10px] font-bold text-white">{step}</div>
@@ -422,7 +422,7 @@ export default async function LocaleHomePage({
             {content.plans.map((plan) => (
               <div key={plan.key} className={`${plan.featured ? "pricing-card-featured relative" : "pricing-card"}`}>
                 {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#faf9f5] px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
                     {content.mostPopular}
                   </div>
                 )}
@@ -446,7 +446,7 @@ export default async function LocaleHomePage({
                 </ul>
                 <Link
                   href={localePath(locale, "/onboarding")}
-                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-white text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary"}`}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-[#faf9f5] text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary"}`}
                 >
                   {plan.ctaLabel}
                 </Link>

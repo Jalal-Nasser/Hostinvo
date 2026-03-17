@@ -23,7 +23,7 @@ export function ModuleStatusCard({
     <article className="glass-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-lg font-semibold text-foreground">{title}</p>
-        <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+        <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
           {accessible ? availableLabel : restrictedLabel}
         </span>
       </div>

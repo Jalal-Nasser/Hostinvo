@@ -75,7 +75,7 @@ export function ServiceOperationPanel({
               type="button"
               onClick={() => handleDispatch(operation.value)}
               disabled={isPending}
-              className="rounded-full border border-line bg-white/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full border border-line bg-[#faf9f5]/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isRunning ? runningLabel : operation.label}
             </button>

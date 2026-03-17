@@ -56,7 +56,7 @@ export default async function ContactPage({ params }: Readonly<{ params: { local
                   </div>
                 ))}
               </div>
-              <div className="mt-8 rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-6">
+              <div className="mt-8 rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-[#048dfe] mb-3">{locale === "ar" ? "معلومات التواصل" : "Contact details"}</p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm text-[#4a5e7a]">
@@ -71,15 +71,15 @@ export default async function ContactPage({ params }: Readonly<{ params: { local
             </div>
 
             {/* Right: form */}
-            <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white p-8 shadow-[0_8px_32px_rgba(4,141,254,0.08)]">
+            <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] p-8 shadow-[0_8px_32px_rgba(4,141,254,0.08)]">
               <h2 className="text-2xl font-extrabold text-[#0a1628]">{content.contact.formTitle}</h2>
               <p className="mt-2 text-sm leading-6 text-[#4a5e7a]">{content.contact.formDescription}</p>
               <form className="mt-6 grid gap-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-white" placeholder={content.contact.formNamePlaceholder} type="text" />
-                  <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-white" placeholder={content.contact.formEmailPlaceholder} type="email" />
+                  <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-[#faf9f5]" placeholder={content.contact.formNamePlaceholder} type="text" />
+                  <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-[#faf9f5]" placeholder={content.contact.formEmailPlaceholder} type="email" />
                 </div>
-                <select className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#4a5e7a] outline-none transition focus:border-[#048dfe] focus:bg-white">
+                <select className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#4a5e7a] outline-none transition focus:border-[#048dfe] focus:bg-[#faf9f5]">
                   <option value="">{locale === "ar" ? "نوع الطلب" : "Inquiry type"}</option>
                   <option>{locale === "ar" ? "الترحيل من WHMCS" : "Migration from WHMCS"}</option>
                   <option>{locale === "ar" ? "إعداد مؤسسي" : "Enterprise onboarding"}</option>
@@ -87,8 +87,8 @@ export default async function ContactPage({ params }: Readonly<{ params: { local
                   <option>{locale === "ar" ? "دعم تقني" : "Technical support"}</option>
                   <option>{locale === "ar" ? "أخرى" : "Other"}</option>
                 </select>
-                <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-white" placeholder={locale === "ar" ? "اسم الشركة" : "Company name"} type="text" />
-                <textarea className="min-h-36 rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-white resize-none" placeholder={content.contact.formRequirementsPlaceholder} />
+                <input className="rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-[#faf9f5]" placeholder={locale === "ar" ? "اسم الشركة" : "Company name"} type="text" />
+                <textarea className="min-h-36 rounded-xl border border-[rgba(4,141,254,0.15)] bg-[#f7faff] px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#048dfe] focus:bg-[#faf9f5] resize-none" placeholder={content.contact.formRequirementsPlaceholder} />
                 <button className="btn-primary w-full justify-center py-3.5 text-base" type="button">{content.contact.formButtonLabel}</button>
                 <p className="text-center text-xs text-[#7a95b5]">{locale === "ar" ? "نردّ خلال أقل من 4 ساعات في أوقات العمل." : "We typically respond within 4 business hours."}</p>
               </form>

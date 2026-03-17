@@ -37,13 +37,13 @@ export default async function InvoiceDetailsPage({
             </Link>
           ) : null}
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, `/dashboard/invoices/${invoice.id}/edit`)}
           >
             {t("editInvoiceButton")}
           </Link>
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/payments")}
           >
             {t("paymentsHistoryButton")}
@@ -58,37 +58,37 @@ export default async function InvoiceDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(`status${invoice.status.charAt(0).toUpperCase()}${invoice.status.slice(1)}`)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("clientLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.client?.display_name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("issueDateLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.issue_date ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("dueDateLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.due_date ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("orderLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.order?.reference_number ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("recurringCycleLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.recurring_cycle ? t(`billingCycle.${invoice.recurring_cycle}`) : t("notAvailable")}
@@ -106,31 +106,31 @@ export default async function InvoiceDetailsPage({
 
         <aside className="glass-card p-6 md:p-8">
           <div className="grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("subtotalLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(invoice.subtotal_minor, invoice.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("discountLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(invoice.discount_amount_minor, invoice.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("creditAppliedLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(invoice.credit_applied_minor, invoice.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("taxLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(invoice.tax_amount_minor, invoice.currency, params.locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("amountPaidLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {formatMinorCurrency(invoice.amount_paid_minor, invoice.currency, params.locale)}
@@ -152,7 +152,7 @@ export default async function InvoiceDetailsPage({
           {invoice.items?.map((item, index) => (
             <article
               key={item.id ?? `${item.description}-${index}`}
-              className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+              className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -177,7 +177,7 @@ export default async function InvoiceDetailsPage({
           {invoice.payments && invoice.payments.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {invoice.payments.map((payment) => (
-                <div key={payment.id} className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div key={payment.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">{payment.reference ?? payment.payment_method}</p>
                     <p className="text-sm font-semibold text-foreground">
@@ -201,7 +201,7 @@ export default async function InvoiceDetailsPage({
           {invoice.transactions && invoice.transactions.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {invoice.transactions.map((transaction) => (
-                <div key={transaction.id} className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div key={transaction.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">
                       {transaction.external_reference ?? transaction.gateway}

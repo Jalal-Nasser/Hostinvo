@@ -173,7 +173,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("clientLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setClientId(event.target.value)}
               value={clientId}
             >
@@ -188,7 +188,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("serviceLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setServiceId(event.target.value)}
               value={serviceId}
             >
@@ -204,7 +204,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("domainLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDomain(event.target.value)}
               required
               value={domain}
@@ -214,7 +214,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("tldLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setTld(event.target.value)}
               required
               value={tld}
@@ -224,7 +224,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setStatus(event.target.value as DomainStatus)}
               value={status}
             >
@@ -239,7 +239,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("registrarLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setRegistrar(event.target.value)}
               value={registrar}
             />
@@ -248,7 +248,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("registrationDateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setRegistrationDate(event.target.value)}
               type="date"
               value={registrationDate}
@@ -258,7 +258,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("expiryDateLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setExpiryDate(event.target.value)}
               required
               type="date"
@@ -269,7 +269,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("renewalPriceLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               min={0}
               onChange={(event) => setRenewalPrice(event.target.value)}
               type="number"
@@ -280,7 +280,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("currencyLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 uppercase outline-none transition focus:border-accent"
               maxLength={3}
               onChange={(event) => setCurrency(event.target.value)}
               value={currency}
@@ -290,7 +290,7 @@ export function DomainForm({
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("notesLabel")}</span>
             <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setNotes(event.target.value)}
               value={notes}
             />
@@ -298,11 +298,11 @@ export function DomainForm({
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-white/80 px-4 py-4 text-sm font-medium text-foreground">
+          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 px-4 py-4 text-sm font-medium text-foreground">
             <input checked={autoRenew} onChange={(event) => setAutoRenew(event.target.checked)} type="checkbox" />
             <span>{t("autoRenewLabel")}</span>
           </label>
-          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-white/80 px-4 py-4 text-sm font-medium text-foreground">
+          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 px-4 py-4 text-sm font-medium text-foreground">
             <input
               checked={dnsManagement}
               onChange={(event) => setDnsManagement(event.target.checked)}
@@ -310,7 +310,7 @@ export function DomainForm({
             />
             <span>{t("dnsManagementLabel")}</span>
           </label>
-          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-white/80 px-4 py-4 text-sm font-medium text-foreground">
+          <label className="flex items-center gap-3 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 px-4 py-4 text-sm font-medium text-foreground">
             <input
               checked={idProtection}
               onChange={(event) => setIdProtection(event.target.checked)}
@@ -350,7 +350,7 @@ export function DomainForm({
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={cancelHref}
         >
           {t("cancelButton")}

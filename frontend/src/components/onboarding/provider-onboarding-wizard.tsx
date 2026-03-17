@@ -182,10 +182,10 @@ const copyByLocale: Record<AppLocale, Copy> = {
   },
 };
 
-const card = "rounded-[1.75rem] border border-[#d7e5f4] bg-white/95 shadow-[0_24px_60px_rgba(8,55,120,0.08)]";
-const input = "w-full rounded-[1rem] border border-[#d0e1f3] bg-[#f8fbff] px-4 py-3.5 text-sm text-[#0a1628] outline-none transition placeholder:text-[#8ca6c1] focus:border-[#048dfe] focus:bg-white focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
+const card = "rounded-[1.75rem] border border-[#d7e5f4] bg-[#faf9f5]/95 shadow-[0_24px_60px_rgba(8,55,120,0.08)]";
+const input = "w-full rounded-[1rem] border border-[#d0e1f3] bg-[#f8fbff] px-4 py-3.5 text-sm text-[#0a1628] outline-none transition placeholder:text-[#8ca6c1] focus:border-[#048dfe] focus:bg-[#faf9f5] focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
 const primary = "inline-flex items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#048DFE_0%,#036DEB_52%,#0054C5_100%)] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(4,109,235,0.26)] transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-60";
-const secondary = "inline-flex items-center justify-center rounded-[1rem] border border-[#d0e1f3] bg-white px-5 py-3.5 text-sm font-semibold text-[#244465] transition hover:bg-[#eff6ff]";
+const secondary = "inline-flex items-center justify-center rounded-[1rem] border border-[#d0e1f3] bg-[#faf9f5] px-5 py-3.5 text-sm font-semibold text-[#244465] transition hover:bg-[#eff6ff]";
 
 function resolveCurrentStep(status: OnboardingStatusPayload | null): number {
   if (!status) return 1;
@@ -392,7 +392,7 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
 
   return (
     <div dir={isRtl ? "rtl" : "ltr"} className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(4,141,254,0.12),transparent_24rem),linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] text-[#0a1628]">
-      <header className="border-b border-[#dbe8f7] bg-white/90 backdrop-blur">
+      <header className="border-b border-[#dbe8f7] bg-[#faf9f5]/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-6 px-6 py-5 sm:px-8 xl:px-10">
           <BrandLogo href={`/${locale}`} priority className="block w-full max-w-[12rem]" />
           <div className="flex items-center gap-4">
@@ -402,7 +402,7 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
         </div>
       </header>
 
-      <div className="border-b border-[#dfeaf7] bg-white/70">
+      <div className="border-b border-[#dfeaf7] bg-[#faf9f5]/70">
         <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-5 px-6 py-7 sm:px-8 xl:px-10">
           <p className="max-w-3xl text-[15px] leading-7 text-[#526c88]">{copy.intro}</p>
           <div className="grid gap-4 lg:grid-cols-4">
@@ -411,7 +411,7 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
               const done = status?.steps[index]?.complete ?? false;
               const active = currentStep === step;
               return (
-                <div key={label} className={`${active ? "border-[#a6d5ff] bg-white shadow-[0_18px_40px_rgba(4,109,235,0.08)]" : "border-[#deebf8] bg-white/70"} flex items-center gap-4 rounded-[1.5rem] border px-4 py-4 transition`}>
+                <div key={label} className={`${active ? "border-[#a6d5ff] bg-[#faf9f5] shadow-[0_18px_40px_rgba(4,109,235,0.08)]" : "border-[#deebf8] bg-[#faf9f5]/70"} flex items-center gap-4 rounded-[1.5rem] border px-4 py-4 transition`}>
                   <div className={`${done ? "bg-[#048dfe] text-white" : active ? "bg-[linear-gradient(135deg,#048DFE,#036DEB)] text-white" : "bg-[#e7f0fa] text-[#6d88a9]"} flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold`}>{done ? "✓" : step}</div>
                   <div>
                     <div className="text-xs font-medium uppercase tracking-[0.2em] text-[#7c95b2]">
@@ -458,7 +458,7 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
                 <div className="rounded-[1.35rem] border border-[#dbe8f7] bg-[#f8fbff] p-4">
                   <button type="button" onClick={() => setShowLicense((value) => !value)} className="flex w-full items-center justify-between gap-3 text-sm font-semibold text-[#264666]">
                     <span>{copy.licenseToggle}</span>
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d0e1f3] bg-white text-[#036deb]">{showLicense ? "−" : "+"}</span>
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d0e1f3] bg-[#faf9f5] text-[#036deb]">{showLicense ? "−" : "+"}</span>
                   </button>
                   <p className="mt-3 text-sm leading-6 text-[#58718c]">{copy.licenseHelp}</p>
                   {showLicense ? (
@@ -559,12 +559,12 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
           <div className="rounded-[1.75rem] border border-[#cfe0f4] bg-[linear-gradient(180deg,#0f3f95_0%,#002d8e_100%)] p-6 text-white shadow-[0_24px_60px_rgba(0,45,142,0.24)]">
             <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#bcdcff]">{copy.support}</div>
             <p className="mt-4 text-sm leading-7 text-[#d6e7ff]">{copy.supportBody}</p>
-            {statusError ? <div className="mt-5 rounded-[1rem] border border-white/10 bg-white/10 px-4 py-3 text-sm text-[#eef6ff]">{statusError}</div> : null}
+            {statusError ? <div className="mt-5 rounded-[1rem] border border-white/10 bg-[#faf9f5]/10 px-4 py-3 text-sm text-[#eef6ff]">{statusError}</div> : null}
           </div>
         </aside>
       </main>
 
-      <footer className="border-t border-[#dfeaf7] bg-white/80 backdrop-blur">
+      <footer className="border-t border-[#dfeaf7] bg-[#faf9f5]/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-8 px-6 py-8 sm:px-8 xl:px-10">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
             <div className="max-w-2xl">
@@ -572,16 +572,16 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
               <p className="mt-4 text-sm leading-7 text-[#58718c]">{copy.supportBody}</p>
             </div>
             <nav className="flex flex-wrap gap-3 text-sm font-semibold text-[#365277]">
-              <Link href={localePath(locale, "/features")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-white hover:text-[#036deb]">
+              <Link href={localePath(locale, "/features")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-[#faf9f5] hover:text-[#036deb]">
                 {launchContent.nav.features}
               </Link>
-              <Link href={localePath(locale, "/pricing")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-white hover:text-[#036deb]">
+              <Link href={localePath(locale, "/pricing")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-[#faf9f5] hover:text-[#036deb]">
                 {launchContent.nav.pricing}
               </Link>
-              <Link href={localePath(locale, "/documentation")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-white hover:text-[#036deb]">
+              <Link href={localePath(locale, "/documentation")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-[#faf9f5] hover:text-[#036deb]">
                 {launchContent.nav.documentation}
               </Link>
-              <Link href={localePath(locale, "/contact")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-white hover:text-[#036deb]">
+              <Link href={localePath(locale, "/contact")} className="rounded-full border border-[#d8e7f6] bg-[#f8fbff] px-4 py-2 transition hover:border-[#bcd7f2] hover:bg-[#faf9f5] hover:text-[#036deb]">
                 {launchContent.nav.contact}
               </Link>
             </nav>

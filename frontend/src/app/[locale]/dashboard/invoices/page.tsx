@@ -47,7 +47,7 @@ export default async function InvoicesPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("searchPlaceholder")}
@@ -57,7 +57,7 @@ export default async function InvoicesPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.status ?? ""}
               name="status"
             >
@@ -80,7 +80,7 @@ export default async function InvoicesPage({
             </button>
 
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, "/dashboard/invoices")}
             >
               {t("clearFilters")}
@@ -102,7 +102,7 @@ export default async function InvoicesPage({
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-semibold text-foreground">{invoice.reference_number}</h2>
-                    <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                       {t(`status${invoice.status.charAt(0).toUpperCase()}${invoice.status.slice(1)}`)}
                     </span>
                   </div>
@@ -112,13 +112,13 @@ export default async function InvoicesPage({
 
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                     href={localePath(params.locale, `/dashboard/invoices/${invoice.id}`)}
                   >
                     {t("viewDetailsButton")}
                   </Link>
                   <Link
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                     href={localePath(params.locale, `/dashboard/invoices/${invoice.id}/edit`)}
                   >
                     {t("editInvoiceButton")}
@@ -127,25 +127,25 @@ export default async function InvoicesPage({
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-4">
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("dueDateLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {invoice.due_date ?? t("notAvailable")}
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("subtotalLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {formatMinorCurrency(invoice.subtotal_minor, invoice.currency, params.locale)}
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("totalLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {formatMinorCurrency(invoice.total_minor, invoice.currency, params.locale)}
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("balanceDueLabel")}</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">
                     {formatMinorCurrency(invoice.balance_due_minor, invoice.currency, params.locale)}

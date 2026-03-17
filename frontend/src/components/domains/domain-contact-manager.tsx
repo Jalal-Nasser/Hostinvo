@@ -235,7 +235,7 @@ export function DomainContactManager({
           {items.map((contact, index) => (
             <article
               key={contact.id ?? `${contact.type}-${index}`}
-              className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+              className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
@@ -245,7 +245,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("firstNameLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateContact(index, "first_name", event.target.value)}
                     value={contact.first_name}
                   />
@@ -254,7 +254,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("lastNameLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateContact(index, "last_name", event.target.value)}
                     value={contact.last_name}
                   />
@@ -263,7 +263,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("emailLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateContact(index, "email", event.target.value)}
                     type="email"
                     value={contact.email}
@@ -273,7 +273,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("phoneLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateContact(index, "phone", event.target.value)}
                     value={contact.phone}
                   />
@@ -282,7 +282,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   <span>{t("addressLineLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateAddress(index, "line1", event.target.value)}
                     value={contact.address.line1}
                   />
@@ -291,7 +291,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("cityLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateAddress(index, "city", event.target.value)}
                     value={contact.address.city}
                   />
@@ -300,7 +300,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("stateLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateAddress(index, "state", event.target.value)}
                     value={contact.address.state}
                   />
@@ -309,7 +309,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("postalCodeLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     onChange={(event) => updateAddress(index, "postal_code", event.target.value)}
                     value={contact.address.postal_code}
                   />
@@ -318,7 +318,7 @@ export function DomainContactManager({
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("countryLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 uppercase outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 uppercase outline-none transition focus:border-accent"
                     maxLength={2}
                     onChange={(event) => updateAddress(index, "country", event.target.value)}
                     value={contact.address.country}

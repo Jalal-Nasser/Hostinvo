@@ -109,7 +109,7 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
         <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>{t("messageLabel")}</span>
           <textarea
-            className="min-h-40 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+            className="min-h-40 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
             onChange={(event) => setMessage(event.target.value)}
             placeholder={t("replyPlaceholder")}
             value={message}
@@ -120,7 +120,7 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setStatusId(event.target.value)}
               value={statusId}
             >
@@ -132,7 +132,7 @@ export function TicketReplyForm({ ticket, statuses }: TicketReplyFormProps) {
             </select>
           </label>
 
-          <label className="inline-flex items-center gap-3 rounded-2xl border border-line bg-white/80 px-4 py-3 text-sm font-medium text-foreground">
+          <label className="inline-flex items-center gap-3 rounded-2xl border border-line bg-[#faf9f5]/80 px-4 py-3 text-sm font-medium text-foreground">
             <input
               checked={isInternal}
               className="size-4"

@@ -226,7 +226,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("groupNameLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setCreateForm((current) => ({ ...current, name: event.target.value }))}
               value={createForm.name}
             />
@@ -235,7 +235,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("slugLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setCreateForm((current) => ({ ...current, slug: event.target.value }))}
               value={createForm.slug}
             />
@@ -244,7 +244,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) =>
                 setCreateForm((current) => ({
                   ...current,
@@ -261,7 +261,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("visibilityLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) =>
                 setCreateForm((current) => ({
                   ...current,
@@ -279,7 +279,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("descriptionLabel")}</span>
             <textarea
-              className="min-h-24 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-24 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) =>
                 setCreateForm((current) => ({ ...current, description: event.target.value }))
               }
@@ -290,7 +290,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("displayOrderLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               min={0}
               onChange={(event) =>
                 setCreateForm((current) => ({
@@ -345,7 +345,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("groupNameLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           setEditForm((current) => ({ ...current, name: event.target.value }))
                         }
@@ -355,7 +355,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("slugLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           setEditForm((current) => ({ ...current, slug: event.target.value }))
                         }
@@ -365,7 +365,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("statusLabel")}</span>
                       <select
-                        className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           setEditForm((current) => ({
                             ...current,
@@ -381,7 +381,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("visibilityLabel")}</span>
                       <select
-                        className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           setEditForm((current) => ({
                             ...current,
@@ -398,7 +398,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                       <span>{t("descriptionLabel")}</span>
                       <textarea
-                        className="min-h-24 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="min-h-24 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           setEditForm((current) => ({ ...current, description: event.target.value }))
                         }
@@ -408,7 +408,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("displayOrderLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
                         min={0}
                         onChange={(event) =>
                           setEditForm((current) => ({
@@ -431,7 +431,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                         {isPending ? t("saving") : t("saveButton")}
                       </button>
                       <button
-                        className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                         onClick={endEdit}
                         type="button"
                       >
@@ -444,7 +444,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-2xl font-semibold text-foreground">{group.name}</h2>
-                        <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                        <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                           {group.status === "active" ? t("statusActive") : t("statusInactive")}
                         </span>
                       </div>
@@ -454,7 +454,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
 
                     <div className="flex flex-wrap gap-3">
                       <button
-                        className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                        className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                         onClick={() => beginEdit(group)}
                         type="button"
                       >
@@ -474,7 +474,7 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
 
                 {!isEditing ? (
                   <div className="mt-6 grid gap-4 md:grid-cols-3">
-                    <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                    <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                       <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("visibilityLabel")}</p>
                       <p className="mt-2 text-sm font-semibold text-foreground">
                         {group.visibility === "public"
@@ -484,11 +484,11 @@ export function ProductGroupManager({ initialGroups }: ProductGroupManagerProps)
                             : t("visibilityHidden")}
                       </p>
                     </div>
-                    <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                    <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                       <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("displayOrderLabel")}</p>
                       <p className="mt-2 text-sm font-semibold text-foreground">{group.display_order}</p>
                     </div>
-                    <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                    <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                       <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("groupProductsCountLabel")}</p>
                       <p className="mt-2 text-sm font-semibold text-foreground">{group.products_count ?? 0}</p>
                     </div>

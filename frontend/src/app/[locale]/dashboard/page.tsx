@@ -52,7 +52,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["invoices.manage"]) ? (
       <Link
         key="new-invoice"
-        className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
         href={localePath(params.locale, "/dashboard/invoices/new")}
       >
         {t("newInvoiceLink")}
@@ -61,7 +61,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["tickets.create", "tickets.manage"]) ? (
       <Link
         key="new-ticket"
-        className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
         href={localePath(params.locale, "/dashboard/tickets/new")}
       >
         {t("newTicketLink")}
@@ -192,7 +192,7 @@ export default async function DashboardPage({
               {operationalMetrics.map((metric) => (
                 <div
                   key={metric.key}
-                  className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                  className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
                 >
                   <p className="text-xs uppercase tracking-[0.24em] text-muted">
                     {metric.label}
@@ -208,14 +208,14 @@ export default async function DashboardPage({
         <aside className="glass-card p-6 md:p-8">
           <h2 className="text-2xl font-semibold text-foreground">{t("workspaceAccessTitle")}</h2>
           <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("tenantLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {user.tenant?.name ?? t("notAvailable")}
               </p>
               <p className="mt-2 text-sm text-muted">{user.tenant?.slug ?? user.tenant_id ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("rolesLabel")}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {user.roles.map((role) => (
@@ -230,7 +230,7 @@ export default async function DashboardPage({
             </div>
             {canAccessClientPortal(user) ? (
               <Link
-                className="rounded-[1.5rem] border border-line bg-[#fffdf8] p-5 transition hover:bg-white"
+                className="rounded-[1.5rem] border border-line bg-[#fffdf8] p-5 transition hover:bg-[#faf9f5]"
                 href={localePath(params.locale, "/portal")}
               >
                 <p className="text-xs uppercase tracking-[0.24em] text-muted">
@@ -262,7 +262,7 @@ export default async function DashboardPage({
                 {summary.modules.invoices.recent.map((invoice) => (
                   <Link
                     key={invoice.id}
-                    className="rounded-[1.5rem] border border-line bg-white/80 p-5 transition hover:bg-[#fffdf8]"
+                    className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
                     href={localePath(params.locale, `/dashboard/invoices/${invoice.id}`)}
                   >
                     <p className="text-sm font-semibold text-foreground">{invoice.reference_number}</p>
@@ -290,7 +290,7 @@ export default async function DashboardPage({
                 {summary.modules.tickets.recent.slice(0, 4).map((ticket) => (
                   <Link
                     key={ticket.id}
-                    className="rounded-[1.5rem] border border-line bg-white/80 p-5 transition hover:bg-[#fffdf8]"
+                    className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
                     href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
                   >
                     <p className="text-sm font-semibold text-foreground">{ticket.subject}</p>

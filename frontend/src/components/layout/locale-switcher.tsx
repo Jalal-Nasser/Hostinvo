@@ -20,7 +20,7 @@ export function LocaleSwitcher({
   return (
     <nav
       aria-label={t("label")}
-      className="inline-flex items-center gap-1 rounded-full border border-[rgba(4,141,254,0.2)] bg-white/80 p-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted backdrop-blur-sm"
+      className="inline-flex items-center gap-1 rounded-full border border-[rgba(4,141,254,0.2)] bg-[#faf9f5]/80 p-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted backdrop-blur-sm"
     >
       {routing.locales.map((locale) => {
         const isActive = locale === currentLocale;

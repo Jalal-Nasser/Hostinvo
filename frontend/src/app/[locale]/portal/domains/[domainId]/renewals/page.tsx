@@ -32,7 +32,7 @@ export default async function PortalDomainRenewalsPage({
     <PortalShell
       actions={
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={localePath(params.locale, `/portal/domains/${domain.id}`)}
         >
           {t("backToDomainButton")}
@@ -48,7 +48,7 @@ export default async function PortalDomainRenewalsPage({
         {renewals && renewals.length > 0 ? (
           <div className="mt-6 grid gap-4">
             {renewals.map((renewal) => (
-              <div key={renewal.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+              <div key={renewal.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm font-semibold text-foreground">{t("renewalYearsValue", { years: renewal.years })}</p>
                   <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">{renewal.status}</span>

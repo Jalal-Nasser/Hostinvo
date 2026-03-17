@@ -116,12 +116,12 @@ export function DomainRenewalForm({ domainId }: DomainRenewalFormProps) {
   }
 
   return (
-    <div className="grid gap-4 rounded-[1.5rem] border border-line bg-white/80 p-5">
+    <div className="grid gap-4 rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>{t("renewalYearsLabel")}</span>
           <input
-            className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+            className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
             min={1}
             onChange={(event) => setYears(event.target.value)}
             type="number"
@@ -132,7 +132,7 @@ export function DomainRenewalForm({ domainId }: DomainRenewalFormProps) {
         <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>{t("renewalPriceLabel")}</span>
           <input
-            className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+            className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
             min={0}
             onChange={(event) => setPrice(event.target.value)}
             type="number"
@@ -143,7 +143,7 @@ export function DomainRenewalForm({ domainId }: DomainRenewalFormProps) {
         <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>{t("renewalStatusLabel")}</span>
           <select
-            className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+            className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
             onChange={(event) => setStatus(event.target.value as DomainRenewalStatus)}
             value={status}
           >
@@ -158,7 +158,7 @@ export function DomainRenewalForm({ domainId }: DomainRenewalFormProps) {
         <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>{t("renewedAtLabel")}</span>
           <input
-            className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+            className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
             onChange={(event) => setRenewedAt(event.target.value)}
             type="date"
             value={renewedAt}

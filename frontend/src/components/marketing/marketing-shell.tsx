@@ -75,7 +75,7 @@ export async function MarketingShell({ locale, currentPath, title, description, 
       </header>
 
       {!isHome && title && (
-        <div className="border-b border-[rgba(4,141,254,0.08)] bg-white">
+        <div className="border-b border-[rgba(4,141,254,0.08)] bg-[#faf9f5]">
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
             <p className="section-label mb-4">{content.badge}</p>
             <h1 className="text-4xl font-bold tracking-tight text-[#0a1628] md:text-5xl">{title}</h1>

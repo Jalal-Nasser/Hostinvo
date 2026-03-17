@@ -167,7 +167,7 @@ export function ProductPricingForm({ product }: ProductPricingFormProps) {
           {billingCycles.map((cycle) => (
             <article
               key={cycle}
-              className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+              className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -190,7 +190,7 @@ export function ProductPricingForm({ product }: ProductPricingFormProps) {
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("currencyLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 uppercase outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 uppercase outline-none transition focus:border-accent"
                     maxLength={3}
                     onChange={(event) => updateCycle(cycle, "currency", event.target.value)}
                     value={pricing[cycle].currency}
@@ -200,7 +200,7 @@ export function ProductPricingForm({ product }: ProductPricingFormProps) {
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("priceLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     min={0}
                     onChange={(event) => updateCycle(cycle, "price", event.target.value)}
                     step="0.01"
@@ -212,7 +212,7 @@ export function ProductPricingForm({ product }: ProductPricingFormProps) {
                 <label className="grid gap-2 text-sm font-medium text-foreground">
                   <span>{t("setupFeeLabel")}</span>
                   <input
-                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                     min={0}
                     onChange={(event) => updateCycle(cycle, "setup_fee", event.target.value)}
                     step="0.01"
@@ -249,14 +249,14 @@ export function ProductPricingForm({ product }: ProductPricingFormProps) {
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={localePath(locale, `/dashboard/products/${product.id}/edit`)}
         >
           {t("editProductButton")}
         </Link>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={localePath(locale, "/dashboard/products")}
         >
           {t("backToProducts")}

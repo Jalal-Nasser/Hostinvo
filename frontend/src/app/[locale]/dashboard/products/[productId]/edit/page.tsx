@@ -40,7 +40,7 @@ export default async function EditProductPage({
             {t("managePricingButton")}
           </Link>
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/products")}
           >
             {t("backToProducts")}

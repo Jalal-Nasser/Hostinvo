@@ -63,14 +63,14 @@ export default async function ApiReferencePage({ params }: Readonly<{ params: { 
           </div>
 
           {/* Endpoint list */}
-          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-white overflow-hidden">
+          <div className="rounded-2xl border border-[rgba(4,141,254,0.12)] bg-[#faf9f5] overflow-hidden">
             <div className="border-b border-[rgba(4,141,254,0.08)] bg-[#f7faff] px-6 py-3 grid grid-cols-[80px_1fr_1fr] gap-4 text-xs font-bold uppercase tracking-widest text-[#7a95b5]">
               <span>{isAr ? "الطريقة" : "Method"}</span>
               <span>{isAr ? "المسار" : "Endpoint"}</span>
               <span>{isAr ? "الوصف" : "Description"}</span>
             </div>
             {endpoints.map(({ method, path, desc }, i) => (
-              <div key={path} className={`grid grid-cols-[80px_1fr_1fr] gap-4 items-center px-6 py-4 text-sm ${i % 2 === 0 ? "bg-white" : "bg-[#fafcff]"} border-b border-[rgba(4,141,254,0.06)]`}>
+              <div key={path} className={`grid grid-cols-[80px_1fr_1fr] gap-4 items-center px-6 py-4 text-sm ${i % 2 === 0 ? "bg-[#faf9f5]" : "bg-[#fafcff]"} border-b border-[rgba(4,141,254,0.06)]`}>
                 <span className="rounded-md px-2.5 py-1 text-xs font-bold text-white text-center" style={{ background: methodColors[method] ?? "#7a95b5" }}>{method}</span>
                 <code className="font-mono text-[#048dfe] text-xs">{path}</code>
                 <span className="text-[#4a5e7a]">{desc}</span>

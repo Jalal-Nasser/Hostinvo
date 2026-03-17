@@ -40,7 +40,7 @@ export default async function PaymentsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("paymentsSearchPlaceholder")}
@@ -50,7 +50,7 @@ export default async function PaymentsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("paymentTypeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.type ?? ""}
               name="type"
             >
@@ -64,7 +64,7 @@ export default async function PaymentsPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("paymentStatusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.status ?? ""}
               name="status"
             >
@@ -85,7 +85,7 @@ export default async function PaymentsPage({
             </button>
 
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, "/dashboard/payments")}
             >
               {t("clearFilters")}
@@ -109,7 +109,7 @@ export default async function PaymentsPage({
                     <h2 className="text-2xl font-semibold text-foreground">
                       {payment.reference ?? payment.payment_method}
                     </h2>
-                    <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                       {t(`paymentStatus${payment.status.charAt(0).toUpperCase()}${payment.status.slice(1)}`)}
                     </span>
                   </div>

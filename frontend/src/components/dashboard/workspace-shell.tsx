@@ -278,7 +278,7 @@ export async function WorkspaceShell({
                   href={localePath(locale, "/")}
                   className="block w-[11rem] shrink-0"
                 />
-                <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
+                <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
                   {workspaceBadge}
                 </span>
               </div>
@@ -290,7 +290,7 @@ export async function WorkspaceShell({
                 {hasAdminWorkspace && mode !== "admin" ? (
                   <Link
                     href={localePath(locale, "/dashboard")}
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                   >
                     {workspaceT("switchToAdmin")}
                   </Link>
@@ -298,7 +298,7 @@ export async function WorkspaceShell({
                 {hasPortalWorkspace && mode !== "portal" ? (
                   <Link
                     href={localePath(locale, "/portal")}
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                   >
                     {workspaceT("switchToPortal")}
                   </Link>
@@ -307,7 +307,7 @@ export async function WorkspaceShell({
             </div>
 
             <div className="flex flex-col items-start gap-3 lg:items-end">
-              <div className="rounded-[1.5rem] border border-line bg-white/75 px-4 py-3 text-sm text-muted">
+              <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/75 px-4 py-3 text-sm text-muted">
                 <p className="font-semibold text-foreground">{user.name}</p>
                 <p className="mt-1">{user.email}</p>
               </div>
@@ -330,7 +330,7 @@ export async function WorkspaceShell({
                   "rounded-full border px-4 py-2 text-sm font-semibold transition",
                   item.active
                     ? "border-accent bg-accent text-white"
-                    : "border-line bg-white/75 text-foreground hover:bg-accentSoft",
+                    : "border-line bg-[#faf9f5]/75 text-foreground hover:bg-accentSoft",
                 ].join(" ")}
               >
                 {item.label}

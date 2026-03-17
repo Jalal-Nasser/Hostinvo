@@ -286,7 +286,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("productGroupLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setGroupId(event.target.value)}
               value={groupId}
             >
@@ -302,7 +302,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("typeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setType(event.target.value as ProductType)}
               value={type}
             >
@@ -317,7 +317,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("productNameLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setName(event.target.value)}
               value={name}
             />
@@ -326,7 +326,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("slugLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setSlug(event.target.value)}
               value={slug}
             />
@@ -335,7 +335,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("skuLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setSku(event.target.value)}
               value={sku}
             />
@@ -344,7 +344,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("displayOrderLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               min={0}
               onChange={(event) => setDisplayOrder(Number(event.target.value) || 0)}
               type="number"
@@ -355,7 +355,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("summaryLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setSummary(event.target.value)}
               value={summary}
             />
@@ -364,7 +364,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
             <span>{t("descriptionLabel")}</span>
             <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setDescription(event.target.value)}
               value={description}
             />
@@ -373,7 +373,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setStatus(event.target.value as ProductStatus)}
               value={status}
             >
@@ -388,7 +388,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("visibilityLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               onChange={(event) => setVisibility(event.target.value as VisibilityOption)}
               value={visibility}
             >
@@ -422,7 +422,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
           </div>
 
           <button
-            className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             onClick={() =>
               setConfigurableOptions((current) => [
                 ...current,
@@ -445,7 +445,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
               return (
                 <article
                   key={option.id ?? `option-${optionIndex}`}
-                  className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                  className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
                 >
                   <div className="mb-4 flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold text-foreground">
@@ -468,7 +468,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("optionNameLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
                             ...current,
@@ -482,7 +482,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("optionCodeLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
                             ...current,
@@ -496,7 +496,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("optionTypeLabel")}</span>
                       <select
-                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
                             ...current,
@@ -523,7 +523,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("statusLabel")}</span>
                       <select
-                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
                             ...current,
@@ -540,7 +540,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                       <span>{t("descriptionLabel")}</span>
                       <textarea
-                        className="min-h-24 rounded-[1.5rem] border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="min-h-24 rounded-[1.5rem] border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
                             ...current,
@@ -554,7 +554,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       <span>{t("displayOrderLabel")}</span>
                       <input
-                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                        className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                         min={0}
                         onChange={(event) =>
                           updateOption(optionIndex, (current) => ({
@@ -590,7 +590,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                           {t("choicesSection")}
                         </h3>
                         <button
-                          className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                          className="rounded-full border border-line bg-[#faf9f5] px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                           onClick={() =>
                             updateOption(optionIndex, (current) => ({
                               ...current,
@@ -616,13 +616,13 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                           {option.choices.map((choice, choiceIndex) => (
                             <div
                               key={choice.id ?? `choice-${choiceIndex}`}
-                              className="rounded-[1.25rem] border border-line bg-white p-4"
+                              className="rounded-[1.25rem] border border-line bg-[#faf9f5] p-4"
                             >
                               <div className="grid gap-4 md:grid-cols-2">
                                 <label className="grid gap-2 text-sm font-medium text-foreground">
                                   <span>{t("choiceLabelLabel")}</span>
                                   <input
-                                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                                     onChange={(event) =>
                                       updateChoice(optionIndex, choiceIndex, (current) => ({
                                         ...current,
@@ -636,7 +636,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                                 <label className="grid gap-2 text-sm font-medium text-foreground">
                                   <span>{t("choiceValueLabel")}</span>
                                   <input
-                                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                                     onChange={(event) =>
                                       updateChoice(optionIndex, choiceIndex, (current) => ({
                                         ...current,
@@ -650,7 +650,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                                 <label className="grid gap-2 text-sm font-medium text-foreground">
                                   <span>{t("displayOrderLabel")}</span>
                                   <input
-                                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                                    className="rounded-2xl border border-line bg-[#faf9f5] px-4 py-3 outline-none transition focus:border-accent"
                                     min={0}
                                     onChange={(event) =>
                                       updateChoice(optionIndex, choiceIndex, (current) => ({
@@ -741,7 +741,7 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
         </button>
 
         <Link
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
           href={cancelHref}
         >
           {t("cancelButton")}

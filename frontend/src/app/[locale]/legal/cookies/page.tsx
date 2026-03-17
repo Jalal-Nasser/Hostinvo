@@ -41,7 +41,7 @@ export default async function CookiesPage({ params }: Readonly<{ params: { local
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="bg-[#faf9f5] py-16">
         <div className="mx-auto max-w-4xl px-6 lg:px-8">
           <div className="space-y-10">
             <LegalSection title={isAr ? "1. ما هي الكوكيز؟" : "1. What are cookies?"}>
@@ -54,7 +54,7 @@ export default async function CookiesPage({ params }: Readonly<{ params: { local
                   <span>{isAr ? "النوع" : "Type"}</span><span>{isAr ? "الغرض" : "Purpose"}</span><span>{isAr ? "التحكم" : "Control"}</span>
                 </div>
                 {cookieTypes.map(({ type, desc, can }, i) => (
-                  <div key={type} className={`grid grid-cols-3 gap-4 px-5 py-4 text-sm ${i % 2 === 0 ? "bg-white" : "bg-[#fafcff]"}`}>
+                  <div key={type} className={`grid grid-cols-3 gap-4 px-5 py-4 text-sm ${i % 2 === 0 ? "bg-[#faf9f5]" : "bg-[#fafcff]"}`}>
                     <span className="font-semibold text-[#0a1628]">{type}</span>
                     <span className="text-[#4a5e7a]">{desc}</span>
                     <span className="text-[#4a5e7a]">{can}</span>

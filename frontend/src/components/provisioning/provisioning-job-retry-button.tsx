@@ -72,7 +72,7 @@ export function ProvisioningJobRetryButton({
   return (
     <div className="grid gap-3">
       <button
-        className="rounded-full border border-line bg-white/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-line bg-[#faf9f5]/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isPending}
         onClick={handleRetry}
         type="button"

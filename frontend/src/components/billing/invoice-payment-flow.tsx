@@ -213,23 +213,23 @@ export function InvoicePaymentFlow({ invoice, gateways }: InvoicePaymentFlowProp
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("invoiceReferenceLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{invoice.reference_number}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("balanceDueLabel")}</p>
               <p className="mt-2 text-lg font-semibold text-foreground">
                 {formatMinorCurrency(invoice.balance_due_minor, invoice.currency, locale)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("clientLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {invoice.client?.display_name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(`status${invoice.status.charAt(0).toUpperCase()}${invoice.status.slice(1)}`)}
@@ -257,7 +257,7 @@ export function InvoicePaymentFlow({ invoice, gateways }: InvoicePaymentFlowProp
               gateways.map((gateway) => (
                 <article
                   key={gateway.code}
-                  className="rounded-[1.5rem] border border-line bg-white/80 p-5"
+                  className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -282,7 +282,7 @@ export function InvoicePaymentFlow({ invoice, gateways }: InvoicePaymentFlowProp
                 </article>
               ))
             ) : (
-              <p className="rounded-[1.5rem] border border-line bg-white/80 p-5 text-sm text-muted">
+              <p className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 text-sm text-muted">
                 {t("noGatewayOptions")}
               </p>
             )}

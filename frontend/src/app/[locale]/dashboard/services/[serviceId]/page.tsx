@@ -57,20 +57,20 @@ export default async function ServiceDetailsPage({
         <div className="flex flex-wrap gap-3">
           {service.server?.id ? (
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, `/dashboard/servers/${service.server.id}`)}
             >
               {t("viewServerButton")}
             </Link>
           ) : null}
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/services")}
           >
             {t("backToServicesButton")}
           </Link>
           <Link
-            className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/provisioning")}
           >
             {t("jobsTitle")}
@@ -85,25 +85,25 @@ export default async function ServiceDetailsPage({
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="glass-card p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("clientLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {service.client?.display_name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("productLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {service.product?.name ?? t("notAvailable")}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("serviceStatusLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(`serviceStatus${service.status.charAt(0).toUpperCase()}${service.status.slice(1)}`)}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("provisioningStateLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {t(
@@ -111,11 +111,11 @@ export default async function ServiceDetailsPage({
                 )}
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("domainLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{service.domain ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("serverLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
                 {service.server ? `${service.server.name} (${service.server.hostname})` : t("notAvailable")}
@@ -133,15 +133,15 @@ export default async function ServiceDetailsPage({
 
         <aside className="glass-card p-6 md:p-8">
           <div className="grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("billingCycleLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{t(`billingCycle.${service.billing_cycle}`)}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("usernameLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">{service.username ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("panelUrlLabel")}</p>
               <p className="mt-2 break-all text-sm font-semibold text-foreground">
                 {service.credentials?.control_panel_url ?? t("notAvailable")}
@@ -172,13 +172,13 @@ export default async function ServiceDetailsPage({
           <h2 className="text-2xl font-semibold text-foreground">{t("usageTitle")}</h2>
           {service.usage ? (
             <div className="mt-6 grid gap-4">
-              <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+              <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("diskUsageLabel")}</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">
                   {service.usage.disk_used_mb} / {service.usage.disk_limit_mb} MB
                 </p>
               </div>
-              <div className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+              <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("bandwidthUsageLabel")}</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">
                   {service.usage.bandwidth_used_mb} / {service.usage.bandwidth_limit_mb} MB
@@ -195,7 +195,7 @@ export default async function ServiceDetailsPage({
           {service.provisioning_logs && service.provisioning_logs.length > 0 ? (
             <div className="mt-6 grid gap-4">
               {service.provisioning_logs.slice(0, 6).map((log) => (
-                <div key={log.id} className="rounded-[1.5rem] border border-line bg-white/80 p-4">
+                <div key={log.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
                   <p className="text-sm font-semibold text-foreground">{operationLabel(log.operation)}</p>
                   <p className="mt-2 text-sm text-muted">{log.message}</p>
                 </div>
@@ -212,7 +212,7 @@ export default async function ServiceDetailsPage({
         {service.provisioning_jobs && service.provisioning_jobs.length > 0 ? (
           <div className="mt-6 grid gap-4">
             {service.provisioning_jobs.map((job) => (
-              <article key={job.id} className="rounded-[1.5rem] border border-line bg-white/80 p-5">
+              <article key={job.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-lg font-semibold text-foreground">{operationLabel(job.operation)}</p>

@@ -66,7 +66,7 @@ export function LogoutButton() {
   return (
     <div className="grid gap-2">
       <button
-        className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isPending}
         onClick={handleLogout}
         type="button"

@@ -39,7 +39,7 @@ export default async function ServersPage({
       actions={
         <Link
           href={localePath(params.locale, "/dashboard/provisioning")}
-          className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
         >
           {t("jobsTitle")}
         </Link>
@@ -54,7 +54,7 @@ export default async function ServersPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("serverSearchPlaceholder")}
@@ -64,7 +64,7 @@ export default async function ServersPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("serverStatusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.status ?? ""}
               name="status"
             >
@@ -78,7 +78,7 @@ export default async function ServersPage({
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("panelTypeLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-white/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
               defaultValue={searchParams?.panel_type ?? ""}
               name="panel_type"
             >
@@ -97,7 +97,7 @@ export default async function ServersPage({
             </button>
 
             <Link
-              className="rounded-full border border-line bg-white/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
               href={localePath(params.locale, "/dashboard/servers")}
             >
               {t("clearFilters")}
@@ -119,7 +119,7 @@ export default async function ServersPage({
                 <div className="max-w-3xl">
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-semibold text-foreground">{server.name}</h2>
-                    <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                       {t(`serverStatus${server.status.charAt(0).toUpperCase()}${server.status.slice(1)}`)}
                     </span>
                     <span className="rounded-full border border-line bg-[#fffdf8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
@@ -140,7 +140,7 @@ export default async function ServersPage({
 
                 <div className="grid gap-3">
                   <Link
-                    className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
                     href={localePath(params.locale, `/dashboard/servers/${server.id}`)}
                   >
                     {t("viewServerButton")}
