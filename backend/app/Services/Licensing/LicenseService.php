@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\License;
 use App\Models\LicenseActivation;
 use App\Services\Licensing\Data\LicenseVerificationResult;
+use App\Support\Tenancy\CurrentTenant;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,7 @@ class LicenseService
 {
     public function __construct(
         private readonly LicenseVerifierInterface $verifier,
+        private readonly CurrentTenant $currentTenant,
     ) {
     }
 
@@ -31,7 +33,7 @@ class LicenseService
     ): array {
         $normalizedDomain = $this->normalizeDomain($domain);
         $normalizedFingerprint = $this->normalizeFingerprint(
-            $instanceFingerprint ?: $this->buildInstallationFingerprint($normalizedDomain)
+            $instanceFingerprint ?: $this->generateInstallationHash($normalizedDomain)
         );
 
         $license = License::query()
@@ -47,51 +49,49 @@ class LicenseService
 
             return [
                 'valid' => false,
+                'reason' => 'invalid_key',
+                'message' => __('licensing.errors.invalid_key'),
                 'error' => __('licensing.errors.invalid_key'),
                 'license' => null,
             ];
         }
 
-        $boundDomain = $license->bound_domain ?: $this->resolveBoundDomain($license);
-        $boundFingerprint = $license->instance_fingerprint ?: $this->resolveBoundFingerprint($license);
+        $boundDomain = $license->domain ?: $this->resolveBoundDomain($license);
+        $boundFingerprint = $license->installation_hash ?: $this->resolveBoundFingerprint($license);
 
-        if ($boundDomain !== null && $boundDomain !== $normalizedDomain) {
+        if (($reason = $this->checkLicenseState($license)) !== null) {
             return $this->invalidValidationResponse(
                 $license,
                 $normalizedDomain,
                 $boundDomain,
-                __('licensing.errors.domain_mismatch'),
+                $this->messageForReason($reason, $license),
                 $normalizedFingerprint,
                 $boundFingerprint,
-                'domain_mismatch',
+                $reason,
             );
         }
 
-        if ($boundFingerprint !== null && $boundFingerprint !== $normalizedFingerprint) {
+        if (($reason = $this->checkDomainBinding($license, $normalizedDomain)) !== null) {
             return $this->invalidValidationResponse(
                 $license,
                 $normalizedDomain,
                 $boundDomain,
-                __('licensing.errors.fingerprint_mismatch'),
+                $this->messageForReason($reason, $license),
                 $normalizedFingerprint,
                 $boundFingerprint,
-                'fingerprint_mismatch',
+                $reason,
             );
         }
 
-        if (! $license->isActive()) {
-            $error = $license->isExpired()
-                ? __('licensing.errors.expired')
-                : __('licensing.errors.inactive');
-
+        if (($reason = $this->checkInstallationBinding($license, $normalizedFingerprint)) !== null) {
             return $this->invalidValidationResponse(
                 $license,
                 $normalizedDomain,
                 $boundDomain,
-                $error,
+                $this->messageForReason($reason, $license),
                 $normalizedFingerprint,
                 $boundFingerprint,
-                $license->isExpired() ? 'expired' : 'inactive',
+                $reason,
             );
         }
 
@@ -142,13 +142,27 @@ class LicenseService
             $verificationMode,
         );
 
+        if (($reason = $this->checkClientLimit($license, $license->tenant_id)) !== null) {
+            return $this->invalidValidationResponse(
+                $license,
+                $normalizedDomain,
+                $license->domain ?: $boundDomain,
+                $this->messageForReason($reason, $license),
+                $normalizedFingerprint,
+                $license->installation_hash ?: $boundFingerprint,
+                $reason,
+            );
+        }
+
         return [
             'valid' => true,
+            'reason' => null,
+            'message' => $verificationMessage,
             'error' => null,
             'license' => $this->formatLicense(
                 $license,
                 $normalizedDomain,
-                $license->bound_domain ?: $boundDomain,
+                $license->domain ?: $boundDomain,
                 $normalizedFingerprint,
                 $verificationMode,
                 $verificationMessage,
@@ -211,12 +225,12 @@ class LicenseService
             $license->tenant_id = $tenantId;
         }
 
-        if (blank($license->license_type)) {
-            $license->license_type = $license->plan;
+        if (blank($license->type)) {
+            $license->type = $license->effectivePlan();
         }
 
-        $license->bound_domain ??= $normalizedDomain;
-        $license->instance_fingerprint ??= $normalizedFingerprint;
+        $license->domain ??= $normalizedDomain;
+        $license->installation_hash ??= $normalizedFingerprint;
         $license->save();
 
         return [
@@ -224,7 +238,7 @@ class LicenseService
             'license' => $this->formatLicense(
                 $license,
                 $normalizedDomain,
-                $license->bound_domain,
+                $license->domain,
                 $normalizedFingerprint,
                 (string) Arr::get($license->metadata ?? [], 'verification_mode', 'local'),
                 null,
@@ -252,7 +266,7 @@ class LicenseService
     ): array {
         $normalizedDomain = $this->normalizeDomain($domain);
         $normalizedFingerprint = $this->normalizeFingerprint(
-            $instanceFingerprint ?: $this->buildInstallationFingerprint($normalizedDomain)
+            $instanceFingerprint ?: $this->generateInstallationHash($normalizedDomain)
         );
 
         $this->ensureTrialIsNotReused(null, $normalizedDomain, $normalizedFingerprint);
@@ -264,10 +278,13 @@ class LicenseService
             'tenant_id' => $tenantId,
             'license_key' => $this->generateTrialLicenseKey(),
             'owner_email' => Str::lower(trim($ownerEmail)),
+            'type' => License::PLAN_FREE_TRIAL,
             'license_type' => License::PLAN_FREE_TRIAL,
             'plan' => License::PLAN_FREE_TRIAL,
             'status' => License::STATUS_ACTIVE,
+            'domain' => $normalizedDomain,
             'bound_domain' => $normalizedDomain,
+            'installation_hash' => $normalizedFingerprint,
             'instance_fingerprint' => $normalizedFingerprint,
             'max_clients' => Arr::get($planDefaults, 'max_clients'),
             'max_services' => Arr::get($planDefaults, 'max_services'),
@@ -341,29 +358,268 @@ class LicenseService
 
         return $this->formatLicense(
             $license,
-            $license->bound_domain,
-            $license->bound_domain,
-            $license->instance_fingerprint,
+            $license->domain,
+            $license->domain,
+            $license->installation_hash,
             (string) Arr::get($license->metadata ?? [], 'verification_mode', 'local'),
             null,
         );
     }
 
-    public function enforceClientLimitForTenant(?string $tenantId): void
+    public function getCurrentLicense(?string $tenantId = null): ?License
+    {
+        $resolvedTenantId = $tenantId
+            ?? $this->currentTenant->id()
+            ?? request()?->user()?->tenant_id;
+
+        if (blank($resolvedTenantId)) {
+            return null;
+        }
+
+        return $this->currentTenantLicense($resolvedTenantId);
+    }
+
+    /**
+     * @return array{valid: bool, reason: string|null, message: string|null, error: string|null, license: array<string, mixed>|null}
+     */
+    public function validateCurrentLicense(
+        ?string $tenantId = null,
+        ?string $domain = null,
+        ?string $installationHash = null,
+    ): array {
+        $license = $this->getCurrentLicense($tenantId);
+        $resolvedDomain = $this->resolveCurrentDomain($domain);
+        $resolvedInstallationHash = $this->normalizeFingerprint(
+            $installationHash ?: $this->generateInstallationHash($resolvedDomain)
+        );
+
+        if (! $license) {
+            $this->logValidationFailure('missing', [
+                'tenant_id' => $tenantId ?? $this->currentTenant->id(),
+                'domain' => $resolvedDomain,
+                'installation_hash' => $resolvedInstallationHash,
+            ]);
+
+            return [
+                'valid' => false,
+                'reason' => 'missing',
+                'message' => __('licensing.errors.missing'),
+                'error' => __('licensing.errors.missing'),
+                'license' => null,
+            ];
+        }
+
+        $boundDomain = $license->domain ?: $this->resolveBoundDomain($license);
+        $boundFingerprint = $license->installation_hash ?: $this->resolveBoundFingerprint($license);
+
+        foreach ([
+            $this->checkLicenseState($license),
+            $this->checkDomainBinding($license, $resolvedDomain),
+            $this->checkInstallationBinding($license, $resolvedInstallationHash),
+            $this->checkClientLimit($license, $license->tenant_id),
+        ] as $reason) {
+            if ($reason === null) {
+                continue;
+            }
+
+            return $this->invalidValidationResponse(
+                $license,
+                $resolvedDomain,
+                $boundDomain,
+                $this->messageForReason($reason, $license),
+                $resolvedInstallationHash,
+                $boundFingerprint,
+                $reason,
+            );
+        }
+
+        if ($this->hasFreshVerificationCache($license)) {
+            $this->touchValidationCache($license, $resolvedDomain, $resolvedInstallationHash);
+
+            return [
+                'valid' => true,
+                'reason' => null,
+                'message' => __('licensing.messages.cached'),
+                'error' => null,
+                'license' => $this->formatLicense(
+                    $license,
+                    $resolvedDomain,
+                    $license->domain ?: $boundDomain,
+                    $resolvedInstallationHash,
+                    (string) Arr::get($license->metadata ?? [], 'verification_mode', 'local'),
+                    __('licensing.messages.cached'),
+                ),
+            ];
+        }
+
+        $verification = $this->verifier->verify($license, $resolvedDomain, $resolvedInstallationHash);
+
+        if ($verification->status === LicenseVerificationResult::STATUS_INVALID) {
+            return $this->invalidValidationResponse(
+                $license,
+                $resolvedDomain,
+                $boundDomain,
+                $verification->message ?? __('licensing.errors.invalid_key'),
+                $resolvedInstallationHash,
+                $boundFingerprint,
+                'remote_invalid',
+            );
+        }
+
+        if ($verification->status === LicenseVerificationResult::STATUS_UNAVAILABLE && ! $license->withinGracePeriod()) {
+            return $this->invalidValidationResponse(
+                $license,
+                $resolvedDomain,
+                $boundDomain,
+                __('licensing.errors.verification_grace_expired'),
+                $resolvedInstallationHash,
+                $boundFingerprint,
+                'verification_grace_expired',
+            );
+        }
+
+        if ($verification->status === LicenseVerificationResult::STATUS_VERIFIED) {
+            $this->syncRemoteLicenseState($license, $verification->payload);
+        }
+
+        $verificationMode = match ($verification->status) {
+            LicenseVerificationResult::STATUS_VERIFIED => 'remote',
+            LicenseVerificationResult::STATUS_UNAVAILABLE => 'grace',
+            default => 'local',
+        };
+
+        $verificationMessage = $verification->status === LicenseVerificationResult::STATUS_UNAVAILABLE
+            ? __('licensing.messages.grace_mode')
+            : ($verification->message ?: __('licensing.messages.local_only'));
+
+        $this->touchVerification(
+            $license,
+            $resolvedDomain,
+            $resolvedInstallationHash,
+            $verificationMode,
+        );
+
+        return [
+            'valid' => true,
+            'reason' => null,
+            'message' => $verificationMessage,
+            'error' => null,
+            'license' => $this->formatLicense(
+                $license,
+                $resolvedDomain,
+                $license->domain ?: $boundDomain,
+                $resolvedInstallationHash,
+                $verificationMode,
+                $verificationMessage,
+            ),
+        ];
+    }
+
+    public function checkExpiration(License $license): ?string
+    {
+        if ($license->isTrial() && blank($license->expires_at)) {
+            return 'trial_expired';
+        }
+
+        if (! $license->isExpired()) {
+            return null;
+        }
+
+        if ($license->status !== License::STATUS_EXPIRED) {
+            $license->forceFill([
+                'status' => License::STATUS_EXPIRED,
+            ])->save();
+        }
+
+        return $license->isTrial() ? 'trial_expired' : 'expired';
+    }
+
+    public function checkDomainBinding(License $license, ?string $domain = null): ?string
+    {
+        if (blank($domain)) {
+            return null;
+        }
+
+        $boundDomain = $license->domain ?: $this->resolveBoundDomain($license);
+
+        if (blank($boundDomain)) {
+            return null;
+        }
+
+        return $this->normalizeDomain($boundDomain) === $this->normalizeDomain($domain)
+            ? null
+            : 'domain_mismatch';
+    }
+
+    public function checkInstallationBinding(License $license, ?string $installationHash = null): ?string
+    {
+        if (blank($installationHash)) {
+            return null;
+        }
+
+        $boundInstallationHash = $license->installation_hash ?: $this->resolveBoundFingerprint($license);
+
+        if (blank($boundInstallationHash)) {
+            return null;
+        }
+
+        return $this->normalizeFingerprint($boundInstallationHash) === $this->normalizeFingerprint($installationHash)
+            ? null
+            : 'installation_mismatch';
+    }
+
+    public function checkClientLimit(License $license, ?string $tenantId = null): ?string
+    {
+        $resolvedTenantId = $tenantId ?: $license->tenant_id;
+
+        if (blank($resolvedTenantId)) {
+            return null;
+        }
+
+        $maxClients = $license->max_clients ?? Arr::get(
+            $this->planDefaults($license->effectivePlan()),
+            'max_clients'
+        );
+
+        if ($maxClients === null) {
+            return null;
+        }
+
+        return $this->activeClientCount($resolvedTenantId) > $maxClients
+            ? 'limit_exceeded'
+            : null;
+    }
+
+    public function generateInstallationHash(?string $domain = null): string
+    {
+        $connection = (string) config('database.default');
+        $database = (string) config("database.connections.{$connection}.database");
+        $host = php_uname('n') ?: gethostname() ?: 'hostinvo';
+
+        return substr(hash('sha256', implode('|', array_filter([
+            (string) config('app.key'),
+            $database,
+            $host,
+        ]))), 0, 64);
+    }
+
+    public function enforceClientLimitForTenant(?string $tenantId, ?string $nextClientStatus = Client::STATUS_ACTIVE): void
     {
         if (blank($tenantId)) {
             return;
         }
 
-        $license = $this->currentTenantLicense($tenantId);
+        $license = $this->getCurrentLicense($tenantId);
 
         if (! $license) {
-            return;
+            throw ValidationException::withMessages([
+                'license' => [__('licensing.errors.missing')],
+            ]);
         }
 
-        if (! $license->isActive()) {
+        if (($reason = $this->checkLicenseState($license)) !== null) {
             throw ValidationException::withMessages([
-                'license' => [__('licensing.errors.license_required')],
+                'license' => [$this->messageForReason($reason, $license)],
             ]);
         }
 
@@ -376,9 +632,11 @@ class LicenseService
             return;
         }
 
-        $currentClients = Client::query()
-            ->where('tenant_id', $tenantId)
-            ->count();
+        if (($nextClientStatus ?? Client::STATUS_ACTIVE) !== Client::STATUS_ACTIVE) {
+            return;
+        }
+
+        $currentClients = $this->activeClientCount($tenantId);
 
         if ($currentClients >= $maxClients) {
             $planLabel = (string) Arr::get(
@@ -424,7 +682,6 @@ class LicenseService
         return License::query()
             ->where('tenant_id', $tenantId)
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [License::STATUS_ACTIVE])
-            ->orderByRaw('CASE WHEN COALESCE(license_type, plan) = ? THEN 1 ELSE 0 END', [License::PLAN_FREE_TRIAL])
             ->latest('issued_at')
             ->latest('created_at')
             ->first();
@@ -450,7 +707,7 @@ class LicenseService
 
     private function buildInstallationFingerprint(string $domain): string
     {
-        return substr(hash('sha256', $domain.'|'.config('app.url')), 0, 40);
+        return $this->generateInstallationHash($domain);
     }
 
     private function ensureActivationCapacity(License $license): void
@@ -512,11 +769,10 @@ class LicenseService
             ? (string) Arr::get($licenseData, 'status')
             : $license->status;
 
-        $licenseType = (string) (Arr::get($licenseData, 'license_type') ?? Arr::get($licenseData, 'plan'));
+        $licenseType = (string) (Arr::get($licenseData, 'type') ?? Arr::get($licenseData, 'license_type') ?? Arr::get($licenseData, 'plan'));
 
         if ($licenseType !== '') {
-            $license->license_type = $licenseType;
-            $license->plan = $licenseType;
+            $license->type = $licenseType;
         }
 
         if (($maxClients = Arr::get($licenseData, 'max_clients')) !== null) {
@@ -527,12 +783,12 @@ class LicenseService
             $license->max_services = (int) $maxServices;
         }
 
-        if (($boundDomain = Arr::get($licenseData, 'bound_domain')) !== null) {
-            $license->bound_domain = $this->normalizeDomain((string) $boundDomain);
+        if (($boundDomain = Arr::get($licenseData, 'domain', Arr::get($licenseData, 'bound_domain'))) !== null) {
+            $license->domain = $this->normalizeDomain((string) $boundDomain);
         }
 
-        if (($instanceFingerprint = Arr::get($licenseData, 'instance_fingerprint')) !== null) {
-            $license->instance_fingerprint = $this->normalizeFingerprint((string) $instanceFingerprint);
+        if (($instanceFingerprint = Arr::get($licenseData, 'installation_hash', Arr::get($licenseData, 'instance_fingerprint'))) !== null) {
+            $license->installation_hash = $this->normalizeFingerprint((string) $instanceFingerprint);
         }
 
         if (($expiresAt = $this->parseDateValue(Arr::get($licenseData, 'expires_at'))) !== null) {
@@ -550,15 +806,32 @@ class LicenseService
         $metadata['verification_mode'] = $verificationMode;
 
         $license->forceFill([
-            'license_type' => $license->license_type ?: $license->plan,
-            'bound_domain' => $license->bound_domain ?: $domain,
-            'instance_fingerprint' => $license->instance_fingerprint ?: $instanceFingerprint,
+            'type' => $license->effectivePlan(),
+            'domain' => $license->domain ?: $domain,
+            'installation_hash' => $license->installation_hash ?: $instanceFingerprint,
             'last_validated_at' => now(),
             'last_verified_at' => $verificationMode !== 'grace' ? now() : $license->last_verified_at,
             'verification_grace_ends_at' => now()->addHours($this->gracePeriodHours()),
             'metadata' => $metadata,
         ]);
         $license->save();
+    }
+
+    private function touchValidationCache(
+        License $license,
+        string $domain,
+        string $installationHash,
+    ): void {
+        $metadata = (array) ($license->metadata ?? []);
+        $metadata['verification_mode'] = $metadata['verification_mode'] ?? 'local';
+
+        $license->forceFill([
+            'type' => $license->effectivePlan(),
+            'domain' => $license->domain ?: $domain,
+            'installation_hash' => $license->installation_hash ?: $installationHash,
+            'last_validated_at' => now(),
+            'metadata' => $metadata,
+        ])->save();
     }
 
     /**
@@ -585,6 +858,8 @@ class LicenseService
 
         return [
             'valid' => false,
+            'reason' => $reason,
+            'message' => $error,
             'error' => $error,
             'license' => $this->formatLicense(
                 $license,
@@ -616,19 +891,21 @@ class LicenseService
             : ($planDefaults['activation_limit'] ?? null);
         $maxClients = $license->max_clients ?? Arr::get($planDefaults, 'max_clients');
         $clientCount = $license->tenant_id
-            ? Client::query()->where('tenant_id', $license->tenant_id)->count()
+            ? $this->activeClientCount($license->tenant_id)
             : null;
 
         return [
             'id' => $license->id,
             'license_key' => $license->license_key,
             'owner_email' => $license->owner_email,
+            'type' => $plan,
             'plan' => $plan,
             'license_type' => $plan,
             'status' => $license->status,
-            'domain' => $domain,
+            'domain' => $license->domain ?: $domain,
             'bound_domain' => $boundDomain,
-            'instance_fingerprint' => $license->instance_fingerprint ?: $instanceFingerprint,
+            'installation_hash' => $license->installation_hash ?: $instanceFingerprint,
+            'instance_fingerprint' => $license->installation_hash ?: $instanceFingerprint,
             'max_clients' => $maxClients,
             'max_services' => $license->max_services ?? Arr::get($planDefaults, 'max_services'),
             'activation_limit' => $license->activation_limit ?? Arr::get($planDefaults, 'activation_limit'),
@@ -636,6 +913,7 @@ class LicenseService
             'remaining_activations' => $remaining,
             'issued_at' => $license->issued_at?->toIso8601String(),
             'expires_at' => $license->expires_at?->toIso8601String(),
+            'last_validated_at' => $license->last_validated_at?->toIso8601String(),
             'last_verified_at' => $license->last_verified_at?->toIso8601String(),
             'verification_grace_ends_at' => $license->verification_grace_ends_at?->toIso8601String(),
             'is_expired' => $license->isExpired(),
@@ -647,6 +925,75 @@ class LicenseService
                 ? $clientCount > $maxClients
                 : false,
         ];
+    }
+
+    private function checkLicenseState(License $license): ?string
+    {
+        if (($expirationReason = $this->checkExpiration($license)) !== null) {
+            return $expirationReason;
+        }
+
+        return match ($license->status) {
+            License::STATUS_SUSPENDED => 'suspended',
+            License::STATUS_REVOKED => 'revoked',
+            License::STATUS_EXPIRED => $license->isTrial() ? 'trial_expired' : 'expired',
+            License::STATUS_ACTIVE => null,
+            default => 'inactive',
+        };
+    }
+
+    private function resolveCurrentDomain(?string $domain = null): string
+    {
+        $candidate = $domain
+            ?: request()?->getHost()
+            ?: parse_url((string) config('app.url'), PHP_URL_HOST)
+            ?: 'localhost';
+
+        return $this->normalizeDomain((string) $candidate);
+    }
+
+    private function hasFreshVerificationCache(License $license): bool
+    {
+        if (! $license->last_verified_at instanceof CarbonInterface) {
+            return false;
+        }
+
+        return $license->last_verified_at->greaterThanOrEqualTo(
+            now()->subMinutes((int) config('licensing.verification.cache_minutes', 15))
+        );
+    }
+
+    private function activeClientCount(string $tenantId): int
+    {
+        return Client::query()
+            ->where('tenant_id', $tenantId)
+            ->where('status', Client::STATUS_ACTIVE)
+            ->count();
+    }
+
+    private function messageForReason(string $reason, ?License $license = null): string
+    {
+        return match ($reason) {
+            'invalid_key' => __('licensing.errors.invalid_key'),
+            'missing' => __('licensing.errors.missing'),
+            'expired' => __('licensing.errors.expired'),
+            'trial_expired' => __('licensing.errors.trial_expired'),
+            'domain_mismatch' => __('licensing.errors.domain_mismatch'),
+            'installation_mismatch', 'fingerprint_mismatch' => __('licensing.errors.installation_mismatch'),
+            'suspended' => __('licensing.errors.suspended'),
+            'revoked' => __('licensing.errors.revoked'),
+            'verification_grace_expired' => __('licensing.errors.verification_grace_expired'),
+            'limit_exceeded' => __('licensing.errors.client_limit_exceeded', [
+                'plan' => (string) Arr::get(
+                    $this->planDefaults($license?->effectivePlan() ?? License::PLAN_STARTER),
+                    'label',
+                    Str::headline($license?->effectivePlan() ?? License::PLAN_STARTER)
+                ),
+                'limit' => (int) ($license?->max_clients
+                    ?? Arr::get($this->planDefaults($license?->effectivePlan() ?? License::PLAN_STARTER), 'max_clients', 0)),
+            ]),
+            default => __('licensing.errors.inactive'),
+        };
     }
 
     private function resolveBoundDomain(License $license): ?string

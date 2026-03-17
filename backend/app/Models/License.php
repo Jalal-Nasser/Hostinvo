@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,10 +32,13 @@ class License extends Model
     protected $fillable = [
         'license_key',
         'owner_email',
+        'type',
         'license_type',
         'plan',
         'status',
+        'domain',
         'bound_domain',
+        'installation_hash',
         'instance_fingerprint',
         'max_clients',
         'max_services',
@@ -103,7 +107,7 @@ class License extends Model
 
     public function effectivePlan(): string
     {
-        return $this->license_type ?: $this->plan;
+        return $this->type ?: $this->license_type ?: $this->plan;
     }
 
     public function isTrial(): bool
@@ -120,5 +124,65 @@ class License extends Model
     {
         return $this->verification_grace_ends_at !== null
             && $this->verification_grace_ends_at->isFuture();
+    }
+
+    protected function type(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value, array $attributes): ?string => $value
+                ?? $attributes['license_type']
+                ?? $attributes['plan']
+                ?? null,
+            set: function (?string $value): array {
+                if (blank($value)) {
+                    return [];
+                }
+
+                return [
+                    'type' => $value,
+                    'license_type' => $value,
+                    'plan' => $value,
+                ];
+            }
+        );
+    }
+
+    protected function domain(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value, array $attributes): ?string => $value
+                ?? $attributes['bound_domain']
+                ?? null,
+            set: function (?string $value): array {
+                if (blank($value)) {
+                    return [];
+                }
+
+                return [
+                    'domain' => $value,
+                    'bound_domain' => $value,
+                ];
+            }
+        );
+    }
+
+    protected function installationHash(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value, array $attributes): ?string => $value
+                ?? $attributes['installation_hash']
+                ?? $attributes['instance_fingerprint']
+                ?? null,
+            set: function (?string $value): array {
+                if (blank($value)) {
+                    return [];
+                }
+
+                return [
+                    'installation_hash' => $value,
+                    'instance_fingerprint' => $value,
+                ];
+            }
+        );
     }
 }

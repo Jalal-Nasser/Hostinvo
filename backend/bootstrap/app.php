@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthorizeMetricsAccess;
 use App\Http\Middleware\CaptureRequestMetrics;
+use App\Http\Middleware\EnsureValidLicense;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\Auth\EnsureUserHasPermission;
 use App\Http\Middleware\Auth\EnsureUserHasRole;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'metrics.auth' => AuthorizeMetricsAccess::class,
             'permission' => EnsureUserHasPermission::class,
+            'license.valid' => EnsureValidLicense::class,
             'resolve.tenant' => ResolveTenant::class,
             'role' => EnsureUserHasRole::class,
         ]);

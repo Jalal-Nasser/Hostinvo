@@ -19,12 +19,12 @@ Route::middleware(['api'])
 
         Route::prefix('admin')
             ->name('admin.')
-            ->middleware(['auth:sanctum', 'resolve.tenant'])
+            ->middleware(['auth:sanctum', 'resolve.tenant', 'license.valid'])
             ->group(base_path('routes/api/v1/admin.php'));
 
         Route::prefix('client')
             ->name('client.')
-            ->middleware(['auth:sanctum', 'resolve.tenant'])
+            ->middleware(['auth:sanctum', 'resolve.tenant', 'license.valid'])
             ->group(base_path('routes/api/v1/client.php'));
 
         Route::prefix('webhooks')

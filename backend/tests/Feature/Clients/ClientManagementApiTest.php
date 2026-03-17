@@ -46,6 +46,20 @@ class ClientManagementApiTest extends TestCase
             'joined_at' => now(),
         ]);
 
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-CLIENTS-001',
+            'owner_email' => 'owner@acme.test',
+            'type' => License::PLAN_STARTER,
+            'plan' => License::PLAN_STARTER,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 35,
+            'max_services' => 5,
+            'activation_limit' => 1,
+            'issued_at' => now(),
+            'expires_at' => now()->addMonth(),
+        ]);
+
         Sanctum::actingAs($user);
 
         $createResponse = $this->postJson('/api/v1/admin/clients', [
@@ -178,6 +192,7 @@ class ClientManagementApiTest extends TestCase
         License::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'license_key' => 'HOST-LIMIT-001',
+            'type' => License::PLAN_FREE_TRIAL,
             'owner_email' => 'owner@licensed.test',
             'plan' => License::PLAN_FREE_TRIAL,
             'license_type' => License::PLAN_FREE_TRIAL,
@@ -187,8 +202,6 @@ class ClientManagementApiTest extends TestCase
             'activation_limit' => 1,
             'issued_at' => now(),
             'expires_at' => now()->addDays(7),
-            'bound_domain' => 'licensed.test',
-            'instance_fingerprint' => 'licensed-instance',
         ]);
 
         Sanctum::actingAs($user);

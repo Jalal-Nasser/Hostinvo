@@ -33,7 +33,10 @@ class ClientService
     public function create(array $payload, User $actor): Client
     {
         return DB::transaction(function () use ($payload, $actor): Client {
-            $this->licenseService->enforceClientLimitForTenant($actor->tenant_id);
+            $this->licenseService->enforceClientLimitForTenant(
+                $actor->tenant_id,
+                (string) ($payload['status'] ?? Client::STATUS_ACTIVE),
+            );
 
             $client = $this->clients->create($this->extractClientAttributes($payload, $actor));
 
@@ -59,6 +62,12 @@ class ClientService
     public function update(Client $client, array $payload, User $actor): Client
     {
         return DB::transaction(function () use ($client, $payload, $actor): Client {
+            $incomingStatus = (string) ($payload['status'] ?? $client->status);
+
+            if ($client->status !== Client::STATUS_ACTIVE && $incomingStatus === Client::STATUS_ACTIVE) {
+                $this->licenseService->enforceClientLimitForTenant($actor->tenant_id, $incomingStatus);
+            }
+
             $this->clients->update($client, $this->extractClientAttributes($payload, $actor, $client));
 
             if (array_key_exists('contacts', $payload)) {

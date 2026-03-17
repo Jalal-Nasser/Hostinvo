@@ -35,6 +35,7 @@ return [
     'verification' => [
         'authority_url' => env('LICENSING_VERIFICATION_URL'),
         'timeout_seconds' => (int) env('LICENSING_VERIFICATION_TIMEOUT', 5),
+        'cache_minutes' => (int) env('LICENSING_VERIFICATION_CACHE_MINUTES', 15),
         'grace_period_hours' => (int) env('LICENSING_VERIFICATION_GRACE_HOURS', 72),
         'allow_local_validation_without_authority' => (bool) env('LICENSING_ALLOW_LOCAL_VALIDATION', true),
     ],
