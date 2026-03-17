@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\Licensing\LicenseVerifierInterface;
 use App\Queue\Failed\TenantAwareDatabaseUuidFailedJobProvider;
+use App\Services\Licensing\RemoteLicenseVerifier;
 use App\Services\Monitoring\MetricsService;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PasswordResetTenantContext::class);
+        $this->app->singleton(LicenseVerifierInterface::class, RemoteLicenseVerifier::class);
 
         $this->app->extend('queue.failer', function (FailedJobProviderInterface $failer, $app) {
             $config = (array) $app['config']->get('queue.failed', []);

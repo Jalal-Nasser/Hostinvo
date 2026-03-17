@@ -51,6 +51,11 @@ class Tenant extends Model
         return $this->hasMany(TenantSetting::class);
     }
 
+    public function licenses(): HasMany
+    {
+        return $this->hasMany(License::class)->latest('issued_at');
+    }
+
     public function webhookLogs(): HasMany
     {
         return $this->hasMany(WebhookLog::class);

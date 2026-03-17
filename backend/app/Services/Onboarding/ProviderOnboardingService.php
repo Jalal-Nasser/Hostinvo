@@ -32,7 +32,7 @@ class ProviderOnboardingService
             $tenant = Tenant::query()->create([
                 'name' => trim((string) $payload['company_name']),
                 'slug' => $this->resolveUniqueTenantSlug((string) $payload['company_name']),
-                'plan' => 'standard',
+                'plan' => License::PLAN_FREE_TRIAL,
                 'status' => 'active',
                 'primary_domain' => $payload['company_domain'] ?? null,
                 'default_locale' => $payload['default_locale'] ?? 'en',
@@ -78,19 +78,40 @@ class ProviderOnboardingService
             ]);
 
             $licensePayload = null;
+            $licenseDomain = Str::lower(trim((string) ($payload['company_domain'] ?? $request->getHost())));
+            $instanceFingerprint = filled($payload['license_instance_id'] ?? null)
+                ? (string) $payload['license_instance_id']
+                : sha1($licenseDomain.'|'.$tenant->slug);
 
             if (filled($payload['license_key'] ?? null)) {
                 $licensePayload = $this->licenseService->activateLicense(
                     licenseKey: (string) $payload['license_key'],
-                    domain: (string) $payload['license_domain'],
-                    instanceId: (string) $payload['license_instance_id'],
+                    domain: (string) ($payload['license_domain'] ?? $licenseDomain),
+                    instanceId: (string) $instanceFingerprint,
+                    tenantId: $tenant->id,
+                );
+            } else {
+                $licensePayload = $this->licenseService->issueTrialLicense(
+                    ownerEmail: $user->email,
+                    domain: $licenseDomain,
+                    instanceFingerprint: $instanceFingerprint,
                     tenantId: $tenant->id,
                 );
             }
 
+            $tenant->plan = (string) data_get(
+                $licensePayload,
+                'license.license_type',
+                data_get($licensePayload, 'license.plan', License::PLAN_FREE_TRIAL),
+            );
+            $tenant->save();
+
             Auth::guard('web')->login($user, true);
-            $request->session()->regenerate();
-            $request->session()->put('tenant_id', $tenant->id);
+
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+                $request->session()->put('tenant_id', $tenant->id);
+            }
 
             return [
                 'user' => $user->loadMissing(['tenant', 'roles.permissions']),
@@ -163,11 +184,16 @@ class ProviderOnboardingService
                 'timezone' => $tenant->timezone,
             ],
             'license' => $license ? [
-                'plan' => $license->plan,
+                'plan' => $license->effectivePlan(),
+                'license_type' => $license->effectivePlan(),
                 'status' => $license->status,
                 'max_clients' => $license->max_clients,
                 'max_services' => $license->max_services,
                 'expires_at' => $license->expires_at?->toIso8601String(),
+                'is_trial' => $license->isTrial(),
+                'last_verified_at' => $license->last_verified_at?->toIso8601String(),
+                'verification_grace_ends_at' => $license->verification_grace_ends_at?->toIso8601String(),
+                'bound_domain' => $license->bound_domain,
             ] : null,
             'steps' => $steps,
             'progress' => [

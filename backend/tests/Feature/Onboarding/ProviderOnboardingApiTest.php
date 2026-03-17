@@ -24,8 +24,9 @@ class ProviderOnboardingApiTest extends TestCase
             'license_key' => 'HOST-LAUNCH-001',
             'owner_email' => 'launch-owner@example.test',
             'plan' => License::PLAN_STARTER,
+            'license_type' => License::PLAN_STARTER,
             'status' => License::STATUS_ACTIVE,
-            'max_clients' => 250,
+            'max_clients' => 35,
             'max_services' => 5,
             'activation_limit' => 1,
             'issued_at' => now(),
@@ -84,6 +85,48 @@ class ProviderOnboardingApiTest extends TestCase
             'tenant_id' => $tenantId,
             'domain' => 'launch-provider.test',
             'instance_id' => 'launch-node-1',
+        ]);
+    }
+
+    public function test_provider_registration_without_license_key_issues_a_free_trial_license(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $response = $this->postJson('/api/v1/auth/provider-register', [
+            'name' => 'Trial Owner',
+            'email' => 'owner@trial-provider.test',
+            'password' => 'secret-pass-123',
+            'password_confirmation' => 'secret-pass-123',
+            'company_name' => 'Trial Provider',
+            'company_domain' => 'trial-provider.test',
+            'default_locale' => 'en',
+            'default_currency' => 'USD',
+            'timezone' => 'UTC',
+        ]);
+
+        $tenantId = $response->json('data.user.tenant.id');
+        $licenseId = $response->json('data.license.license.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.license.license.plan', License::PLAN_FREE_TRIAL)
+            ->assertJsonPath('data.license.license.license_type', License::PLAN_FREE_TRIAL)
+            ->assertJsonPath('data.license.license.is_trial', true)
+            ->assertJsonPath('data.license.license.max_clients', 3)
+            ->assertJsonPath('data.license.activation.domain', 'trial-provider.test');
+
+        $this->assertDatabaseHas('licenses', [
+            'id' => $licenseId,
+            'tenant_id' => $tenantId,
+            'plan' => License::PLAN_FREE_TRIAL,
+            'license_type' => License::PLAN_FREE_TRIAL,
+            'bound_domain' => 'trial-provider.test',
+        ]);
+
+        $this->assertDatabaseHas('license_activations', [
+            'license_id' => $licenseId,
+            'tenant_id' => $tenantId,
+            'domain' => 'trial-provider.test',
         ]);
     }
 

@@ -9,7 +9,7 @@ class UpdateOnboardingCompanyRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('tenant.manage') ?? false;
+        return $this->user()?->hasPermissionTo('tenant.manage') ?? false;
     }
 
     public function rules(): array

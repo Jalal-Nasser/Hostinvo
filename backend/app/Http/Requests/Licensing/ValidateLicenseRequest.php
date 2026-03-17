@@ -16,6 +16,7 @@ class ValidateLicenseRequest extends FormRequest
         return [
             'license_key' => ['required', 'string', 'max:120'],
             'domain' => ['required', 'string', 'max:255'],
+            'instance_id' => ['nullable', 'string', 'max:191'],
         ];
     }
 }

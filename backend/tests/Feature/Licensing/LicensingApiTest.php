@@ -17,8 +17,9 @@ class LicensingApiTest extends TestCase
             'license_key' => 'HOST-STARTER-001',
             'owner_email' => 'owner@example.test',
             'plan' => License::PLAN_STARTER,
+            'license_type' => License::PLAN_STARTER,
             'status' => License::STATUS_ACTIVE,
-            'max_clients' => 250,
+            'max_clients' => 35,
             'max_services' => 5,
             'activation_limit' => 1,
             'issued_at' => now(),
@@ -34,7 +35,8 @@ class LicensingApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.valid', true)
             ->assertJsonPath('data.license.plan', License::PLAN_STARTER)
-            ->assertJsonPath('data.license.max_clients', 250)
+            ->assertJsonPath('data.license.license_type', License::PLAN_STARTER)
+            ->assertJsonPath('data.license.max_clients', 35)
             ->assertJsonPath('data.license.max_services', 5)
             ->assertJsonPath('data.license.remaining_activations', 1);
     }
@@ -45,8 +47,9 @@ class LicensingApiTest extends TestCase
             'license_key' => 'HOST-PRO-001',
             'owner_email' => 'owner@example.test',
             'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
             'status' => License::STATUS_ACTIVE,
-            'max_clients' => 1000,
+            'max_clients' => 500,
             'max_services' => 20,
             'activation_limit' => 1,
             'issued_at' => now(),

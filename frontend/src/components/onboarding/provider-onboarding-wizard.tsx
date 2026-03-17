@@ -50,6 +50,7 @@ type Copy = {
   companyDomain: string;
   companyDomainPlaceholder: string;
   licenseToggle: string;
+  licenseHelp: string;
   licenseKey: string;
   licenseKeyPlaceholder: string;
   licenseInstance: string;
@@ -70,16 +71,16 @@ type Copy = {
 
 const copyByLocale: Record<AppLocale, Copy> = {
   en: {
-    intro: "Set up your provider workspace, company profile, first server, and first product in one guided flow.",
+    intro: "Create your self-hosted Hostinvo installation, activate a paid license or start a 7-day evaluation license, and prepare the first provider workspace.",
     login: "Sign in instead",
     progress: "Setup progress",
     stepLabel: "Step",
     included: "What's included",
     support: "Built for serious providers",
-    supportBody: "Hostinvo gives you billing, provisioning, domains, and support operations inside one premium provider control layer.",
+    supportBody: "Hostinvo gives you billing, provisioning, domains, and support operations inside one self-hosted provider control layer.",
     complete: "of 4 complete",
     createTitle: "Create your account",
-    createBody: "Create the provider owner account and optional license context for your commercial workspace.",
+    createBody: "Create the provider owner account. If you already purchased a Hostinvo license, activate it now. Otherwise, a 7-day trial license with up to 3 clients will be issued for evaluation.",
     configureTitle: "Configure your company",
     configureBody: "Confirm your brand profile and operating defaults before connecting infrastructure.",
     serverTitle: "Add your first server",
@@ -101,6 +102,7 @@ const copyByLocale: Record<AppLocale, Copy> = {
     companyDomain: "Company domain",
     companyDomainPlaceholder: "acmehosting.com",
     licenseToggle: "Have a license key? (optional)",
+    licenseHelp: "No license key yet? Hostinvo will issue a 7-day self-hosted trial for evaluation, limited to 3 clients.",
     licenseKey: "License key",
     licenseKeyPlaceholder: "HOST-XXXX-XXXX-XXXX",
     licenseInstance: "Instance ID",
@@ -124,16 +126,16 @@ const copyByLocale: Record<AppLocale, Copy> = {
     ],
   },
   ar: {
-    intro: "جهز مساحة عمل المزود وملف الشركة وأول خادم وأول منتج ضمن مسار إعداد واحد وواضح.",
+    intro: "أنشئ تثبيت Hostinvo الذاتي، وفعّل ترخيصًا مدفوعًا أو ابدأ تجربة تقييم لمدة 7 أيام، ثم جهّز أول مساحة عمل للمزوّد.",
     login: "تسجيل الدخول بدلاً من ذلك",
     progress: "تقدم الإعداد",
     stepLabel: "الخطوة",
     included: "ما الذي ستحصل عليه",
     support: "مصمم لمزودي الخدمة الجادين",
-    supportBody: "يوفر Hostinvo طبقة تشغيل موحدة للفوترة والتزويد والنطاقات والدعم داخل تجربة مزود احترافية.",
+    supportBody: "يوفر Hostinvo طبقة تشغيل ذاتية للفوترة والتزويد والنطاقات والدعم داخل تجربة مزود احترافية.",
     complete: "من 4 مكتملة",
     createTitle: "إنشاء حسابك",
-    createBody: "أنشئ حساب مالك المزود وسياق الترخيص الاختياري لمساحة العمل التجارية.",
+    createBody: "أنشئ حساب مالك المزود. إذا كان لديك ترخيص Hostinvo مدفوع فيمكنك تفعيله الآن، وإلا سيتم إصدار تجربة ذاتية لمدة 7 أيام بحد أقصى 3 عملاء للتقييم.",
     configureTitle: "إعداد شركتك",
     configureBody: "أكد هوية الشركة والإعدادات التشغيلية قبل ربط البنية التحتية.",
     serverTitle: "إضافة أول خادم",
@@ -155,6 +157,7 @@ const copyByLocale: Record<AppLocale, Copy> = {
     companyDomain: "نطاق الشركة",
     companyDomainPlaceholder: "acmehosting.com",
     licenseToggle: "هل لديك مفتاح ترخيص؟ (اختياري)",
+    licenseHelp: "إذا لم يكن لديك مفتاح ترخيص بعد، سيُصدر Hostinvo تجربة ذاتية لمدة 7 أيام للتقييم وبحد أقصى 3 عملاء.",
     licenseKey: "مفتاح الترخيص",
     licenseKeyPlaceholder: "HOST-XXXX-XXXX-XXXX",
     licenseInstance: "معرف النسخة",
@@ -457,6 +460,7 @@ export function ProviderOnboardingWizard({ locale }: ProviderOnboardingWizardPro
                     <span>{copy.licenseToggle}</span>
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d0e1f3] bg-white text-[#036deb]">{showLicense ? "−" : "+"}</span>
                   </button>
+                  <p className="mt-3 text-sm leading-6 text-[#58718c]">{copy.licenseHelp}</p>
                   {showLicense ? (
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div className="grid gap-2"><label className="text-sm font-semibold text-[#123055]">{copy.licenseKey}</label><input className={input} placeholder={copy.licenseKeyPlaceholder} value={registerForm.licenseKey} onChange={(e) => setRegisterForm((v) => ({ ...v, licenseKey: e.target.value }))} /></div>

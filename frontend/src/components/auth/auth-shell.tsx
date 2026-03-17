@@ -33,11 +33,11 @@ type ShellCopy = {
 
 const shellCopyByLocale: Record<string, ShellCopy> = {
   en: {
-    badge: "Premium hosting operations",
+    badge: "Licensed self-hosted platform",
     eyebrow: "Hostinvo Workspace Access",
     heading: "The smarter way to run your hosting business",
     description:
-      "One platform for billing, provisioning, client management, and automation. Built for providers who need control, speed, and enterprise-grade trust.",
+      "One self-hosted platform for billing, provisioning, client management, and automation. Built for providers who want to run Hostinvo on their own infrastructure.",
     features: [
       {
         key: "provisioning",
@@ -53,9 +53,9 @@ const shellCopyByLocale: Record<string, ShellCopy> = {
       },
       {
         key: "tenancy",
-        title: "Multi-tenant SaaS",
+        title: "Self-hosted licensing",
         description:
-          "Isolated provider workspaces with role-aware access and operational clarity.",
+          "Install Hostinvo on your own infrastructure with tenant-aware controls and plan-based licensing.",
       },
       {
         key: "security",
@@ -70,14 +70,14 @@ const shellCopyByLocale: Record<string, ShellCopy> = {
       { value: "99.9%", label: "Uptime" },
     ],
     footer:
-      "Secure provider access for billing, provisioning, tenant administration, and customer operations.",
+      "Secure provider access for self-hosted billing, provisioning, tenant administration, and customer operations.",
   },
   ar: {
-    badge: "تشغيل احترافي للاستضافة",
+    badge: "منصة مرخصة ذاتية الاستضافة",
     eyebrow: "الوصول إلى مساحة عمل Hostinvo",
     heading: "الطريقة الأذكى لإدارة أعمال الاستضافة",
     description:
-      "منصة واحدة للفوترة والتزويد وإدارة العملاء والأتمتة. مصممة لمزودي الخدمة الذين يحتاجون إلى سرعة وتحكم وثقة تشغيلية عالية.",
+      "منصة ذاتية الاستضافة للفوترة والتزويد وإدارة العملاء والأتمتة. مصممة لمزودي الخدمة الذين يريدون تشغيل Hostinvo على بنيتهم التحتية الخاصة.",
     features: [
       {
         key: "provisioning",
@@ -91,8 +91,9 @@ const shellCopyByLocale: Record<string, ShellCopy> = {
       },
       {
         key: "tenancy",
-        title: "منصة SaaS متعددة المستأجرين",
-        description: "مساحات عمل معزولة للمزودين مع صلاحيات مرنة ووضوح تشغيلي كامل.",
+        title: "ترخيص ذاتي الاستضافة",
+        description:
+          "شغّل Hostinvo على بنيتك الخاصة مع ضوابط واعية بالمستأجر وحدود ترخيص مرتبطة بالخطة.",
       },
       {
         key: "security",
@@ -105,7 +106,7 @@ const shellCopyByLocale: Record<string, ShellCopy> = {
       { value: "+1M", label: "فاتورة" },
       { value: "99.9%", label: "وقت التشغيل" },
     ],
-    footer: "وصول آمن للفوترة والتزويد وإدارة المستأجر وتشغيل العملاء.",
+    footer: "وصول آمن للفوترة والتزويد وإدارة المستأجر وتشغيل العملاء على بنية ذاتية.",
   },
 };
 

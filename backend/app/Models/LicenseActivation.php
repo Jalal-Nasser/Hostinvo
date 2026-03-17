@@ -24,6 +24,7 @@ class LicenseActivation extends Model
     protected $fillable = [
         'domain',
         'instance_id',
+        'instance_fingerprint',
         'status',
         'activated_at',
         'last_seen_at',

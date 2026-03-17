@@ -5,6 +5,7 @@ namespace App\Services\Clients;
 use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
 use App\Models\Client;
 use App\Models\User;
+use App\Services\Licensing\LicenseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ class ClientService
 {
     public function __construct(
         private readonly ClientRepositoryInterface $clients,
+        private readonly LicenseService $licenseService,
     ) {
     }
 
@@ -31,6 +33,8 @@ class ClientService
     public function create(array $payload, User $actor): Client
     {
         return DB::transaction(function () use ($payload, $actor): Client {
+            $this->licenseService->enforceClientLimitForTenant($actor->tenant_id);
+
             $client = $this->clients->create($this->extractClientAttributes($payload, $actor));
 
             if (array_key_exists('contacts', $payload)) {

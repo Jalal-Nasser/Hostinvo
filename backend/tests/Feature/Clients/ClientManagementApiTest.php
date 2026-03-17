@@ -3,6 +3,7 @@
 namespace Tests\Feature\Clients;
 
 use App\Models\Client;
+use App\Models\License;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\TenantUser;
@@ -143,5 +144,78 @@ class ClientManagementApiTest extends TestCase
         $this->assertSoftDeleted('clients', [
             'id' => $clientId,
         ]);
+    }
+
+    public function test_tenant_admin_cannot_create_more_clients_than_the_active_license_allows(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $tenant = Tenant::query()->create([
+            'name' => 'Licensed Hosting',
+            'slug' => 'licensed-hosting',
+            'default_locale' => 'en',
+            'default_currency' => 'USD',
+            'timezone' => 'UTC',
+            'status' => 'active',
+        ]);
+
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'admin@licensed.test',
+        ]);
+
+        $role = Role::query()->where('name', Role::TENANT_ADMIN)->firstOrFail();
+        $user->roles()->attach($role);
+
+        TenantUser::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'role_id' => $role->id,
+            'is_primary' => true,
+            'joined_at' => now(),
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-LIMIT-001',
+            'owner_email' => 'owner@licensed.test',
+            'plan' => License::PLAN_FREE_TRIAL,
+            'license_type' => License::PLAN_FREE_TRIAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 1,
+            'max_services' => 1,
+            'activation_limit' => 1,
+            'issued_at' => now(),
+            'expires_at' => now()->addDays(7),
+            'bound_domain' => 'licensed.test',
+            'instance_fingerprint' => 'licensed-instance',
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/admin/clients', [
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'First Licensed Client',
+            'email' => 'first@licensed.test',
+            'phone' => '+966500000010',
+            'country' => 'sa',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'usd',
+            'notes' => 'Allowed under current license.',
+        ])->assertCreated();
+
+        $this->postJson('/api/v1/admin/clients', [
+            'client_type' => Client::TYPE_COMPANY,
+            'company_name' => 'Second Licensed Client',
+            'email' => 'second@licensed.test',
+            'phone' => '+966500000011',
+            'country' => 'sa',
+            'status' => Client::STATUS_ACTIVE,
+            'preferred_locale' => 'en',
+            'currency' => 'usd',
+            'notes' => 'Should be rejected by the license limit.',
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['license']);
     }
 }

@@ -18,7 +18,9 @@ class License extends Model
     public const STATUS_REVOKED = 'revoked';
     public const STATUS_EXPIRED = 'expired';
 
+    public const PLAN_FREE_TRIAL = 'free_trial';
     public const PLAN_STARTER = 'starter';
+    public const PLAN_GROWTH = 'growth';
     public const PLAN_PROFESSIONAL = 'professional';
     public const PLAN_ENTERPRISE = 'enterprise';
 
@@ -29,14 +31,19 @@ class License extends Model
     protected $fillable = [
         'license_key',
         'owner_email',
+        'license_type',
         'plan',
         'status',
+        'bound_domain',
+        'instance_fingerprint',
         'max_clients',
         'max_services',
         'activation_limit',
         'issued_at',
         'expires_at',
         'last_validated_at',
+        'last_verified_at',
+        'verification_grace_ends_at',
         'metadata',
     ];
 
@@ -53,6 +60,8 @@ class License extends Model
             'issued_at' => 'datetime',
             'expires_at' => 'datetime',
             'last_validated_at' => 'datetime',
+            'last_verified_at' => 'datetime',
+            'verification_grace_ends_at' => 'datetime',
             'metadata' => 'array',
         ];
     }
@@ -70,9 +79,10 @@ class License extends Model
     public static function plans(): array
     {
         return [
+            self::PLAN_FREE_TRIAL,
             self::PLAN_STARTER,
+            self::PLAN_GROWTH,
             self::PLAN_PROFESSIONAL,
-            self::PLAN_ENTERPRISE,
         ];
     }
 
@@ -91,8 +101,24 @@ class License extends Model
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
+    public function effectivePlan(): string
+    {
+        return $this->license_type ?: $this->plan;
+    }
+
+    public function isTrial(): bool
+    {
+        return $this->effectivePlan() === self::PLAN_FREE_TRIAL;
+    }
+
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE && ! $this->isExpired();
+    }
+
+    public function withinGracePeriod(): bool
+    {
+        return $this->verification_grace_ends_at !== null
+            && $this->verification_grace_ends_at->isFuture();
     }
 }

@@ -431,7 +431,7 @@ export default async function LocaleHomePage({
                 </p>
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className={`text-5xl font-extrabold ${plan.featured ? "text-white" : "text-[#0a1628]"}`}>{plan.price}</span>
-                  {plan.price !== "Custom" && plan.price !== "مخصص" && (
+                  {plan.key !== "free_trial" && (
                     <span className={`text-sm ${plan.featured ? "text-[rgba(255,255,255,0.6)]" : "text-[#7a95b5]"}`}>{content.perMonth}</span>
                   )}
                 </div>
@@ -445,7 +445,7 @@ export default async function LocaleHomePage({
                   ))}
                 </ul>
                 <Link
-                  href={localePath(locale, plan.key === "enterprise" ? "/contact" : "/onboarding")}
+                  href={localePath(locale, "/onboarding")}
                   className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${plan.featured ? "bg-white text-[#048dfe] hover:bg-[#f0f7ff]" : "btn-primary"}`}
                 >
                   {plan.ctaLabel}

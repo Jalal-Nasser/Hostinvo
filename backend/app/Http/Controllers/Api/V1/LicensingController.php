@@ -18,6 +18,7 @@ class LicensingController extends Controller
             $licenseService->validateLicense(
                 $request->validated('license_key'),
                 $request->validated('domain'),
+                $request->validated('instance_id'),
             )
         );
     }
