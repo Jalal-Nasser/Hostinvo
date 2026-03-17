@@ -46,6 +46,7 @@ export type LaunchContent = {
   provisioningFeatures: string[];
   billingFeatures: string[];
   automationSteps: Array<{ step: string; title: string; desc: string; icon: string }>;
+  heroWorkflow: Array<{ label: string; badge: string; icon: string }>;
   plans: LaunchPlan[];
   features: LaunchFeature[];
   documentationItems: Array<{ title: string; description: string }>;
@@ -142,6 +143,13 @@ const launchContentByLocale: Record<AppLocale, LaunchContent> = {
       { step: "03", title: "Payment Received", desc: "Stripe or PayPal webhook confirms payment", icon: "✅" },
       { step: "04", title: "Job Dispatched", desc: "Provisioning job pushed to critical queue", icon: "⚡" },
       { step: "05", title: "Account Live", desc: "cPanel or Plesk account created — client notified", icon: "🚀" },
+    ],
+    heroWorkflow: [
+      { label: "Order Received",      badge: "Pending",  icon: "🛒" },
+      { label: "Invoice Generated",   badge: "Issued",   icon: "📄" },
+      { label: "Payment Confirmed",   badge: "Paid",     icon: "✅" },
+      { label: "Provisioning Started",badge: "Running",  icon: "⚡" },
+      { label: "Service Activated",   badge: "Active",   icon: "🚀" },
     ],
     plans: [
       { key: "free_trial", name: "7 days", price: "Free Trial", description: "Evaluate Hostinvo on your own infrastructure before purchasing a paid license.", limits: ["Up to 3 clients", "Trial license for testing", "7-day automatic expiry", "Self-hosted evaluation environment"], ctaLabel: "Start 7-day trial" },
@@ -274,6 +282,13 @@ const launchContentByLocale: Record<AppLocale, LaunchContent> = {
       { step: "03", title: "تأكيد الدفع", desc: "يُؤكَّد الدفع عبر Webhook من Stripe أو PayPal", icon: "✅" },
       { step: "04", title: "تنفيذ المهمة", desc: "تُرسَل مهمة التزويد إلى طابور الأولوية الحرجة", icon: "⚡" },
       { step: "05", title: "الخدمة حية", desc: "يُنشأ حساب cPanel أو Plesk ويُبلَّغ العميل", icon: "🚀" },
+    ],
+    heroWorkflow: [
+      { label: "استلام الطلب",  badge: "قيد الانتظار", icon: "🛒" },
+      { label: "إنشاء الفاتورة", badge: "صادرة",       icon: "📄" },
+      { label: "تأكيد الدفع",   badge: "مدفوعة",       icon: "✅" },
+      { label: "بدء التزويد",   badge: "جارٍ",         icon: "⚡" },
+      { label: "تفعيل الخدمة",  badge: "نشطة",         icon: "🚀" },
     ],
     plans: [
       { key: "free_trial", name: "7 أيام", price: "تجربة مجانية", description: "قيّم Hostinvo على بنيتك التحتية الخاصة قبل شراء ترخيص مدفوع.", limits: ["حتى 3 عملاء", "ترخيص تجريبي للتقييم", "انتهاء تلقائي بعد 7 أيام", "بيئة اختبار ذاتية الاستضافة"], ctaLabel: "ابدأ التجربة لمدة 7 أيام" },

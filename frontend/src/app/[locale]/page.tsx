@@ -2,6 +2,7 @@ import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { siCpanel, siLinux, siPlesk } from "simple-icons";
 
+import { HeroWorkflow } from "@/components/home/hero-workflow";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
@@ -147,6 +148,9 @@ export default async function LocaleHomePage({
             </div>
             <p className="mt-6 text-sm text-[#6a8aad]">{content.heroSubnote}</p>
           </div>
+
+          {/* ── Automation workflow strip ── */}
+          <HeroWorkflow steps={content.heroWorkflow} isRtl={locale === "ar"} />
 
           {/* Dashboard mockup */}
           <div className="relative mx-auto mt-16 w-full max-w-4xl">
