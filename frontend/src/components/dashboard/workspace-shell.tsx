@@ -390,7 +390,7 @@ export async function WorkspaceShell({
 
     return (
       <main className="dashboard-workspace min-h-screen bg-[#faf9f5]">
-        <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
           <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="dashboard-sidebar-surface h-fit lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between gap-3">
