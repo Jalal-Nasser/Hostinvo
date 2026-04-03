@@ -43,7 +43,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["clients.manage"]) ? (
       <Link
         key="new-client"
-        className="btn-primary"
+        className="btn-primary whitespace-nowrap"
         href={localePath(params.locale, "/dashboard/clients/new")}
       >
         {t("newClientLink")}
@@ -52,7 +52,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["invoices.manage"]) ? (
       <Link
         key="new-invoice"
-        className="btn-secondary"
+        className="btn-secondary whitespace-nowrap"
         href={localePath(params.locale, "/dashboard/invoices/new")}
       >
         {t("newInvoiceLink")}
@@ -61,7 +61,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["tickets.create", "tickets.manage"]) ? (
       <Link
         key="new-ticket"
-        className="btn-secondary"
+        className="btn-secondary whitespace-nowrap"
         href={localePath(params.locale, "/dashboard/tickets/new")}
       >
         {t("newTicketLink")}

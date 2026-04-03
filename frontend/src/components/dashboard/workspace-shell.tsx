@@ -439,19 +439,28 @@ export async function WorkspaceShell({
             </aside>
 
             <div className="min-w-0 space-y-6">
-              <header className="dashboard-shell-surface">
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="min-w-0">
+              <section className="dashboard-shell-surface">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+                  <div className="min-w-0 max-w-4xl">
                     <p className="dashboard-kicker">{workspaceBadge}</p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[#0a1628]">
-                      {user.tenant?.name ?? workspaceT("adminBadge")}
-                    </h2>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#6b7280]">
+                    <h1 className="mt-2 text-[2rem] font-bold tracking-[-0.05em] text-[#0a1628] md:text-[2.35rem]">
+                      {title}
+                    </h1>
+                    <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6b7280]">
+                      {description}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#6b7280]">
+                      <span className="rounded-lg border border-[#e5e7eb] bg-[#fcfcfb] px-3 py-1.5 font-medium text-[#123055]">
+                        {user.tenant?.name ?? workspaceT("adminBadge")}
+                      </span>
+                      <span>{user.name}</span>
+                      <span className="text-[#c0cad5]">/</span>
                       <span>{user.email}</span>
                       {user.roles.slice(0, 2).map((role) => (
                         <span
                           key={role.id}
-                          className="rounded-lg border border-[#e5e7eb] bg-[#faf9f5] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#516578]"
+                          className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#516578]"
                         >
                           {role.display_name}
                         </span>
@@ -459,35 +468,27 @@ export async function WorkspaceShell({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <LocaleSwitcher currentLocale={locale} path={currentPath} />
-                    <LogoutButton />
-                  </div>
-                </div>
-              </header>
-
-              <section className="dashboard-shell-surface">
-                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="max-w-3xl">
-                    <p className="dashboard-kicker">{workspaceBadge}</p>
-                    <h1 className="mt-2 text-3xl font-bold tracking-[-0.05em] text-[#0a1628] md:text-4xl">
-                      {title}
-                    </h1>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6b7280]">
-                      {description}
-                    </p>
-                  </div>
-
-                  {(actions || hasPortalWorkspace) ? (
-                    <div className="flex flex-wrap items-center gap-3 xl:justify-end">
-                      {actions}
+                  <div className="flex flex-col gap-4 xl:min-w-max xl:items-end">
+                    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap">
                       {hasPortalWorkspace ? (
-                        <Link className="btn-secondary" href={localePath(locale, "/portal")}>
+                        <Link
+                          className="btn-ghost whitespace-nowrap border border-[#e5e7eb] bg-white"
+                          href={localePath(locale, "/portal")}
+                        >
                           {workspaceT("switchToPortal")}
                         </Link>
                       ) : null}
+
+                      <LocaleSwitcher currentLocale={locale} path={currentPath} />
+                      <LogoutButton />
                     </div>
-                  ) : null}
+
+                    {actions ? (
+                      <div className="flex flex-col gap-3 sm:flex-row xl:flex-nowrap xl:justify-end">
+                        {actions}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </section>
 
