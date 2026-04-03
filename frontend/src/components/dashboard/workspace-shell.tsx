@@ -24,6 +24,8 @@ type WorkspaceShellProps = {
   description: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
+  headerStats?: React.ReactNode;
+  tintedHeader?: boolean;
   mode: WorkspaceMode;
 };
 
@@ -166,6 +168,8 @@ export async function WorkspaceShell({
   description,
   children,
   actions,
+  headerStats,
+  tintedHeader = false,
   mode,
 }: WorkspaceShellProps) {
   const cookieHeader = cookies().toString();
@@ -439,9 +443,9 @@ export async function WorkspaceShell({
             </aside>
 
             <div className="min-w-0 space-y-6">
-              <section className="dashboard-shell-surface">
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-                  <div className="min-w-0 max-w-4xl">
+              <section className={tintedHeader ? "dashboard-header-surface" : "dashboard-shell-surface"}>
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_max-content] xl:items-start">
+                  <div className="min-w-0">
                     <p className="dashboard-kicker">{workspaceBadge}</p>
                     <h1 className="mt-2 text-[2rem] font-bold tracking-[-0.05em] text-[#0a1628] md:text-[2.35rem]">
                       {title}
@@ -466,10 +470,16 @@ export async function WorkspaceShell({
                         </span>
                       ))}
                     </div>
+
+                    {headerStats ? (
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {headerStats}
+                      </div>
+                    ) : null}
                   </div>
 
-                  <div className="flex flex-col gap-4 xl:min-w-max xl:items-end">
-                    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap">
+                  <div className="xl:min-w-max xl:pt-1">
+                    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap xl:justify-end">
                       {hasPortalWorkspace ? (
                         <Link
                           className="btn-ghost whitespace-nowrap border border-[#e5e7eb] bg-white"
@@ -481,13 +491,8 @@ export async function WorkspaceShell({
 
                       <LocaleSwitcher currentLocale={locale} path={currentPath} />
                       <LogoutButton />
+                      {actions}
                     </div>
-
-                    {actions ? (
-                      <div className="flex flex-col gap-3 sm:flex-row xl:flex-nowrap xl:justify-end">
-                        {actions}
-                      </div>
-                    ) : null}
                   </div>
                 </div>
               </section>

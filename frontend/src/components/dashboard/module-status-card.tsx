@@ -20,7 +20,7 @@ export function ModuleStatusCard({
   href,
 }: ModuleStatusCardProps) {
   const content = (
-    <article className="glass-card p-5 md:p-6">
+    <article className="dashboard-subtle-card p-4 md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">
@@ -33,7 +33,7 @@ export function ModuleStatusCard({
         </span>
       </div>
 
-      <p className="mt-8 text-4xl font-bold tracking-[-0.05em] text-[#0a1628]">
+      <p className="mt-6 text-[2rem] font-bold tracking-[-0.05em] text-[#0a1628] md:text-[2.2rem]">
         {accessible ? total ?? 0 : "--"}
       </p>
       <p className="mt-3 text-sm leading-7 text-[#6b7280]">{description}</p>

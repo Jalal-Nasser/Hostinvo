@@ -9,6 +9,8 @@ type DashboardShellProps = {
   description: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
+  headerStats?: React.ReactNode;
+  tintedHeader?: boolean;
 };
 
 export async function DashboardShell({
@@ -18,6 +20,22 @@ export async function DashboardShell({
   description,
   children,
   actions,
+  headerStats,
+  tintedHeader,
 }: DashboardShellProps) {
-  return <WorkspaceShell {...{ locale, currentPath, title, description, children, actions }} mode="admin" />;
+  return (
+    <WorkspaceShell
+      {...{
+        locale,
+        currentPath,
+        title,
+        description,
+        children,
+        actions,
+        headerStats,
+        tintedHeader,
+      }}
+      mode="admin"
+    />
+  );
 }
