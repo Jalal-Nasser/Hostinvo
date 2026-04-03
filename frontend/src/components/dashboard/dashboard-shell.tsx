@@ -21,7 +21,7 @@ export async function DashboardShell({
   children,
   actions,
   headerStats,
-  tintedHeader,
+  tintedHeader = true,
 }: DashboardShellProps) {
   return (
     <WorkspaceShell
