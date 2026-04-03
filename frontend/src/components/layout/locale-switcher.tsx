@@ -20,7 +20,7 @@ export function LocaleSwitcher({
   return (
     <nav
       aria-label={t("label")}
-      className="inline-flex items-center gap-1 rounded-full border border-[rgba(4,141,254,0.2)] bg-[#faf9f5]/80 p-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted backdrop-blur-sm"
+      className="inline-flex items-center gap-1 rounded-xl border border-[#e5e7eb] bg-white p-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6b7280]"
     >
       {routing.locales.map((locale) => {
         const isActive = locale === currentLocale;
@@ -30,10 +30,10 @@ export function LocaleSwitcher({
             key={locale}
             href={`/${locale}${normalizedPath === "/" ? "" : normalizedPath}`}
             className={[
-              "rounded-full px-3 py-1.5 transition-all duration-200",
+              "rounded-lg px-3 py-2 transition-all duration-200",
               isActive
-                ? "bg-gradient-to-r from-[#048dfe] to-[#036deb] text-white shadow-[0_2px_12px_rgba(4,141,254,0.4)]"
-                : "text-[#4a5e7a] hover:bg-[#e0f0ff] hover:text-[#048dfe]",
+                ? "bg-[linear-gradient(135deg,#048DFE_0%,#036DEB_52%,#0054C5_100%)] text-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(4,109,235,0.18)]"
+                : "text-[#4a5e7a] hover:bg-[#f1f5f9] hover:text-[#0a1628]",
             ].join(" ")}
           >
             {locale}

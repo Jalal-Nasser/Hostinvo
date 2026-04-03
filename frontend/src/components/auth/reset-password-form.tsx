@@ -91,6 +91,9 @@ export function ResetPasswordForm({
   function handleSubmit(formData: FormData) {
     setMessage(null);
     setError(null);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const passwordConfirmation = String(formData.get("password_confirmation") ?? "");
 
     if (!hasToken) {
       setError(t("tokenMissing"));
@@ -115,11 +118,11 @@ export function ResetPasswordForm({
           },
           body: JSON.stringify({
             token,
-            email: formData.get("email"),
+            email,
             tenant_id: tenantId,
             tenant_signature: tenantSignature,
-            password: formData.get("password"),
-            password_confirmation: formData.get("password_confirmation"),
+            password,
+            password_confirmation: passwordConfirmation,
           }),
         });
 

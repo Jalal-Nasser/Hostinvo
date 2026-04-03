@@ -20,17 +20,23 @@ export function ModuleStatusCard({
   href,
 }: ModuleStatusCardProps) {
   const content = (
-    <article className="glass-card p-6">
+    <article className="glass-card p-5 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-lg font-semibold text-foreground">{title}</p>
-        <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">
+            {accessible ? availableLabel : restrictedLabel}
+          </p>
+          <p className="mt-2 text-base font-semibold text-[#0a1628]">{title}</p>
+        </div>
+        <span className="rounded-lg border border-[#e5e7eb] bg-[#faf9f5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f7389]">
           {accessible ? availableLabel : restrictedLabel}
         </span>
       </div>
-      <p className="mt-4 text-3xl font-semibold text-foreground">
+
+      <p className="mt-8 text-4xl font-bold tracking-[-0.05em] text-[#0a1628]">
         {accessible ? total ?? 0 : "--"}
       </p>
-      <p className="mt-3 text-sm leading-7 text-muted">{description}</p>
+      <p className="mt-3 text-sm leading-7 text-[#6b7280]">{description}</p>
     </article>
   );
 

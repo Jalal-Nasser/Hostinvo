@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 import { type BillingCycle } from "@/lib/catalog";
 
 export const orderStatuses = [
@@ -144,10 +144,7 @@ export async function fetchOrdersFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -163,10 +160,7 @@ export async function fetchOrderFromCookies(
 ): Promise<OrderRecord | null> {
   const response = await fetch(`${apiBaseUrl}/admin/orders/${orderId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

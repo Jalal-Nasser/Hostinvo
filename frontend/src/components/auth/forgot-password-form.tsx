@@ -39,6 +39,7 @@ export function ForgotPasswordForm() {
   function handleSubmit(formData: FormData) {
     setMessage(null);
     setError(null);
+    const email = String(formData.get("email") ?? "");
 
     startTransition(async () => {
       try {
@@ -54,7 +55,7 @@ export function ForgotPasswordForm() {
             ...tenantHostHeader(),
             ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
           },
-          body: JSON.stringify({ email: formData.get("email") }),
+          body: JSON.stringify({ email }),
         });
 
         if (!response.ok) {

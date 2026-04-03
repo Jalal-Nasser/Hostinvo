@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 import { type BillingCycle } from "@/lib/catalog";
 import { bpsToPercentString, decimalToMinor, formatMinorCurrency, percentToBps } from "@/lib/orders";
 
@@ -223,10 +223,7 @@ export async function fetchInvoicesFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -242,10 +239,7 @@ export async function fetchInvoiceFromCookies(
 ): Promise<InvoiceRecord | null> {
   const response = await fetch(`${apiBaseUrl}/admin/invoices/${invoiceId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -279,10 +273,7 @@ export async function fetchPaymentsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -298,10 +289,7 @@ export async function fetchInvoiceGatewayOptionsFromCookies(
 ): Promise<GatewayOptionRecord[] | null> {
   const response = await fetch(`${apiBaseUrl}/admin/invoices/${invoiceId}/gateway-options`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

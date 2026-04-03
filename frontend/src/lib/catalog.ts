@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 
 export const productGroupStatuses = ["active", "inactive"] as const;
 export const productStatuses = ["draft", "active", "inactive", "archived"] as const;
@@ -162,10 +162,7 @@ export async function fetchProductGroupsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -197,10 +194,7 @@ export async function fetchProductsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -216,10 +210,7 @@ export async function fetchProductFromCookies(
 ): Promise<ProductRecord | null> {
   const response = await fetch(`${apiBaseUrl}/admin/products/${productId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

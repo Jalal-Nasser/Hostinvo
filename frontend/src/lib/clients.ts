@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 
 export const clientStatuses = ["active", "inactive", "lead"] as const;
 export const clientTypes = ["company", "individual"] as const;
@@ -122,10 +122,7 @@ export async function fetchClientsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -141,10 +138,7 @@ export async function fetchClientFromCookies(
 ): Promise<ClientRecord | null> {
   const response = await fetch(`${apiBaseUrl}/admin/clients/${clientId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

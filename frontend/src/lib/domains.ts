@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 import { type ClientRecord } from "@/lib/clients";
 import { type ServiceRecord } from "@/lib/provisioning";
 
@@ -166,10 +166,7 @@ export async function fetchDomainsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -186,10 +183,7 @@ export async function fetchDomainFromCookies(
 ): Promise<DomainRecord | null> {
   const response = await fetch(`${endpoint(mode)}/domains/${domainId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -208,10 +202,7 @@ export async function fetchDomainContactsFromCookies(
 ): Promise<DomainContactRecord[] | null> {
   const response = await fetch(`${endpoint(mode)}/domains/${domainId}/contacts`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -230,10 +221,7 @@ export async function fetchDomainRenewalsFromCookies(
 ): Promise<DomainRenewalRecord[] | null> {
   const response = await fetch(`${endpoint(mode)}/domains/${domainId}/renewals`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {
@@ -251,10 +239,7 @@ export async function fetchRegistrarLogsFromCookies(
 ): Promise<RegistrarLogRecord[] | null> {
   const response = await fetch(`${endpoint("admin")}/domains/${domainId}/registrar-logs`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

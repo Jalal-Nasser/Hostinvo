@@ -85,6 +85,9 @@ export function LoginForm() {
 
   function handleSubmit(formData: FormData) {
     setError(null);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const remember = formData.get("remember") === "on";
 
     startTransition(async () => {
       try {
@@ -100,9 +103,9 @@ export function LoginForm() {
             ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
           },
           body: JSON.stringify({
-            email: formData.get("email"),
-            password: formData.get("password"),
-            remember: formData.get("remember") === "on",
+            email,
+            password,
+            remember,
           }),
         });
 

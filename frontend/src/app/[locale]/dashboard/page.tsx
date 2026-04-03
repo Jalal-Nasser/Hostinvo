@@ -43,7 +43,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["clients.manage"]) ? (
       <Link
         key="new-client"
-        className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+        className="btn-primary"
         href={localePath(params.locale, "/dashboard/clients/new")}
       >
         {t("newClientLink")}
@@ -52,7 +52,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["invoices.manage"]) ? (
       <Link
         key="new-invoice"
-        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+        className="btn-secondary"
         href={localePath(params.locale, "/dashboard/invoices/new")}
       >
         {t("newInvoiceLink")}
@@ -61,7 +61,7 @@ export default async function DashboardPage({
     hasAnyPermission(user, ["tickets.create", "tickets.manage"]) ? (
       <Link
         key="new-ticket"
-        className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+        className="btn-secondary"
         href={localePath(params.locale, "/dashboard/tickets/new")}
       >
         {t("newTicketLink")}
@@ -169,7 +169,7 @@ export default async function DashboardPage({
       locale={params.locale as AppLocale}
       title={t("overviewTitle")}
     >
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
           <ModuleStatusCard
             key={card.key}
@@ -184,21 +184,26 @@ export default async function DashboardPage({
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
         <article className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("operationsTitle")}</h2>
+          <p className="dashboard-kicker">{t("operationsTitle")}</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+            {t("operationsTitle")}
+          </h2>
           {operationalMetrics.length > 0 ? (
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               {operationalMetrics.map((metric) => (
                 <div
                   key={metric.key}
-                  className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5"
+                  className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] p-5"
                 >
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">
                     {metric.label}
                   </p>
-                  <p className="mt-3 text-3xl font-semibold text-foreground">{metric.value}</p>
-                  <p className="mt-3 text-sm leading-7 text-muted">{metric.description}</p>
+                  <p className="mt-4 text-4xl font-bold tracking-[-0.05em] text-[#0a1628]">
+                    {metric.value}
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-[#6b7280]">{metric.description}</p>
                 </div>
               ))}
             </div>
@@ -206,22 +211,25 @@ export default async function DashboardPage({
         </article>
 
         <aside className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("workspaceAccessTitle")}</h2>
+          <p className="dashboard-kicker">{t("workspaceAccessTitle")}</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+            {t("workspaceAccessTitle")}
+          </h2>
           <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("tenantLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
+            <div className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">{t("tenantLabel")}</p>
+              <p className="mt-2 text-sm font-semibold text-[#0a1628]">
                 {user.tenant?.name ?? t("notAvailable")}
               </p>
-              <p className="mt-2 text-sm text-muted">{user.tenant?.slug ?? user.tenant_id ?? t("notAvailable")}</p>
+              <p className="mt-2 text-sm text-[#6b7280]">{user.tenant?.slug ?? user.tenant_id ?? t("notAvailable")}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("rolesLabel")}</p>
+            <div className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">{t("rolesLabel")}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {user.roles.map((role) => (
                   <span
                     key={role.id}
-                    className="rounded-full border border-line bg-[#fffdf8] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground"
+                    className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0a1628]"
                   >
                     {role.display_name}
                   </span>
@@ -230,13 +238,13 @@ export default async function DashboardPage({
             </div>
             {canAccessClientPortal(user) ? (
               <Link
-                className="rounded-[1.5rem] border border-line bg-[#fffdf8] p-5 transition hover:bg-[#faf9f5]"
+                className="rounded-xl border border-[#dbeafe] bg-[#eff6ff] p-5 transition hover:bg-[#dbeafe]"
                 href={localePath(params.locale, "/portal")}
               >
-                <p className="text-xs uppercase tracking-[0.24em] text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7b8794]">
                   {workspaceT("portalBadge")}
                 </p>
-                <p className="mt-2 text-sm font-semibold text-foreground">
+                <p className="mt-2 text-sm font-semibold text-[#0a1628]">
                   {workspaceT("switchToPortal")}
                 </p>
               </Link>
@@ -246,13 +254,16 @@ export default async function DashboardPage({
       </section>
 
       {showRecentInvoices || showRecentTickets ? (
-        <section className="grid gap-4 xl:grid-cols-2">
+        <section className="grid gap-5 xl:grid-cols-2">
           {showRecentInvoices ? (
             <article className="glass-card p-6 md:p-8">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-2xl font-semibold text-foreground">{t("recentInvoicesTitle")}</h2>
+                <div>
+                  <p className="dashboard-kicker">{t("recentInvoicesTitle")}</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">{t("recentInvoicesTitle")}</h2>
+                </div>
                 <Link
-                  className="text-sm font-semibold text-accent transition hover:opacity-80"
+                  className="btn-ghost"
                   href={localePath(params.locale, "/dashboard/invoices")}
                 >
                   {t("viewAllLink")}
@@ -262,11 +273,11 @@ export default async function DashboardPage({
                 {summary.modules.invoices.recent.map((invoice) => (
                   <Link
                     key={invoice.id}
-                    className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
+                    className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] p-5 transition hover:bg-white"
                     href={localePath(params.locale, `/dashboard/invoices/${invoice.id}`)}
                   >
-                    <p className="text-sm font-semibold text-foreground">{invoice.reference_number}</p>
-                    <p className="mt-2 text-sm text-muted">
+                    <p className="text-sm font-semibold text-[#0a1628]">{invoice.reference_number}</p>
+                    <p className="mt-2 text-sm text-[#6b7280]">
                       {invoice.client?.display_name ?? t("notAvailable")} / {invoice.status}
                     </p>
                   </Link>
@@ -278,9 +289,12 @@ export default async function DashboardPage({
           {showRecentTickets ? (
             <article className="glass-card p-6 md:p-8">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-2xl font-semibold text-foreground">{t("recentTicketsTitle")}</h2>
+                <div>
+                  <p className="dashboard-kicker">{t("recentTicketsTitle")}</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">{t("recentTicketsTitle")}</h2>
+                </div>
                 <Link
-                  className="text-sm font-semibold text-accent transition hover:opacity-80"
+                  className="btn-ghost"
                   href={localePath(params.locale, "/dashboard/tickets")}
                 >
                   {t("viewAllLink")}
@@ -290,11 +304,11 @@ export default async function DashboardPage({
                 {summary.modules.tickets.recent.slice(0, 4).map((ticket) => (
                   <Link
                     key={ticket.id}
-                    className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 transition hover:bg-[#fffdf8]"
+                    className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] p-5 transition hover:bg-white"
                     href={localePath(params.locale, `/dashboard/tickets/${ticket.id}`)}
                   >
-                    <p className="text-sm font-semibold text-foreground">{ticket.subject}</p>
-                    <p className="mt-2 text-sm text-muted">
+                    <p className="text-sm font-semibold text-[#0a1628]">{ticket.subject}</p>
+                    <p className="mt-2 text-sm text-[#6b7280]">
                       {ticket.ticket_number} / {ticket.status?.name ?? t("notAvailable")}
                     </p>
                   </Link>

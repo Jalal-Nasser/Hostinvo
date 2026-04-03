@@ -55,6 +55,23 @@ export const backendOrigin = new URL(apiBaseUrl).origin;
 export const sessionCookieName =
   process.env.NEXT_PUBLIC_SESSION_COOKIE ?? "hostinvo_session";
 
+export function statefulApiHeaders(
+  cookieHeader: string,
+  refererPath = "/dashboard",
+): HeadersInit {
+  const normalizedRefererPath = refererPath.startsWith("/")
+    ? refererPath
+    : `/${refererPath}`;
+
+  return {
+    Accept: "application/json",
+    Cookie: cookieHeader,
+    Origin: portalUrl,
+    Referer: `${portalUrl}${normalizedRefererPath}`,
+    "X-Requested-With": "XMLHttpRequest",
+  };
+}
+
 export function localePath(locale: string, path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
 
@@ -70,10 +87,7 @@ export async function getAuthenticatedUserFromCookies(
 
   const response = await fetch(`${apiBaseUrl}/auth/me`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader),
   });
 
   if (!response.ok) {

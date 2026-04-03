@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/auth";
+import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 import { type ClientRecord } from "@/lib/clients";
 
 export const ticketPriorities = ["low", "medium", "high", "urgent"] as const;
@@ -203,10 +203,7 @@ export async function fetchTicketsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -223,10 +220,7 @@ export async function fetchTicketFromCookies(
 ): Promise<TicketRecord | null> {
   const response = await fetch(`${endpoint(mode)}/tickets/${ticketId}`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -258,10 +252,7 @@ export async function fetchTicketDepartmentsFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -277,10 +268,7 @@ export async function fetchTicketStatusesFromCookies(
 ): Promise<TicketStatusRecord[] | null> {
   const response = await fetch(`${endpoint(mode)}/ticket-statuses`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -298,10 +286,7 @@ export async function fetchSupportOverviewFromCookies(
 ): Promise<SupportOverviewResponse["data"] | null> {
   const response = await fetch(`${endpoint(mode)}/support/overview`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -318,10 +303,7 @@ export async function fetchTicketServicesFromCookies(
 ): Promise<TicketServiceRecord[] | null> {
   const response = await fetch(`${endpoint("client")}/ticket-services`, {
     cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      Cookie: cookieHeader,
-    },
+    headers: statefulApiHeaders(cookieHeader, "/portal"),
   });
 
   if (!response.ok) {
