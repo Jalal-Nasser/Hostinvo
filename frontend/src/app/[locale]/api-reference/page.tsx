@@ -2,7 +2,7 @@ import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
-import { localePath } from "@/lib/auth";
+import { localePath, publicApiBaseUrl } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
 
 const endpoints = [
@@ -46,7 +46,7 @@ export default async function ApiReferencePage({ params }: Readonly<{ params: { 
           <p className="mt-4 max-w-2xl text-lg text-[#b3d4f5]">{p.apiDesc}</p>
           <div className="mt-6 flex flex-wrap gap-4">
             <div className="rounded-xl border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.08)] px-5 py-3 text-sm text-white">
-              <span className="font-bold">{isAr ? "الإصدار الأساسي:" : "Base URL:"}</span> <code className="font-mono text-[#93b4d8]">https://app.hostinvo.com/api/v1</code>
+              <span className="font-bold">{isAr ? "الإصدار الأساسي:" : "Base URL:"}</span> <code className="font-mono text-[#93b4d8]">{publicApiBaseUrl}</code>
             </div>
             <div className="rounded-xl border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.08)] px-5 py-3 text-sm text-white">
               <span className="font-bold">{isAr ? "المصادقة:" : "Auth:"}</span> <code className="font-mono text-[#93b4d8]">Bearer token (Sanctum)</code>

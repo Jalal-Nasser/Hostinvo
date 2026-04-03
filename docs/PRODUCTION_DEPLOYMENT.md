@@ -33,8 +33,9 @@
 ### Required DNS Records
 | Record | Type | Value |
 |--------|------|-------|
-| `api.hostinvo.example` | A | Server IP |
-| `app.hostinvo.example` | A | Server IP or CDN |
+| `api.hostinvo.dev` | A | Server IP |
+| `hostinvo.dev` | A / CNAME | Vercel project |
+| `portal.hostinvo.dev` | A / CNAME | Vercel project |
 
 ### TLS Termination
 TLS **must** be terminated upstream (Nginx, Caddy, Cloudflare, or AWS ALB).
@@ -69,8 +70,10 @@ Edit `backend/.env.production` and set **every** value marked `change-this`:
 | Variable | Description |
 |----------|-------------|
 | `APP_KEY` | Generate: `php artisan key:generate --show` |
-| `APP_URL` | `https://api.hostinvo.example` |
-| `FRONTEND_URL` | `https://app.hostinvo.example` |
+| `APP_URL` | `https://api.hostinvo.dev` |
+| `FRONTEND_URL` | `https://portal.hostinvo.dev` |
+| `MARKETING_URL` | `https://hostinvo.dev` |
+| `PORTAL_URL` | `https://portal.hostinvo.dev` |
 | `DB_PASSWORD` | Strong random password (min 32 chars) |
 | `REDIS_PASSWORD` | Strong random password (min 32 chars) |
 | `STRIPE_SECRET_KEY` | Live Stripe secret key |
@@ -80,7 +83,7 @@ Edit `backend/.env.production` and set **every** value marked `change-this`:
 | `MONITORING_METRICS_TOKEN` | Random token for `/metrics` auth |
 | `MONITORING_ALERT_WEBHOOK_URL` | Slack/Teams webhook for alerts |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP credentials |
-| `SESSION_DOMAIN` | `.hostinvo.example` (leading dot = subdomain coverage) |
+| `SESSION_DOMAIN` | `.hostinvo.dev` (leading dot = subdomain coverage) |
 
 Security assertions — verify before proceeding:
 ```bash

@@ -2,6 +2,37 @@
 
 use Laravel\Sanctum\Sanctum;
 
+$extractHostWithPort = static function (?string $value): ?string {
+    if (! is_string($value) || trim($value) === '') {
+        return null;
+    }
+
+    $normalized = preg_match('#^https?://#', $value) ? $value : "https://{$value}";
+    $parts = parse_url($normalized);
+
+    if (! is_array($parts) || ! isset($parts['host'])) {
+        return trim($value, '/');
+    }
+
+    return isset($parts['port'])
+        ? "{$parts['host']}:{$parts['port']}"
+        : $parts['host'];
+};
+
+$defaultStatefulDomains = array_values(array_unique(array_filter([
+    'localhost',
+    'localhost:3000',
+    'localhost:8080',
+    '127.0.0.1',
+    '127.0.0.1:3000',
+    '127.0.0.1:8080',
+    '::1',
+    $extractHostWithPort(env('MARKETING_URL')),
+    $extractHostWithPort(env('PORTAL_URL')),
+    $extractHostWithPort(env('APP_URL')),
+    $extractHostWithPort(Sanctum::currentApplicationUrlWithPort()),
+])));
+
 return [
 
     /*
@@ -15,11 +46,10 @@ return [
     |
     */
 
-    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s',
-        'localhost,localhost:3000,localhost:8080,127.0.0.1,127.0.0.1:3000,127.0.0.1:8080,::1,',
-        Sanctum::currentApplicationUrlWithPort(),
-    ))),
+    'stateful' => explode(
+        ',',
+        env('SANCTUM_STATEFUL_DOMAINS', implode(',', $defaultStatefulDomains)),
+    ),
 
     /*
     |--------------------------------------------------------------------------

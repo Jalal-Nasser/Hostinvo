@@ -27,11 +27,25 @@ export type AuthenticatedUser = {
 
 export type WorkspaceMode = "admin" | "portal";
 
-const publicApiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+function normalizeUrl(url: string): string {
+  return url.replace(/\/+$/, "");
+}
 
-const internalApiBaseUrl =
-  process.env.INTERNAL_API_BASE_URL ?? publicApiBaseUrl;
+export const publicApiBaseUrl = normalizeUrl(
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1",
+);
+
+const internalApiBaseUrl = normalizeUrl(
+  process.env.INTERNAL_API_BASE_URL ?? publicApiBaseUrl,
+);
+
+export const marketingUrl = normalizeUrl(
+  process.env.NEXT_PUBLIC_MARKETING_URL ?? "http://localhost:3000",
+);
+
+export const portalUrl = normalizeUrl(
+  process.env.NEXT_PUBLIC_PORTAL_URL ?? marketingUrl,
+);
 
 export const apiBaseUrl =
   typeof window === "undefined" ? internalApiBaseUrl : publicApiBaseUrl;

@@ -8,6 +8,14 @@
 
 All local development runs in **Docker Desktop**. Seven containers share a single bridge network (`hostinvo_network`). The production environment uses Docker Engine on Linux — Docker Desktop is for development only.
 
+For the production split used by Hostinvo:
+
+- `frontend/` deploys to Vercel for `hostinvo.dev` and `portal.hostinvo.dev`
+- `backend/` deploys to the VPS for `api.hostinvo.dev`
+- Plesk handles DNS, TLS, and reverse proxying only
+
+See [docs/VERCEL_VPS_DEPLOYMENT.md](docs/VERCEL_VPS_DEPLOYMENT.md) for the runtime boundary and deployment-specific env values.
+
 ---
 
 ## Containers
@@ -193,6 +201,8 @@ APP_FAKER_LOCALE=en_US
 ```
 
 > **Rule:** Never commit `.env` to version control. Only `.env.example` is committed.
+>
+> Local-only env files such as `.env`, `backend/.env`, and `frontend/.env.local` must remain untracked.
 
 ---
 

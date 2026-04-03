@@ -5,7 +5,7 @@ import { siCpanel, siLinux, siPlesk } from "simple-icons";
 import { HeroWorkflow } from "@/components/home/hero-workflow";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
-import { localePath } from "@/lib/auth";
+import { localePath, portalUrl } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
 
 type CompatibilityPlatform = {
@@ -13,6 +13,8 @@ type CompatibilityPlatform = {
   label: string;
   description: string;
 };
+
+const portalDashboardLabel = new URL(portalUrl).host + "/dashboard";
 
 function CompatibilityLogo({
   platform,
@@ -159,7 +161,7 @@ export default async function LocaleHomePage({
                 <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
                 <span className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
                 <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-                <div className="mx-4 flex-1 rounded-md bg-[rgba(255,255,255,0.06)] px-3 py-1 text-xs text-[#6a8aad]">app.hostinvo.com/dashboard</div>
+                <div className="mx-4 flex-1 rounded-md bg-[rgba(255,255,255,0.06)] px-3 py-1 text-xs text-[#6a8aad]">{portalDashboardLabel}</div>
               </div>
               <div className="grid grid-cols-4 gap-0 divide-x divide-[rgba(255,255,255,0.06)]">
                 <div className="col-span-1 bg-[rgba(0,18,60,0.6)] px-3 py-5">

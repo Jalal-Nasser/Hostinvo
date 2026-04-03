@@ -122,7 +122,7 @@ class AppServiceProvider extends ServiceProvider
 
         ResetPassword::createUrlUsing(function ($user, string $token): string {
             $locale = $user->locale ?: config('app.locale');
-            $frontendUrl = rtrim(config('app.frontend_url'), '/');
+            $frontendUrl = rtrim((string) config('app.portal_url', config('app.frontend_url')), '/');
             $context = app(PasswordResetTenantContext::class)->buildSignedUrlContext($user, $token);
             $query = http_build_query(array_filter([
                 'token' => $token,
