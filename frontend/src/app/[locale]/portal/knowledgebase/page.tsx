@@ -1,10 +1,15 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { PortalShell } from "@/components/dashboard/portal-shell";
 import { portalTheme } from "@/components/portal/portal-theme";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
+import {
+  fetchKnowledgeBaseFromCookies,
+  fetchPortalConfigFromCookies,
+} from "@/lib/tenant-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -17,48 +22,58 @@ export default async function PortalKnowledgebasePage({
 }>) {
   setRequestLocale(params.locale);
 
+  const cookieHeader = cookies().toString();
   const t = await getTranslations("Portal");
   const query = searchParams?.query?.trim().toLowerCase() ?? "";
+  const portalConfig = await fetchPortalConfigFromCookies(cookieHeader);
+  const knowledgebase =
+    portalConfig?.surface.content_sources.knowledgebase === false
+      ? null
+      : await fetchKnowledgeBaseFromCookies(cookieHeader, "client");
 
-  const topics = [
-    {
-      key: "register",
-      title: t("knowledgebaseTopicRegisterTitle"),
-      description: t("knowledgebaseTopicRegisterDescription"),
-      href: localePath(params.locale, "/portal/domains/register"),
-    },
-    {
-      key: "transfer",
-      title: t("knowledgebaseTopicTransferTitle"),
-      description: t("knowledgebaseTopicTransferDescription"),
-      href: localePath(params.locale, "/portal/domains/transfer"),
-    },
-    {
-      key: "pricing",
-      title: t("knowledgebaseTopicPricingTitle"),
-      description: t("knowledgebaseTopicPricingDescription"),
-      href: localePath(params.locale, "/portal/domains/pricing"),
-    },
-    {
-      key: "support",
-      title: t("knowledgebaseTopicSupportTitle"),
-      description: t("knowledgebaseTopicSupportDescription"),
-      href: localePath(params.locale, "/portal/tickets/new"),
-    },
-  ].filter((topic) => {
-    if (!query) {
-      return true;
-    }
+  const categories =
+    knowledgebase && Array.isArray(knowledgebase.categories)
+      ? knowledgebase.categories
+      : [];
 
-    const haystack = `${topic.title} ${topic.description}`.toLowerCase();
+  const filteredCategories = categories
+    .map((category) => ({
+      ...category,
+      articles: (category.articles ?? []).filter((article) => {
+        if (!query) {
+          return true;
+        }
 
-    return haystack.includes(query);
-  });
+        const haystack = `${article.localized_title} ${article.localized_excerpt ?? ""} ${
+          article.localized_body
+        } ${category.localized_name}`.toLowerCase();
+
+        return haystack.includes(query);
+      }),
+    }))
+    .filter((category) => {
+      if (!query) {
+        return true;
+      }
+
+      const categoryMatch = `${category.localized_name} ${
+        category.localized_description ?? ""
+      }`.toLowerCase();
+
+      return categoryMatch.includes(query) || (category.articles?.length ?? 0) > 0;
+    });
+
+  const hasArticles = filteredCategories.some(
+    (category) => (category.articles?.length ?? 0) > 0,
+  );
 
   return (
     <PortalShell
       actions={
-        <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/tickets")}>
+        <Link
+          className={portalTheme.secondaryButtonClass}
+          href={localePath(params.locale, "/portal/tickets")}
+        >
           {t("viewTicketsButton")}
         </Link>
       }
@@ -83,49 +98,69 @@ export default async function PortalKnowledgebasePage({
             <button className={portalTheme.primaryButtonClass} type="submit">
               {t("heroSearchButton")}
             </button>
-            <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/knowledgebase")}>
+            <Link
+              className={portalTheme.secondaryButtonClass}
+              href={localePath(params.locale, "/portal/knowledgebase")}
+            >
               {t("clearFilters")}
             </Link>
           </div>
         </form>
 
-        <p className="mt-4 text-sm leading-7 text-[#aebad4]">{t("knowledgebasePublishedNote")}</p>
+        <p className="mt-4 text-sm leading-7 text-[#aebad4]">
+          {t("knowledgebasePublishedNote")}
+        </p>
       </section>
 
-      <section>
-        <div className={[portalTheme.noteClass, "mb-4"].join(" ")}>
-          {t("knowledgebaseEmptyStateNotice")}
-        </div>
+      {portalConfig?.surface.content_sources.knowledgebase === false || !hasArticles ? (
+        <article className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}>
+          <h3 className="text-lg font-semibold text-white">{t("knowledgebaseEmptyTitle")}</h3>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#aebad4]">
+            {portalConfig?.surface.content_sources.knowledgebase === false
+              ? t("knowledgebasePublishedNote")
+              : t("knowledgebaseEmptyDescription")}
+          </p>
+        </article>
+      ) : (
+        <section className="grid gap-5">
+          {filteredCategories.map((category) => (
+            <article
+              key={category.id}
+              className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}
+            >
+              <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em] text-white">
+                {category.localized_name}
+              </h2>
+              {category.localized_description ? (
+                <p className="mt-3 text-sm leading-7 text-[#aebad4]">
+                  {category.localized_description}
+                </p>
+              ) : null}
 
-        <div className="mb-4">
-          <h2 className="text-[1.4rem] font-semibold tracking-[-0.02em] text-white">
-            {t("knowledgebaseFeaturedTitle")}
-          </h2>
-        </div>
-
-        {topics.length === 0 ? (
-          <article className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}>
-            <h3 className="text-lg font-semibold text-white">{t("knowledgebaseEmptyTitle")}</h3>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#aebad4]">
-              {t("knowledgebaseEmptyDescription")}
-            </p>
-          </article>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {topics.map((topic) => (
-              <article key={topic.key} className={[portalTheme.subtleSurfaceClass, "p-5"].join(" ")}>
-                <h3 className="text-lg font-semibold text-white">{topic.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[#aebad4]">{topic.description}</p>
-                <div className="mt-5">
-                  <Link className={portalTheme.secondaryButtonClass} href={topic.href}>
-                    {t("openGuideButton")}
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {(category.articles ?? []).map((article) => (
+                  <article
+                    key={article.id}
+                    className={[portalTheme.subtleSurfaceClass, "p-5"].join(" ")}
+                  >
+                    <h3 className="text-lg font-semibold text-white">
+                      {article.localized_title}
+                    </h3>
+                    {article.localized_excerpt ? (
+                      <p className="mt-3 text-sm leading-7 text-[#aebad4]">
+                        {article.localized_excerpt}
+                      </p>
+                    ) : null}
+                    <div className="mt-4 text-sm leading-7 text-[#d8e3f8]">
+                      {article.localized_body}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
     </PortalShell>
   );
 }

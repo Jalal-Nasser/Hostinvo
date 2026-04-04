@@ -10,6 +10,10 @@ type PortalFlyoutMenuProps = {
   currentPath: string;
   section: PortalSection;
   mobile?: boolean;
+  branding?: {
+    logoUrl?: string | null;
+    portalName?: string | null;
+  } | null;
 };
 
 function joinClasses(...classes: Array<string | undefined | false>): string {
@@ -47,6 +51,7 @@ export function PortalFlyoutMenu({
   currentPath,
   section,
   mobile = false,
+  branding,
 }: PortalFlyoutMenuProps) {
   const explicitActiveLabel =
     section.items.find((item) =>
@@ -63,7 +68,12 @@ export function PortalFlyoutMenu({
             </p>
             <h2 className="mt-2 text-base font-semibold text-white">{section.title}</h2>
           </div>
-          <BrandLogo href={localePath(locale, "/portal")} className="w-[102px] shrink-0" />
+          <BrandLogo
+            href={localePath(locale, "/portal")}
+            className="w-[102px] shrink-0"
+            src={branding?.logoUrl}
+            alt={branding?.portalName || "Hostinvo"}
+          />
         </div>
 
         <div className="mt-4 grid gap-1.5">

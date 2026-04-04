@@ -1,10 +1,21 @@
 import type { AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
+import {
+  localizedValue,
+  type PortalFooterLinkRecord,
+  type PortalSurfaceEntry,
+  type PortalSurfaceSettings,
+} from "@/lib/tenant-admin";
 
-export type PortalSectionKey = "products" | "domains" | "website-security" | "support";
+export type PortalSectionKey =
+  | "products"
+  | "domains"
+  | "website-security"
+  | "support";
 
 export type PortalSection = {
   key: PortalSectionKey;
+  configKey: string;
   label: string;
   title: string;
   description: string;
@@ -22,6 +33,58 @@ export type PortalSection = {
     actionHref?: string;
   };
 };
+
+type PortalFooterColumn = {
+  key: string;
+  title: string;
+  items: ReadonlyArray<{
+    label: string;
+    href: string;
+    openInNewTab?: boolean;
+  }>;
+};
+
+const sectionConfigKeyMap: Record<PortalSectionKey, string> = {
+  products: "products",
+  domains: "domains",
+  "website-security": "website_security",
+  support: "support",
+};
+
+function sectionConfigEntry(
+  surface: PortalSurfaceSettings | null | undefined,
+  section: PortalSection,
+): PortalSurfaceEntry | undefined {
+  return surface?.navigation.find((entry) => entry.key === section.configKey);
+}
+
+function withSurfaceLabel(
+  locale: string,
+  fallback: string,
+  entry?: PortalSurfaceEntry,
+): string {
+  if (!entry) {
+    return fallback;
+  }
+
+  const localized = localizedValue(locale, entry.label_en, entry.label_ar);
+
+  return localized || fallback;
+}
+
+function sortBySurfaceOrder<T extends { configKey: string }>(
+  records: T[],
+  surfaceEntries: PortalSurfaceEntry[] | undefined,
+) {
+  const entryMap = new Map((surfaceEntries ?? []).map((entry) => [entry.key, entry]));
+
+  return [...records].sort((left, right) => {
+    const leftOrder = entryMap.get(left.configKey)?.order ?? 9999;
+    const rightOrder = entryMap.get(right.configKey)?.order ?? 9999;
+
+    return leftOrder - rightOrder;
+  });
+}
 
 export function resolvePortalSectionKey(currentPath: string): PortalSectionKey {
   if (
@@ -58,6 +121,7 @@ export function resolvePortalSectionKey(currentPath: string): PortalSectionKey {
 export function buildPortalSections(
   locale: AppLocale,
   t: (key: string) => string,
+  surface?: PortalSurfaceSettings | null,
 ): PortalSection[] {
   const productsHref = localePath(locale, "/portal/products");
   const servicesHref = localePath(locale, "/portal/services");
@@ -74,9 +138,10 @@ export function buildPortalSections(
   const knowledgebaseHref = localePath(locale, "/portal/knowledgebase");
   const newsHref = localePath(locale, "/portal/news");
 
-  return [
+  const defaults: PortalSection[] = [
     {
       key: "products",
+      configKey: sectionConfigKeyMap.products,
       label: t("railProducts"),
       title: t("productsSectionTitle"),
       description: t("productsSectionDescription"),
@@ -113,6 +178,7 @@ export function buildPortalSections(
     },
     {
       key: "domains",
+      configKey: sectionConfigKeyMap.domains,
       label: t("railDomains"),
       title: t("domainsSectionTitle"),
       description: t("domainsSectionDescription"),
@@ -138,13 +204,14 @@ export function buildPortalSections(
     },
     {
       key: "website-security",
+      configKey: sectionConfigKeyMap["website-security"],
       label: t("railWebsiteSecurity"),
       title: t("websiteSecuritySectionTitle"),
       description: t("websiteSecuritySectionDescription"),
       href: websiteSecurityHref,
       icon: "website-security",
       items: [
-        { label: t("submenuSecurityGuides"), href: knowledgebaseHref },
+        { label: t("submenuSecurityGuides"), href: websiteSecurityHref },
         { label: t("submenuLatestAdvisories"), href: newsHref },
         { label: t("submenuKnowledgebase"), href: knowledgebaseHref },
         { label: t("submenuNetworkStatus"), href: networkStatusHref },
@@ -152,6 +219,7 @@ export function buildPortalSections(
     },
     {
       key: "support",
+      configKey: sectionConfigKeyMap.support,
       label: t("railSupport"),
       title: t("supportSectionTitle"),
       description: t("supportSectionDescription"),
@@ -186,49 +254,84 @@ export function buildPortalSections(
       ],
     },
   ];
+
+  return sortBySurfaceOrder(defaults, surface?.navigation)
+    .filter((section) => sectionConfigEntry(surface, section)?.visible ?? true)
+    .map((section) => {
+      const entry = sectionConfigEntry(surface, section);
+
+      return {
+        ...section,
+        label: withSurfaceLabel(locale, section.label, entry),
+      };
+    });
+}
+
+function footerGroupTitle(
+  groupKey: string,
+  locale: AppLocale,
+  t: (key: string) => string,
+): string {
+  const map: Record<string, string> = locale === "ar"
+    ? {
+        company: "الشركة",
+        products: t("productsSectionTitle"),
+        services: t("servicesLink"),
+        support: t("footerSupportTitle"),
+        resources: "الموارد",
+      }
+    : {
+        company: "Company",
+        products: t("productsSectionTitle"),
+        services: t("servicesLink"),
+        support: t("footerSupportTitle"),
+        resources: "Resources",
+      };
+
+  return map[groupKey] ?? groupKey.replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 export function buildPortalFooterColumns(
   locale: AppLocale,
   t: (key: string) => string,
-) {
-  const homeHref = localePath(locale, "/portal");
-  const ticketsHref = localePath(locale, "/portal/tickets");
-  const networkStatusHref = localePath(locale, "/portal/network-status");
-  const knowledgebaseHref = localePath(locale, "/portal/knowledgebase");
-  const newsHref = localePath(locale, "/portal/news");
+  footerLinks: PortalFooterLinkRecord[] = [],
+): PortalFooterColumn[] {
+  if (footerLinks.length === 0) {
+    return [];
+  }
 
-  return [
-    {
-      key: "products",
-      title: t("productsSectionTitle"),
-      items: [
-        { label: t("overviewLink"), href: homeHref },
-        { label: t("servicesLink"), href: localePath(locale, "/portal/services") },
-        { label: t("invoicesLink"), href: localePath(locale, "/portal/invoices") },
-        { label: t("ticketsLink"), href: ticketsHref },
-        { label: t("topbarMyAccount"), href: localePath(locale, "/portal/account") },
-      ],
-    },
-    {
-      key: "domains",
-      title: t("domainsSectionTitle"),
-      items: [
-        { label: t("submenuRegisterNewDomain"), href: localePath(locale, "/portal/domains/register") },
-        { label: t("submenuTransferDomains"), href: localePath(locale, "/portal/domains/transfer") },
-        { label: t("submenuDomainPricing"), href: localePath(locale, "/portal/domains/pricing") },
-      ],
-    },
-    {
-      key: "support",
-      title: t("footerSupportTitle"),
-      items: [
-        { label: t("ticketsLink"), href: ticketsHref },
-        { label: t("submenuContactUs"), href: localePath(locale, "/portal/tickets/new") },
-        { label: t("submenuNetworkStatus"), href: networkStatusHref },
-        { label: t("submenuKnowledgebase"), href: knowledgebaseHref },
-        { label: t("submenuNews"), href: newsHref },
-      ],
-    },
-  ] as const;
+  const groups = new Map<string, PortalFooterColumn>();
+
+  footerLinks
+    .slice()
+    .sort((left, right) => {
+      if (left.group_key === right.group_key) {
+        return left.sort_order - right.sort_order;
+      }
+
+      return left.group_key.localeCompare(right.group_key);
+    })
+    .forEach((link) => {
+      if (!groups.has(link.group_key)) {
+        groups.set(link.group_key, {
+          key: link.group_key,
+          title: footerGroupTitle(link.group_key, locale, t),
+          items: [],
+        });
+      }
+
+      const group = groups.get(link.group_key);
+
+      if (!group) {
+        return;
+      }
+
+      (group.items as Array<{ label: string; href: string; openInNewTab?: boolean }>).push({
+        label: localizedValue(locale, link.label_en, link.label_ar),
+        href: link.href,
+        openInNewTab: link.open_in_new_tab,
+      });
+    });
+
+  return Array.from(groups.values());
 }

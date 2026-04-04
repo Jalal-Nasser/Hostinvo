@@ -6,19 +6,21 @@ import { PortalLogoutButton } from "@/components/portal/portal-logout-button";
 import { portalTheme } from "@/components/portal/portal-theme";
 import type { AuthenticatedUser } from "@/lib/auth";
 import { localePath } from "@/lib/auth";
+import type { TenantBrandingRecord } from "@/lib/tenant-admin";
 
 type PortalTopbarProps = {
   locale: string;
   user: AuthenticatedUser;
   t: (key: string) => string;
+  branding?: TenantBrandingRecord | null;
 };
 
-export function PortalTopbar({ locale, user, t }: PortalTopbarProps) {
+export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
   return (
     <div className={[portalTheme.utilityStripClass, "mb-5 flex min-h-[40px] items-center ps-4 pe-4 py-2"].join(" ")}>
       <div className="hidden min-w-0 items-center gap-2 lg:flex">
         <span className="rounded-full border border-[rgba(104,123,158,0.18)] bg-[rgba(255,255,255,0.04)] ps-2.5 pe-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#c3d2ee]">
-          {user.tenant?.name ?? t("overviewTitle")}
+          {branding?.portal_name || user.tenant?.name || t("overviewTitle")}
         </span>
       </div>
 

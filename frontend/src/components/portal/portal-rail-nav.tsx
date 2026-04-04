@@ -13,6 +13,8 @@ type PortalRailNavProps = {
   mobile?: boolean;
   onSectionHover?: (key: PortalSectionKey) => void;
   onSectionFocus?: (key: PortalSectionKey) => void;
+  logoSrc?: string | null;
+  logoAlt?: string;
 };
 
 function joinClasses(...classes: Array<string | undefined | false>): string {
@@ -26,6 +28,8 @@ export function PortalRailNav({
   mobile = false,
   onSectionHover,
   onSectionFocus,
+  logoSrc,
+  logoAlt = "Hostinvo",
 }: PortalRailNavProps) {
   if (mobile) {
     return (
@@ -69,14 +73,23 @@ export function PortalRailNav({
         className="inline-flex items-center justify-center rounded-[20px] border border-[rgba(110,128,158,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
         aria-label="Hostinvo portal"
       >
-        <Image
-          src="/icon.png"
-          alt="Hostinvo"
-          width={54}
-          height={54}
-          className="h-[46px] w-[46px] object-contain"
-          priority
-        />
+        {(logoSrc || "/icon.png").startsWith("/") ? (
+          <Image
+            src={logoSrc || "/icon.png"}
+            alt={logoAlt}
+            width={54}
+            height={54}
+            className="h-[46px] w-[46px] object-contain"
+            priority
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoSrc || "/icon.png"}
+            alt={logoAlt}
+            className="h-[46px] w-[46px] object-contain"
+          />
+        )}
       </Link>
 
       <nav className="mt-9 flex w-full flex-1 flex-col items-center gap-4 ps-3 pe-3">

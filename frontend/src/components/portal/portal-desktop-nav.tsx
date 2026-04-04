@@ -14,6 +14,8 @@ type PortalDesktopNavProps = {
   currentPath: string;
   sections: PortalSection[];
   activeSectionKey: PortalSectionKey;
+  logoSrc?: string | null;
+  logoAlt?: string;
 };
 
 export function PortalDesktopNav({
@@ -21,6 +23,8 @@ export function PortalDesktopNav({
   currentPath,
   sections,
   activeSectionKey,
+  logoSrc,
+  logoAlt,
 }: PortalDesktopNavProps) {
   const [hoveredKey, setHoveredKey] = useState<PortalSectionKey | null>(null);
 
@@ -44,6 +48,8 @@ export function PortalDesktopNav({
         onSectionFocus={setHoveredKey}
         onSectionHover={setHoveredKey}
         sections={sections}
+        logoSrc={logoSrc}
+        logoAlt={logoAlt}
       />
       {flyoutSection ? (
         <PortalFlyoutMenu

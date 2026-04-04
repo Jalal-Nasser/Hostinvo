@@ -16,6 +16,7 @@ import {
   localePath,
   type WorkspaceMode,
 } from "@/lib/auth";
+import { fetchTenantBrandingFromCookies } from "@/lib/tenant-admin";
 
 type WorkspaceShellProps = {
   locale: AppLocale;
@@ -196,6 +197,10 @@ export async function WorkspaceShell({
     mode === "portal" || !hasAdminWorkspace
       ? workspaceT("portalBadge")
       : workspaceT("adminBadge");
+  const tenantBranding =
+    mode === "admin" && hasAdminWorkspace
+      ? await fetchTenantBrandingFromCookies(cookieHeader)
+      : null;
 
   const adminNavigation: WorkspaceNavItem[] = [
     {
@@ -295,7 +300,10 @@ export async function WorkspaceShell({
     {
       href: localePath(locale, "/dashboard/settings"),
       label: dashboardT("settingsLink"),
-      active: currentPath === "/dashboard/settings",
+      active:
+        currentPath === "/dashboard/settings" ||
+        currentPath.startsWith("/dashboard/settings/") ||
+        currentPath.startsWith("/dashboard/content"),
       visible: hasAdminWorkspace,
       icon: "settings",
       section: "primary",
@@ -397,6 +405,8 @@ export async function WorkspaceShell({
                 <BrandLogo
                   href={localePath(locale, "/")}
                   className="block w-[9.5rem] shrink-0"
+                  src={tenantBranding?.logo_url}
+                  alt={tenantBranding?.portal_name || tenantBranding?.company_name || "Hostinvo"}
                 />
                 <span className="rounded-lg bg-[#eff6ff] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
                   {workspaceBadge}

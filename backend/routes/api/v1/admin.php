@@ -4,12 +4,19 @@ use App\Http\Controllers\Api\V1\Admin\ClientController;
 use App\Http\Controllers\Api\V1\Admin\DomainContactController;
 use App\Http\Controllers\Api\V1\Admin\DomainController;
 use App\Http\Controllers\Api\V1\Admin\DomainRenewalController;
+use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\InvoiceController;
 use App\Http\Controllers\Api\V1\Admin\InvoiceGatewayController;
 use App\Http\Controllers\Api\V1\Admin\InvoicePaymentController;
+use App\Http\Controllers\Api\V1\Admin\KnowledgeBaseArticleController;
+use App\Http\Controllers\Api\V1\Admin\KnowledgeBaseCategoryController;
+use App\Http\Controllers\Api\V1\Admin\NetworkIncidentController;
 use App\Http\Controllers\Api\V1\Admin\OrderCheckoutController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
+use App\Http\Controllers\Api\V1\Admin\PortalContentBlockController;
+use App\Http\Controllers\Api\V1\Admin\PortalFooterLinkController;
+use App\Http\Controllers\Api\V1\Admin\PortalSurfaceController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductGroupController;
 use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
@@ -23,12 +30,14 @@ use App\Http\Controllers\Api\V1\Admin\ServerPackageController;
 use App\Http\Controllers\Api\V1\Admin\ServiceController;
 use App\Http\Controllers\Api\V1\Admin\ServiceProvisioningController;
 use App\Http\Controllers\Api\V1\Admin\SupportOverviewController;
+use App\Http\Controllers\Api\V1\Admin\TenantBrandingController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\TicketDepartmentController;
 use App\Http\Controllers\Api\V1\Admin\TicketReplyController;
 use App\Http\Controllers\Api\V1\Admin\TicketStatusController;
 use Illuminate\Support\Facades\Route;
 
+Route::apiResource('announcements', AnnouncementController::class);
 Route::apiResource('clients', ClientController::class);
 Route::get('domains/{domain}/contacts', [DomainContactController::class, 'index'])->name('domains.contacts.index');
 Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update'])->name('domains.contacts.update');
@@ -50,6 +59,21 @@ Route::post('orders/place', [OrderCheckoutController::class, 'place'])->name('or
 Route::post('orders/{order}/place', [OrderController::class, 'place'])->name('orders.place-existing');
 Route::apiResource('orders', OrderController::class);
 Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+Route::apiResource('knowledgebase-categories', KnowledgeBaseCategoryController::class)->parameters([
+    'knowledgebase-categories' => 'knowledgebaseCategory',
+]);
+Route::apiResource('knowledgebase-articles', KnowledgeBaseArticleController::class)->parameters([
+    'knowledgebase-articles' => 'knowledgebaseArticle',
+]);
+Route::apiResource('network-incidents', NetworkIncidentController::class)->parameters([
+    'network-incidents' => 'networkIncident',
+]);
+Route::apiResource('portal-content-blocks', PortalContentBlockController::class)->parameters([
+    'portal-content-blocks' => 'portalContentBlock',
+]);
+Route::apiResource('portal-footer-links', PortalFooterLinkController::class)->parameters([
+    'portal-footer-links' => 'portalFooterLink',
+]);
 Route::apiResource('provisioning-jobs', ProvisioningJobController::class)->only(['index', 'show']);
 Route::post('provisioning-jobs/{provisioningJob}/retry', [ProvisioningJobRetryController::class, 'store'])->name('provisioning-jobs.retry');
 Route::apiResource('product-groups', ProductGroupController::class);
@@ -62,6 +86,10 @@ Route::put('servers/{server}/packages', [ServerPackageController::class, 'update
 Route::apiResource('servers', ServerController::class);
 Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
 Route::apiResource('services', ServiceController::class);
+Route::get('settings/branding', [TenantBrandingController::class, 'show'])->name('settings.branding.show');
+Route::post('settings/branding', [TenantBrandingController::class, 'update'])->name('settings.branding.update');
+Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])->name('settings.portal-surface.show');
+Route::put('settings/portal-surface', [PortalSurfaceController::class, 'update'])->name('settings.portal-surface.update');
 Route::get('support/overview', SupportOverviewController::class)->name('support.overview.show');
 Route::get('ticket-statuses', [TicketStatusController::class, 'index'])->name('ticket-statuses.index');
 Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])

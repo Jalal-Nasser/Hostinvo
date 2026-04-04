@@ -24,6 +24,7 @@ import {
   getAuthenticatedUserFromCookies,
   localePath,
 } from "@/lib/auth";
+import { fetchPortalConfigFromCookies } from "@/lib/tenant-admin";
 
 type PortalShellProps = {
   locale: AppLocale;
@@ -56,12 +57,25 @@ export async function PortalShell({
   }
 
   const t = await getTranslations("Portal");
-  const sections = buildPortalSections(locale, t);
+  const portalConfig = await fetchPortalConfigFromCookies(cookieHeader);
+  const branding = portalConfig?.branding ?? null;
+  const sections = buildPortalSections(locale, t, portalConfig?.surface);
   const activeSectionKey = resolvePortalSectionKey(currentPath);
-  const activeSection =
-    sections.find((section) => section.key === activeSectionKey) ?? sections[0];
+  const activeSection = sections.find((section) => section.key === activeSectionKey) ?? {
+    key: "products",
+    configKey: "products",
+    label: t("railProducts"),
+    title: t("productsSectionTitle"),
+    description: t("productsSectionDescription"),
+    href: localePath(locale, "/portal/products"),
+    icon: "products" as const,
+    items: [],
+  };
   const hasActiveDesktopFlyout = activeSection.items.length > 0;
-  const footerColumns = buildPortalFooterColumns(locale, t);
+  const footerColumns = portalConfig?.surface.content_sources.footer_links === false
+    ? []
+    : buildPortalFooterColumns(locale, t, portalConfig?.footer_links ?? []);
+  const railLogoSrc = branding?.favicon_url || branding?.logo_url || null;
 
   return (
     <main
@@ -75,6 +89,8 @@ export async function PortalShell({
             currentPath={currentPath}
             locale={locale}
             sections={sections}
+            logoSrc={railLogoSrc}
+            logoAlt={branding?.portal_name || user.tenant?.name || "Hostinvo"}
           />
         </div>
       </div>
@@ -86,7 +102,7 @@ export async function PortalShell({
         ].join(" ")}
       >
         <div className="ms-auto me-auto flex min-h-screen w-full max-w-[1360px] flex-col ps-4 pe-4 pt-4 pb-8 md:ps-6 md:pe-6 md:pt-5 lg:ps-8 lg:pe-8 xl:ps-10 xl:pe-10">
-          <PortalTopbar locale={locale} t={t} user={user} />
+          <PortalTopbar locale={locale} t={t} user={user} branding={branding} />
 
           <div className="mb-5 space-y-4 lg:hidden">
             <PortalRailNav
@@ -94,6 +110,8 @@ export async function PortalShell({
               locale={locale}
               mobile
               sections={sections}
+              logoSrc={railLogoSrc}
+              logoAlt={branding?.portal_name || user.tenant?.name || "Hostinvo"}
             />
             {activeSection.items.length > 0 ? (
               <PortalFlyoutMenu
@@ -101,6 +119,10 @@ export async function PortalShell({
                 locale={locale}
                 mobile
                 section={activeSection}
+                branding={{
+                  logoUrl: branding?.logo_url,
+                  portalName: branding?.portal_name,
+                }}
               />
             ) : null}
           </div>
@@ -139,6 +161,7 @@ export async function PortalShell({
             currentPath={currentPath}
             locale={locale}
             t={t}
+            branding={branding}
           />
         </div>
       </div>
