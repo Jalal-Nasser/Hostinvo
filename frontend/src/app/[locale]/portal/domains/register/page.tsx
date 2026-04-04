@@ -41,7 +41,6 @@ export default async function PortalRegisterDomainPage({
           unavailableLabel: t("registerUnavailableLabel"),
           addToCartButton: t("registerAddToCartButton"),
           transferInsteadButton: t("registerTransferInsteadButton"),
-          mockCartMessage: t("registerMockCartMessage"),
         }}
         locale={params.locale}
       />

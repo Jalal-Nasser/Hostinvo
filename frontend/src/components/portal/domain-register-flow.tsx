@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { portalTheme } from "@/components/portal/portal-theme";
+import { addPortalCartItem } from "@/lib/portal-cart";
 import { localePath } from "@/lib/auth";
 
 type DomainRegisterFlowProps = {
@@ -26,7 +28,6 @@ type DomainRegisterFlowProps = {
     unavailableLabel: string;
     addToCartButton: string;
     transferInsteadButton: string;
-    mockCartMessage: string;
   };
 };
 
@@ -75,6 +76,7 @@ export function DomainRegisterFlow({
   initialTld = ".com",
   labels,
 }: DomainRegisterFlowProps) {
+  const router = useRouter();
   const parsedInitialQuery = normalizeDomainSeed(initialQuery);
   const [domainQuery, setDomainQuery] = useState(
     parsedInitialQuery === "example" && !initialQuery ? "" : parsedInitialQuery,
@@ -83,24 +85,31 @@ export function DomainRegisterFlow({
   const [results, setResults] = useState<DomainSearchResult[]>(
     initialQuery ? buildMockResults(parsedInitialQuery, initialTld) : [],
   );
-  const [cartMessage, setCartMessage] = useState<string | null>(null);
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const seed = normalizeDomainSeed(domainQuery);
 
-    setCartMessage(null);
     setResults(buildMockResults(seed, selectedTld));
   }
 
   function handleTldSelection(tld: string) {
     setSelectedTld(tld);
-    setCartMessage(null);
 
     if (domainQuery.trim()) {
       setResults(buildMockResults(normalizeDomainSeed(domainQuery), tld));
     }
+  }
+
+  function handleAddToCart(result: DomainSearchResult) {
+    addPortalCartItem({
+      type: "domain-registration",
+      domain: result.domain,
+      price: result.price,
+    });
+
+    router.push(localePath(locale, "/portal/cart"));
   }
 
   return (
@@ -203,7 +212,7 @@ export function DomainRegisterFlow({
                       {result.status === "available" ? (
                         <button
                           className={portalTheme.primaryButtonClass}
-                          onClick={() => setCartMessage(`${result.domain} ${labels.mockCartMessage}`)}
+                          onClick={() => handleAddToCart(result)}
                           type="button"
                         >
                           {labels.addToCartButton}
@@ -222,12 +231,6 @@ export function DomainRegisterFlow({
               );
             })}
           </div>
-
-          {cartMessage ? (
-            <div className="mt-5 rounded-[12px] border border-[rgba(94,157,126,0.24)] bg-[rgba(39,78,57,0.34)] ps-4 pe-4 py-3 text-sm text-[#d8f7e4]">
-              {cartMessage}
-            </div>
-          ) : null}
         </section>
       ) : null}
     </div>

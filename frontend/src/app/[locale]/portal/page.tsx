@@ -70,7 +70,7 @@ export default async function PortalPage({
             key: "get-support",
             label: t("quickActionGetSupport"),
             description: t("quickActionGetSupportDescription"),
-            href: localePath(params.locale, "/portal/tickets"),
+            href: localePath(params.locale, "/portal/tickets/new"),
             icon: "get-support",
           },
         ]}

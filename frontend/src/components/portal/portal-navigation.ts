@@ -24,6 +24,15 @@ export type PortalSection = {
 };
 
 export function resolvePortalSectionKey(currentPath: string): PortalSectionKey {
+  if (
+    currentPath === "/portal" ||
+    currentPath.startsWith("/portal/products") ||
+    currentPath.startsWith("/portal/cart") ||
+    currentPath.startsWith("/portal/account")
+  ) {
+    return "products";
+  }
+
   if (currentPath.startsWith("/portal/domains")) {
     return "domains";
   }
@@ -48,11 +57,12 @@ export function buildPortalSections(
   locale: AppLocale,
   t: (key: string) => string,
 ): PortalSection[] {
-  const homeHref = localePath(locale, "/portal");
+  const productsHref = localePath(locale, "/portal/products");
   const domainsHref = localePath(locale, "/portal/domains");
   const registerDomainHref = localePath(locale, "/portal/domains/register");
   const transferDomainHref = localePath(locale, "/portal/domains/transfer");
   const pricingDomainHref = localePath(locale, "/portal/domains/pricing");
+  const websiteSecurityHref = localePath(locale, "/portal/website-security");
   const ticketsHref = localePath(locale, "/portal/tickets");
   const newTicketHref = localePath(locale, "/portal/tickets/new");
   const networkStatusHref = localePath(locale, "/portal/network-status");
@@ -65,7 +75,7 @@ export function buildPortalSections(
       label: t("railProducts"),
       title: t("productsSectionTitle"),
       description: t("productsSectionDescription"),
-      href: homeHref,
+      href: productsHref,
       icon: "products",
       items: [],
       emptyState: {
@@ -105,7 +115,7 @@ export function buildPortalSections(
       label: t("railWebsiteSecurity"),
       title: t("websiteSecuritySectionTitle"),
       description: t("websiteSecuritySectionDescription"),
-      href: `${homeHref}#website-security`,
+      href: websiteSecurityHref,
       icon: "website-security",
       items: [
         { label: t("submenuSecurityGuides"), href: knowledgebaseHref },

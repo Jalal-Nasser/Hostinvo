@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { PortalCartLink } from "@/components/portal/portal-cart-link";
+import { PortalCurrencySelect } from "@/components/portal/portal-currency-select";
 import { PortalLogoutButton } from "@/components/portal/portal-logout-button";
 import { portalTheme } from "@/components/portal/portal-theme";
 import type { AuthenticatedUser } from "@/lib/auth";
@@ -21,18 +23,15 @@ export function PortalTopbar({ locale, user, t }: PortalTopbarProps) {
       </div>
 
       <div className="ms-auto flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.14em]">
-        <Link className={portalTheme.utilityLinkClass} href={localePath(locale, "/portal")}>
-          {t("topbarViewCart")}
-        </Link>
-        <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
-        <button
+        <PortalCartLink
           className={portalTheme.utilityLinkClass}
-          type="button"
-        >
-          {t("topbarCurrency")}
-        </button>
+          href={localePath(locale, "/portal/cart")}
+          label={t("topbarViewCart")}
+        />
         <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
-        <Link className={portalTheme.utilityLinkClass} href={localePath(locale, "/portal")}>
+        <PortalCurrencySelect label={t("topbarCurrency")} options={["USD", "SAR", "EUR"]} />
+        <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
+        <Link className={portalTheme.utilityLinkClass} href={localePath(locale, "/portal/account")}>
           {t("topbarMyAccount")}
         </Link>
         <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
