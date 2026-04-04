@@ -32,15 +32,12 @@ export default async function PortalRegisterDomainPage({
           domainInputLabel: t("registerDomainInputLabel"),
           domainInputPlaceholder: t("registerDomainInputPlaceholder"),
           suggestedTldsLabel: t("registerSuggestedTldsLabel"),
-          searchButton: t("searchButton"),
+          submitButton: t("registerSubmitButton"),
+          submittingButton: t("registerSubmittingButton"),
           infoNote: t("registerInfoNote"),
-          resultsKicker: t("registerResultsKicker"),
-          resultsTitle: t("registerResultsTitle"),
-          resultsDescription: t("registerResultsDescription"),
-          availableLabel: t("registerAvailableLabel"),
-          unavailableLabel: t("registerUnavailableLabel"),
-          addToCartButton: t("registerAddToCartButton"),
-          transferInsteadButton: t("registerTransferInsteadButton"),
+          requestPreviewLabel: t("registerRequestPreviewLabel"),
+          requestPreviewDescription: t("registerRequestPreviewDescription"),
+          errorMessage: t("registerErrorMessage"),
         }}
         locale={params.locale}
       />

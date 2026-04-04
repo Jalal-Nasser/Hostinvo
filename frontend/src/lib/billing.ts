@@ -21,6 +21,7 @@ export type PaymentStatus = (typeof paymentStatuses)[number];
 export type PaymentType = (typeof paymentTypes)[number];
 export type InvoiceItemType = (typeof invoiceItemTypes)[number];
 export type GatewayCode = (typeof gatewayCodes)[number];
+export type InvoiceApiMode = "admin" | "client";
 
 export type TransactionRecord = {
   id: string;
@@ -202,6 +203,10 @@ type PaginatedResponse<T> = {
   };
 };
 
+function endpoint(mode: InvoiceApiMode): string {
+  return `${apiBaseUrl}/${mode}`;
+}
+
 export async function fetchInvoicesFromCookies(
   cookieHeader: string,
   filters: {
@@ -212,8 +217,9 @@ export async function fetchInvoicesFromCookies(
     per_page?: string;
     page?: string;
   } = {},
+  mode: InvoiceApiMode = "admin",
 ): Promise<PaginatedResponse<InvoiceRecord> | null> {
-  const url = new URL(`${apiBaseUrl}/admin/invoices`);
+  const url = new URL(`${endpoint(mode)}/invoices`);
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value) {
@@ -223,7 +229,7 @@ export async function fetchInvoicesFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -236,10 +242,11 @@ export async function fetchInvoicesFromCookies(
 export async function fetchInvoiceFromCookies(
   cookieHeader: string,
   invoiceId: string,
+  mode: InvoiceApiMode = "admin",
 ): Promise<InvoiceRecord | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/invoices/${invoiceId}`, {
+  const response = await fetch(`${endpoint(mode)}/invoices/${invoiceId}`, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {

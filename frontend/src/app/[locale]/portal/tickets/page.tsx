@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { PortalShell } from "@/components/dashboard/portal-shell";
+import { PortalPagination } from "@/components/portal/portal-pagination";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import {
@@ -40,6 +41,7 @@ export default async function PortalTicketsPage({
   ]);
 
   const tickets = ticketsResponse?.data ?? [];
+  const ticketsMeta = ticketsResponse?.meta;
   const statuses = overview?.statuses ?? [];
   const priorityLabels: Record<TicketPriority, string> = {
     low: t("priorityLow"),
@@ -130,35 +132,56 @@ export default async function PortalTicketsPage({
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">{t("emptyStateDescription")}</p>
         </section>
       ) : (
-        <section className="grid gap-4">
-          {tickets.map((ticket) => (
-            <article key={ticket.id} className="glass-card p-6 md:p-8">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-foreground">{ticket.subject}</h2>
-                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-                      {ticket.ticket_number}
-                    </span>
+        <div className="space-y-4">
+          <section className="grid gap-4">
+            {tickets.map((ticket) => (
+              <article key={ticket.id} className="glass-card p-6 md:p-8">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h2 className="text-2xl font-semibold text-foreground">{ticket.subject}</h2>
+                      <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                        {ticket.ticket_number}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-muted">{ticket.department?.name ?? t("notAvailable")}</p>
                   </div>
-                  <p className="mt-3 text-sm text-muted">{ticket.department?.name ?? t("notAvailable")}</p>
-                </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <span className="rounded-full border border-line bg-accentSoft px-4 py-2 text-sm font-semibold text-foreground">
-                    {ticket.status?.name ?? t("notAvailable")}
-                  </span>
-                  <Link
-                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                    href={localePath(params.locale, `/portal/tickets/${ticket.id}`)}
-                  >
-                    {t("viewTicketButton")}
-                  </Link>
+                  <div className="flex flex-wrap gap-3">
+                    <span className="rounded-full border border-line bg-accentSoft px-4 py-2 text-sm font-semibold text-foreground">
+                      {ticket.status?.name ?? t("notAvailable")}
+                    </span>
+                    <Link
+                      className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                      href={localePath(params.locale, `/portal/tickets/${ticket.id}`)}
+                    >
+                      {t("viewTicketButton")}
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </section>
+              </article>
+            ))}
+          </section>
+
+          {ticketsMeta ? (
+            <PortalPagination
+              currentPage={ticketsMeta.current_page}
+              lastPage={ticketsMeta.last_page}
+              locale={params.locale}
+              nextLabel={t("paginationNext")}
+              path="/portal/tickets"
+              previousLabel={t("paginationPrevious")}
+              query={{
+                page: searchParams?.page,
+                priority: searchParams?.priority,
+                search: searchParams?.search,
+                status_id: searchParams?.status_id,
+              }}
+              summaryLabel={t("paginationSummary")}
+              total={ticketsMeta.total}
+            />
+          ) : null}
+        </div>
       )}
     </PortalShell>
   );

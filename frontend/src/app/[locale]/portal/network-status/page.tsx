@@ -17,24 +17,6 @@ export default async function PortalNetworkStatusPage({
 
   const t = await getTranslations("Portal");
 
-  const statusItems = [
-    {
-      key: "portal",
-      title: t("networkStatusItemPortal"),
-      description: t("networkStatusItemPortalDescription"),
-    },
-    {
-      key: "api",
-      title: t("networkStatusItemApi"),
-      description: t("networkStatusItemApiDescription"),
-    },
-    {
-      key: "mail",
-      title: t("networkStatusItemMail"),
-      description: t("networkStatusItemMailDescription"),
-    },
-  ];
-
   return (
     <PortalShell
       actions={
@@ -48,25 +30,23 @@ export default async function PortalNetworkStatusPage({
       title={t("networkStatusPageTitle")}
     >
       <section className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}>
-        <div className="grid gap-4 md:grid-cols-3">
-          {statusItems.map((item) => (
-            <article key={item.key} className={[portalTheme.subtleSurfaceClass, "p-5"].join(" ")}>
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-base font-semibold text-white">{item.title}</h2>
-                <span className="rounded-full bg-[rgba(83,110,151,0.22)] ps-3 pe-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d3def2]">
-                  {t("networkStatusPendingLabel")}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-7 text-[#aebad4]">{item.description}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className={[portalTheme.subtleSurfaceClass, "mt-5 p-5"].join(" ")}>
-          <h3 className="text-lg font-semibold text-white">{t("networkStatusFeedTitle")}</h3>
+        <div className={[portalTheme.subtleSurfaceClass, "p-5 md:p-6"].join(" ")}>
+          <h2 className="text-xl font-semibold text-white">{t("networkStatusFeedTitle")}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[#aebad4]">
             {t("networkStatusFeedDescription")}
           </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {["portal", "api", "mail"].map((item) => (
+              <article key={item} className={[portalTheme.subtleSurfaceClass, "p-4"].join(" ")}>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8ea4ca]">
+                  {t(`networkStatusItem${item.charAt(0).toUpperCase()}${item.slice(1)}`)}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[#aebad4]">
+                  {t(`networkStatusItem${item.charAt(0).toUpperCase()}${item.slice(1)}Description`)}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
     </PortalShell>

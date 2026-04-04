@@ -36,6 +36,8 @@ export default async function PortalAccountPage({
       locale={params.locale as AppLocale}
       title={t("accountPageTitle")}
     >
+      <div className={portalTheme.noteClass}>{t("accountReadOnlyNotice")}</div>
+
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}>
           <div className="grid gap-4 md:grid-cols-2">

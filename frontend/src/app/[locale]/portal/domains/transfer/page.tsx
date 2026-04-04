@@ -24,6 +24,7 @@ export default async function PortalTransferDomainPage({
     >
       <DomainTransferFlow
         initialQuery={searchParams?.query}
+        locale={params.locale}
         labels={{
           sectionKicker: t("transferSectionKicker"),
           formTitle: t("transferFlowTitle"),
@@ -33,16 +34,11 @@ export default async function PortalTransferDomainPage({
           authCodeLabel: t("transferAuthCodeLabel"),
           authCodePlaceholder: t("transferAuthCodePlaceholder"),
           continueButton: t("transferContinueButton"),
+          submittingButton: t("transferSubmittingButton"),
           infoNote: t("transferInfoNote"),
-          summaryKicker: t("transferSummaryKicker"),
-          summaryTitle: t("transferSummaryTitle"),
-          summaryDescription: t("transferSummaryDescription"),
-          summaryDomainLabel: t("transferSummaryDomainLabel"),
-          summaryAuthCodeLabel: t("transferSummaryAuthCodeLabel"),
-          summaryReadinessLabel: t("transferSummaryReadinessLabel"),
-          summaryNextStepLabel: t("transferSummaryNextStepLabel"),
-          summaryValidValue: t("transferSummaryValidValue"),
-          summaryPendingValue: t("transferSummaryPendingValue"),
+          requestSummaryTitle: t("transferRequestSummaryTitle"),
+          requestSummaryDescription: t("transferRequestSummaryDescription"),
+          errorMessage: t("transferErrorMessage"),
         }}
       />
     </PortalShell>

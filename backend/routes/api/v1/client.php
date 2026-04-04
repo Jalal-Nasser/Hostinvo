@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\Client\DomainContactController;
 use App\Http\Controllers\Api\V1\Client\DomainController;
 use App\Http\Controllers\Api\V1\Client\DomainRenewalController;
+use App\Http\Controllers\Api\V1\Client\InvoiceController;
+use App\Http\Controllers\Api\V1\Client\ServiceController;
 use App\Http\Controllers\Api\V1\Client\SupportOverviewController;
 use App\Http\Controllers\Api\V1\Client\TicketController;
 use App\Http\Controllers\Api\V1\Client\TicketDepartmentController;
@@ -19,6 +21,8 @@ Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])
 Route::apiResource('tickets', TicketController::class)
     ->only(['index', 'show', 'store'])
     ->middlewareFor('store', 'throttle:ticket-create');
+Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show']);
+Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
 
 Route::get('domains/{domain}/contacts', [DomainContactController::class, 'index'])->name('domains.contacts.index');
 Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update'])->name('domains.contacts.update');

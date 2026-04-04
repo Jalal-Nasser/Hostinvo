@@ -37,6 +37,7 @@ export type ProvisioningState = (typeof provisioningStates)[number];
 export type ServerStatus = (typeof serverStatuses)[number];
 export type ServerPanelType = (typeof serverPanelTypes)[number];
 export type ProvisioningOperation = (typeof provisioningOperations)[number];
+export type ServiceApiMode = "admin" | "client";
 
 export type ProvisioningLogRecord = {
   id: string;
@@ -171,10 +172,15 @@ export type ServiceRecord = {
   status: ServiceStatus;
   provisioning_state: ProvisioningState;
   billing_cycle: BillingCycle;
+  price: number;
+  currency: string;
   domain: string | null;
   username: string | null;
   external_reference: string | null;
   last_operation: string | null;
+  registration_date: string | null;
+  next_due_date: string | null;
+  termination_date: string | null;
   activated_at: string | null;
   suspended_at: string | null;
   terminated_at: string | null;
@@ -252,6 +258,10 @@ type PaginatedResponse<T> = {
   };
 };
 
+function endpoint(mode: ServiceApiMode): string {
+  return `${apiBaseUrl}/${mode}`;
+}
+
 export async function fetchServicesFromCookies(
   cookieHeader: string,
   filters: {
@@ -264,8 +274,9 @@ export async function fetchServicesFromCookies(
     per_page?: string;
     page?: string;
   } = {},
+  mode: ServiceApiMode = "admin",
 ): Promise<PaginatedResponse<ServiceRecord> | null> {
-  const url = new URL(`${apiBaseUrl}/admin/services`);
+  const url = new URL(`${endpoint(mode)}/services`);
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value) {
@@ -275,7 +286,7 @@ export async function fetchServicesFromCookies(
 
   const response = await fetch(url, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {
@@ -337,10 +348,11 @@ export async function fetchServerFromCookies(
 export async function fetchServiceFromCookies(
   cookieHeader: string,
   serviceId: string,
+  mode: ServiceApiMode = "admin",
 ): Promise<ServiceRecord | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/services/${serviceId}`, {
+  const response = await fetch(`${endpoint(mode)}/services/${serviceId}`, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 import { portalTheme } from "@/components/portal/portal-theme";
-import { addPortalCartItem } from "@/lib/portal-cart";
 import { localePath } from "@/lib/auth";
+import { createPortalTicketRequest } from "@/lib/portal-ticket-requests";
 
 type DomainRegisterFlowProps = {
   locale: string;
@@ -19,55 +18,33 @@ type DomainRegisterFlowProps = {
     domainInputLabel: string;
     domainInputPlaceholder: string;
     suggestedTldsLabel: string;
-    searchButton: string;
+    submitButton: string;
+    submittingButton: string;
     infoNote: string;
-    resultsKicker: string;
-    resultsTitle: string;
-    resultsDescription: string;
-    availableLabel: string;
-    unavailableLabel: string;
-    addToCartButton: string;
-    transferInsteadButton: string;
+    requestPreviewLabel: string;
+    requestPreviewDescription: string;
+    errorMessage: string;
   };
 };
 
-type DomainSearchResult = {
-  domain: string;
-  status: "available" | "unavailable";
-  price: string;
-};
+const suggestedTlds = [".com", ".net", ".org", ".sa"];
 
-const availableTlds = [".com", ".net", ".org", ".sa"];
-
-function normalizeDomainSeed(input: string): string {
-  const trimmed = input.trim().toLowerCase();
-
-  if (!trimmed) {
-    return "example";
-  }
-
-  return trimmed.replace(/^www\./, "").split(".")[0] || "example";
+function normalizeBaseName(input: string): string {
+  return input.trim().replace(/^www\./i, "").replace(/\.+$/, "");
 }
 
-function buildMockResults(seed: string, preferredTld: string): DomainSearchResult[] {
-  const results: DomainSearchResult[] = [
-    { domain: `${seed}.com`, status: "unavailable", price: "$12.99 / year" },
-    { domain: `${seed}.net`, status: "available", price: "$10.99 / year" },
-    { domain: `${seed}.org`, status: "available", price: "$9.49 / year" },
-    { domain: `${seed}.sa`, status: "unavailable", price: "$34.00 / year" },
-  ];
+function buildRequestedDomain(domainName: string, selectedTld: string): string {
+  const normalized = normalizeBaseName(domainName);
 
-  return results.sort((left, right) => {
-    if (left.domain.endsWith(preferredTld)) {
-      return -1;
-    }
+  if (!normalized) {
+    return "";
+  }
 
-    if (right.domain.endsWith(preferredTld)) {
-      return 1;
-    }
+  if (normalized.includes(".")) {
+    return normalized.toLowerCase();
+  }
 
-    return 0;
-  });
+  return `${normalized.toLowerCase()}${selectedTld}`;
 }
 
 export function DomainRegisterFlow({
@@ -77,39 +54,48 @@ export function DomainRegisterFlow({
   labels,
 }: DomainRegisterFlowProps) {
   const router = useRouter();
-  const parsedInitialQuery = normalizeDomainSeed(initialQuery);
-  const [domainQuery, setDomainQuery] = useState(
-    parsedInitialQuery === "example" && !initialQuery ? "" : parsedInitialQuery,
-  );
+  const [isPending, startTransition] = useTransition();
+  const [domainName, setDomainName] = useState(initialQuery);
   const [selectedTld, setSelectedTld] = useState(initialTld);
-  const [results, setResults] = useState<DomainSearchResult[]>(
-    initialQuery ? buildMockResults(parsedInitialQuery, initialTld) : [],
-  );
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+  const requestedDomain = buildRequestedDomain(domainName, selectedTld);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
-    const seed = normalizeDomainSeed(domainQuery);
-
-    setResults(buildMockResults(seed, selectedTld));
-  }
-
-  function handleTldSelection(tld: string) {
-    setSelectedTld(tld);
-
-    if (domainQuery.trim()) {
-      setResults(buildMockResults(normalizeDomainSeed(domainQuery), tld));
+    if (!requestedDomain) {
+      setError(labels.errorMessage);
+      return;
     }
-  }
 
-  function handleAddToCart(result: DomainSearchResult) {
-    addPortalCartItem({
-      type: "domain-registration",
-      domain: result.domain,
-      price: result.price,
+    startTransition(async () => {
+      try {
+        const ticket = await createPortalTicketRequest({
+          subject: `Domain registration request: ${requestedDomain}`,
+          priority: "medium",
+          message: [
+            "A client submitted a domain registration request from the portal.",
+            "",
+            `Requested domain: ${requestedDomain}`,
+            `Preferred TLD: ${selectedTld}`,
+            "",
+            "Live registrar availability lookup is not connected yet.",
+            "Please review this request manually and advise the client on next steps.",
+          ].join("\n"),
+        });
+
+        router.replace(localePath(locale, `/portal/tickets/${ticket.id}`));
+        router.refresh();
+      } catch (submissionError) {
+        setError(
+          submissionError instanceof Error && submissionError.message
+            ? submissionError.message
+            : labels.errorMessage,
+        );
+      }
     });
-
-    router.push(localePath(locale, "/portal/cart"));
   }
 
   return (
@@ -123,29 +109,29 @@ export function DomainRegisterFlow({
           <p className="mt-3 text-sm leading-7 text-[#aebad4]">{labels.formDescription}</p>
         </div>
 
-        <form className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]" onSubmit={handleSearch}>
+        <form className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]" onSubmit={handleSubmit}>
           <div className="grid gap-4">
             <label className="grid gap-2">
               <span className="text-sm font-medium text-[#dbe7ff]">{labels.domainInputLabel}</span>
               <input
                 className={portalTheme.fieldClass}
-                onChange={(event) => setDomainQuery(event.target.value)}
+                onChange={(event) => setDomainName(event.target.value)}
                 placeholder={labels.domainInputPlaceholder}
-                value={domainQuery}
+                value={domainName}
               />
             </label>
 
             <div className="grid gap-2">
               <span className="text-sm font-medium text-[#dbe7ff]">{labels.suggestedTldsLabel}</span>
               <div className="flex flex-wrap items-center gap-2">
-                {availableTlds.map((tld) => (
+                {suggestedTlds.map((tld) => (
                   <button
                     key={tld}
                     className={[
                       portalTheme.chipClass,
                       selectedTld === tld ? portalTheme.chipActiveClass : "",
                     ].join(" ")}
-                    onClick={() => handleTldSelection(tld)}
+                    onClick={() => setSelectedTld(tld)}
                     type="button"
                   >
                     {tld}
@@ -156,83 +142,34 @@ export function DomainRegisterFlow({
           </div>
 
           <div className="flex items-end">
-            <button className={[portalTheme.primaryButtonClass, "w-full lg:w-auto"].join(" ")} type="submit">
-              {labels.searchButton}
+            <button
+              className={[portalTheme.primaryButtonClass, "w-full lg:w-auto disabled:opacity-60"].join(" ")}
+              disabled={isPending}
+              type="submit"
+            >
+              {isPending ? labels.submittingButton : labels.submitButton}
             </button>
           </div>
         </form>
 
+        {error ? (
+          <p className="mt-5 rounded-[12px] border border-[rgba(235,87,87,0.28)] bg-[rgba(108,31,45,0.32)] ps-4 pe-4 py-3 text-sm text-[#ffd6d6]">
+            {error}
+          </p>
+        ) : null}
+
         <div className={[portalTheme.noteClass, "mt-5"].join(" ")}>{labels.infoNote}</div>
       </section>
 
-      {results.length > 0 ? (
-        <section className={[portalTheme.surfaceClass, "ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7"].join(" ")}>
-          <div className="flex flex-col gap-2 border-b border-[rgba(104,123,158,0.12)] pb-4">
-            <p className={portalTheme.sectionKickerClass}>{labels.resultsKicker}</p>
-            <h3 className="text-xl font-semibold text-white">{labels.resultsTitle}</h3>
-            <p className="text-sm leading-7 text-[#aebad4]">{labels.resultsDescription}</p>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {results.map((result) => {
-              const isSelectedTld = result.domain.endsWith(selectedTld);
-
-              return (
-                <article
-                  key={result.domain}
-                  className={[
-                    "rounded-[12px] border ps-4 pe-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
-                    result.status === "available"
-                      ? "border-[rgba(94,157,126,0.22)] bg-[linear-gradient(180deg,rgba(48,66,56,0.42)_0%,rgba(38,50,47,0.42)_100%)]"
-                      : "border-[rgba(104,123,158,0.12)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(255,255,255,0.015)_100%)]",
-                  ].join(" ")}
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="text-lg font-semibold text-white">{result.domain}</h4>
-                        {isSelectedTld ? (
-                          <span className="rounded-full bg-[rgba(52,134,255,0.16)] ps-3 pe-3 py-1 text-xs font-semibold text-[#dfe9ff]">
-                            {selectedTld}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[#afbed8]">
-                        <span>
-                          {result.status === "available"
-                            ? labels.availableLabel
-                            : labels.unavailableLabel}
-                        </span>
-                        <span className="text-[#6f85aa]">/</span>
-                        <span>{result.price}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      {result.status === "available" ? (
-                        <button
-                          className={portalTheme.primaryButtonClass}
-                          onClick={() => handleAddToCart(result)}
-                          type="button"
-                        >
-                          {labels.addToCartButton}
-                        </button>
-                      ) : (
-                        <Link
-                          className={portalTheme.secondaryButtonClass}
-                          href={`${localePath(locale, "/portal/domains/transfer")}?query=${encodeURIComponent(result.domain)}`}
-                        >
-                          {labels.transferInsteadButton}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+      <section className={[portalTheme.surfaceClass, "ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7"].join(" ")}>
+        <p className={portalTheme.sectionKickerClass}>{labels.requestPreviewLabel}</p>
+        <h3 className="mt-2 text-xl font-semibold text-white">
+          {requestedDomain || labels.domainInputPlaceholder}
+        </h3>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[#aebad4]">
+          {labels.requestPreviewDescription}
+        </p>
+      </section>
     </div>
   );
 }

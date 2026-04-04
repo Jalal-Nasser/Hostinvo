@@ -4,6 +4,7 @@ namespace App\Repositories\Provisioning;
 
 use App\Contracts\Repositories\Provisioning\ServiceRepositoryInterface;
 use App\Models\Service;
+use App\Models\User;
 use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,6 +66,39 @@ class EloquentServiceRepository implements ServiceRepositoryInterface
             ->withQueryString();
     }
 
+    public function paginateForPortal(User $user, array $filters): LengthAwarePaginator
+    {
+        $perPage = $this->resolvePerPage($filters);
+
+        return $this->portalAccessibleQuery($user)
+            ->with(['client', 'product', 'server', 'serverPackage'])
+            ->withCount('provisioningJobs')
+            ->when(
+                filled($filters['search'] ?? null),
+                fn (Builder $query) => $query->where(function (Builder $builder) use ($filters): void {
+                    $search = trim((string) $filters['search']);
+
+                    $builder
+                        ->where('reference_number', 'like', "%{$search}%")
+                        ->orWhere('domain', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhereHas('product', fn (Builder $productQuery) => $productQuery
+                            ->where('name', 'like', "%{$search}%"));
+                })
+            )
+            ->when(
+                filled($filters['status'] ?? null),
+                fn (Builder $query) => $query->where('status', $filters['status'])
+            )
+            ->when(
+                filled($filters['provisioning_state'] ?? null),
+                fn (Builder $query) => $query->where('provisioning_state', $filters['provisioning_state'])
+            )
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
     public function findById(string $id): ?Service
     {
         return Service::query()->find($id);
@@ -91,6 +125,24 @@ class EloquentServiceRepository implements ServiceRepositoryInterface
             ->find($id);
     }
 
+    public function findByIdForPortalDisplay(User $user, string $id): ?Service
+    {
+        return $this->portalAccessibleQuery($user)
+            ->with([
+                'client',
+                'product',
+                'order',
+                'owner',
+                'server.group',
+                'serverPackage.product',
+                'credentials',
+                'usage',
+                'suspensions.user',
+            ])
+            ->withCount('provisioningJobs')
+            ->find($id);
+    }
+
     public function create(array $attributes): Service
     {
         $service = new Service();
@@ -111,5 +163,12 @@ class EloquentServiceRepository implements ServiceRepositoryInterface
     public function delete(Service $service): void
     {
         $service->delete();
+    }
+
+    private function portalAccessibleQuery(User $user): Builder
+    {
+        return Service::query()->whereHas('client', function (Builder $query) use ($user): void {
+            $query->where('user_id', $user->id);
+        });
     }
 }

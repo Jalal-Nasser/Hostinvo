@@ -31,9 +31,19 @@ class InvoiceService
         return $this->invoices->paginate($filters);
     }
 
+    public function paginateForPortal(User $user, array $filters): LengthAwarePaginator
+    {
+        return $this->invoices->paginateForPortal($user, $filters);
+    }
+
     public function getForDisplay(Invoice $invoice): Invoice
     {
         return $this->invoices->findByIdForDisplay($invoice->getKey()) ?? $invoice;
+    }
+
+    public function getForPortalDisplay(User $user, Invoice $invoice): ?Invoice
+    {
+        return $this->invoices->findByIdForPortalDisplay($user, $invoice->getKey());
     }
 
     public function create(array $payload, User $actor): Invoice

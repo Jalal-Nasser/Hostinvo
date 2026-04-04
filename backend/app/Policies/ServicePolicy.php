@@ -40,4 +40,20 @@ class ServicePolicy
         return $user->tenant_id === $service->tenant_id
             && $user->hasPermissionTo('provisioning.manage');
     }
+
+    public function viewPortal(User $user, Service $service): bool
+    {
+        return $user->tenant_id === $service->tenant_id
+            && $user->hasPermissionTo('client.portal.access')
+            && $this->portalOwnsService($user, $service);
+    }
+
+    private function portalOwnsService(User $user, Service $service): bool
+    {
+        if ($service->relationLoaded('client')) {
+            return $service->client?->user_id === $user->id;
+        }
+
+        return $service->client()->where('user_id', $user->id)->exists();
+    }
 }

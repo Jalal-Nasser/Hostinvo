@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 import { portalTheme } from "@/components/portal/portal-theme";
+import { localePath } from "@/lib/auth";
+import { createPortalTicketRequest } from "@/lib/portal-ticket-requests";
 
 type DomainTransferFlowProps = {
+  locale: string;
   initialQuery?: string;
   labels: {
     sectionKicker: string;
@@ -15,36 +19,66 @@ type DomainTransferFlowProps = {
     authCodeLabel: string;
     authCodePlaceholder: string;
     continueButton: string;
+    submittingButton: string;
     infoNote: string;
-    summaryKicker: string;
-    summaryTitle: string;
-    summaryDescription: string;
-    summaryDomainLabel: string;
-    summaryAuthCodeLabel: string;
-    summaryReadinessLabel: string;
-    summaryNextStepLabel: string;
-    summaryValidValue: string;
-    summaryPendingValue: string;
+    requestSummaryTitle: string;
+    requestSummaryDescription: string;
+    errorMessage: string;
   };
 };
 
+function normalizeDomain(input: string): string {
+  return input.trim().replace(/^www\./i, "").replace(/\.+$/, "").toLowerCase();
+}
+
 export function DomainTransferFlow({
+  locale,
   initialQuery = "",
   labels,
 }: DomainTransferFlowProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [domainName, setDomainName] = useState(initialQuery);
   const [authCode, setAuthCode] = useState("");
-  const [submitted, setSubmitted] = useState<{
-    domainName: string;
-    authCode: string;
-  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
-    setSubmitted({
-      domainName: domainName.trim() || "example.com",
-      authCode: authCode.trim() || "EPP-PLACEHOLDER-12345",
+    const normalizedDomain = normalizeDomain(domainName);
+    const trimmedAuthCode = authCode.trim();
+
+    if (!normalizedDomain || !trimmedAuthCode) {
+      setError(labels.errorMessage);
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const ticket = await createPortalTicketRequest({
+          subject: `Domain transfer request: ${normalizedDomain}`,
+          priority: "medium",
+          message: [
+            "A client submitted a domain transfer request from the portal.",
+            "",
+            `Domain: ${normalizedDomain}`,
+            `Auth / EPP code: ${trimmedAuthCode}`,
+            "",
+            "This request requires manual registrar-side processing.",
+            "Live transfer validation is not connected yet, so please review the request manually and contact the client with the next step.",
+          ].join("\n"),
+        });
+
+        router.replace(localePath(locale, `/portal/tickets/${ticket.id}`));
+        router.refresh();
+      } catch (submissionError) {
+        setError(
+          submissionError instanceof Error && submissionError.message
+            ? submissionError.message
+            : labels.errorMessage,
+        );
+      }
     });
   }
 
@@ -80,61 +114,32 @@ export function DomainTransferFlow({
             />
           </label>
 
-          <div className="lg:col-span-2 flex flex-wrap items-center gap-3">
-            <button className={portalTheme.primaryButtonClass} type="submit">
-              {labels.continueButton}
+          <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
+            <button
+              className={[portalTheme.primaryButtonClass, "disabled:opacity-60"].join(" ")}
+              disabled={isPending}
+              type="submit"
+            >
+              {isPending ? labels.submittingButton : labels.continueButton}
             </button>
           </div>
         </form>
 
+        {error ? (
+          <p className="mt-5 rounded-[12px] border border-[rgba(235,87,87,0.28)] bg-[rgba(108,31,45,0.32)] ps-4 pe-4 py-3 text-sm text-[#ffd6d6]">
+            {error}
+          </p>
+        ) : null}
+
         <div className={[portalTheme.noteClass, "mt-5"].join(" ")}>{labels.infoNote}</div>
       </section>
 
-      {submitted ? (
-        <section className={[portalTheme.surfaceClass, "ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7"].join(" ")}>
-          <div className="border-b border-[rgba(104,123,158,0.12)] pb-4">
-            <p className={portalTheme.sectionKickerClass}>{labels.summaryKicker}</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">{labels.summaryTitle}</h3>
-            <p className="mt-2 text-sm leading-7 text-[#aebad4]">{labels.summaryDescription}</p>
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <div className={[portalTheme.subtleSurfaceClass, "ps-4 pe-4 py-4"].join(" ")}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8ea4ca]">
-                {labels.summaryDomainLabel}
-              </p>
-              <p className="mt-3 text-lg font-semibold text-white">{submitted.domainName}</p>
-              <p className="mt-2 text-sm text-[#b6c5df]">{labels.summaryValidValue}</p>
-            </div>
-
-            <div className={[portalTheme.subtleSurfaceClass, "ps-4 pe-4 py-4"].join(" ")}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8ea4ca]">
-                {labels.summaryAuthCodeLabel}
-              </p>
-              <p className="mt-3 break-all text-lg font-semibold text-white">{submitted.authCode}</p>
-              <p className="mt-2 text-sm text-[#b6c5df]">{labels.summaryValidValue}</p>
-            </div>
-
-            <div className={[portalTheme.subtleSurfaceClass, "ps-4 pe-4 py-4"].join(" ")}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8ea4ca]">
-                {labels.summaryReadinessLabel}
-              </p>
-              <p className="mt-3 text-lg font-semibold text-white">{labels.summaryPendingValue}</p>
-              <p className="mt-2 text-sm text-[#b6c5df]">{labels.infoNote}</p>
-            </div>
-
-            <div className={[portalTheme.subtleSurfaceClass, "ps-4 pe-4 py-4"].join(" ")}>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8ea4ca]">
-                {labels.summaryNextStepLabel}
-              </p>
-              <p className="mt-3 text-lg font-semibold text-white">{labels.summaryPendingValue}</p>
-              <p className="mt-2 text-sm text-[#b6c5df]">
-                {labels.summaryDescription}
-              </p>
-            </div>
-          </div>
-        </section>
-      ) : null}
+      <section className={[portalTheme.surfaceClass, "ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7"].join(" ")}>
+        <h3 className="text-xl font-semibold text-white">{labels.requestSummaryTitle}</h3>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[#aebad4]">
+          {labels.requestSummaryDescription}
+        </p>
+      </section>
     </div>
   );
 }

@@ -55,18 +55,22 @@ export default async function PortalWebsiteSecurityPage({
       locale={params.locale as AppLocale}
       title={t("websiteSecurityPageTitle")}
     >
-      <section className="grid gap-4 md:grid-cols-3">
-        {resources.map((resource) => (
-          <article key={resource.key} className={[portalTheme.surfaceClass, "p-5"].join(" ")}>
-            <h2 className="text-lg font-semibold text-white">{resource.title}</h2>
-            <p className="mt-3 text-sm leading-7 text-[#aebad4]">{resource.description}</p>
-            <div className="mt-5">
-              <Link className={portalTheme.secondaryButtonClass} href={resource.href}>
-                {t("openGuideButton")}
-              </Link>
-            </div>
-          </article>
-        ))}
+      <section className="space-y-4">
+        <div className={portalTheme.noteClass}>{t("websiteSecurityEmptyStateNotice")}</div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {resources.map((resource) => (
+            <article key={resource.key} className={[portalTheme.surfaceClass, "p-5"].join(" ")}>
+              <h2 className="text-lg font-semibold text-white">{resource.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-[#aebad4]">{resource.description}</p>
+              <div className="mt-5">
+                <Link className={portalTheme.secondaryButtonClass} href={resource.href}>
+                  {t("openGuideButton")}
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
     </PortalShell>
   );

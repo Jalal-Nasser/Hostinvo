@@ -93,6 +93,10 @@ export default async function PortalKnowledgebasePage({
       </section>
 
       <section>
+        <div className={[portalTheme.noteClass, "mb-4"].join(" ")}>
+          {t("knowledgebaseEmptyStateNotice")}
+        </div>
+
         <div className="mb-4">
           <h2 className="text-[1.4rem] font-semibold tracking-[-0.02em] text-white">
             {t("knowledgebaseFeaturedTitle")}

@@ -4,6 +4,7 @@ namespace App\Repositories\Billing;
 
 use App\Contracts\Repositories\Billing\InvoiceRepositoryInterface;
 use App\Models\Invoice;
+use App\Models\User;
 use App\Repositories\Concerns\ResolvesPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -56,6 +57,34 @@ class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             ->withQueryString();
     }
 
+    public function paginateForPortal(User $user, array $filters): LengthAwarePaginator
+    {
+        $perPage = $this->resolvePerPage($filters);
+
+        return $this->portalAccessibleQuery($user)
+            ->with(['client', 'order', 'owner'])
+            ->withCount(['items', 'payments'])
+            ->when(
+                filled($filters['search'] ?? null),
+                fn (Builder $query) => $query->where(function (Builder $builder) use ($filters): void {
+                    $search = trim((string) $filters['search']);
+
+                    $builder
+                        ->where('reference_number', 'like', "%{$search}%")
+                        ->orWhereHas('order', fn (Builder $orderQuery) => $orderQuery
+                            ->where('reference_number', 'like', "%{$search}%"));
+                })
+            )
+            ->when(
+                filled($filters['status'] ?? null),
+                fn (Builder $query) => $query->where('status', $filters['status'])
+            )
+            ->latest('issue_date')
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
     public function findById(string $id): ?Invoice
     {
         return Invoice::query()->find($id);
@@ -64,6 +93,21 @@ class EloquentInvoiceRepository implements InvoiceRepositoryInterface
     public function findByIdForDisplay(string $id): ?Invoice
     {
         return Invoice::query()
+            ->with([
+                'client',
+                'order',
+                'owner',
+                'items' => fn ($query) => $query->orderBy('created_at'),
+                'payments' => fn ($query) => $query->with('transactions')->latest('paid_at'),
+                'transactions' => fn ($query) => $query->latest('occurred_at'),
+            ])
+            ->withCount(['items', 'payments'])
+            ->find($id);
+    }
+
+    public function findByIdForPortalDisplay(User $user, string $id): ?Invoice
+    {
+        return $this->portalAccessibleQuery($user)
             ->with([
                 'client',
                 'order',
@@ -126,5 +170,12 @@ class EloquentInvoiceRepository implements InvoiceRepositoryInterface
     public function delete(Invoice $invoice): void
     {
         $invoice->delete();
+    }
+
+    private function portalAccessibleQuery(User $user): Builder
+    {
+        return Invoice::query()->whereHas('client', function (Builder $query) use ($user): void {
+            $query->where('user_id', $user->id);
+        });
     }
 }

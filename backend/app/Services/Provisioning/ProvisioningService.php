@@ -50,9 +50,19 @@ class ProvisioningService
         return $this->services->paginate($filters);
     }
 
+    public function paginateServicesForPortal(User $user, array $filters): LengthAwarePaginator
+    {
+        return $this->services->paginateForPortal($user, $filters);
+    }
+
     public function getServiceForDisplay(Service $service): Service
     {
         return $this->services->findByIdForDisplay($service->getKey()) ?? $service;
+    }
+
+    public function getServiceForPortalDisplay(User $user, Service $service): ?Service
+    {
+        return $this->services->findByIdForPortalDisplay($user, $service->getKey());
     }
 
     public function createService(array $payload, User $actor): Service

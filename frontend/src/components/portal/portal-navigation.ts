@@ -27,6 +27,8 @@ export function resolvePortalSectionKey(currentPath: string): PortalSectionKey {
   if (
     currentPath === "/portal" ||
     currentPath.startsWith("/portal/products") ||
+    currentPath.startsWith("/portal/services") ||
+    currentPath.startsWith("/portal/invoices") ||
     currentPath.startsWith("/portal/cart") ||
     currentPath.startsWith("/portal/account")
   ) {
@@ -58,6 +60,9 @@ export function buildPortalSections(
   t: (key: string) => string,
 ): PortalSection[] {
   const productsHref = localePath(locale, "/portal/products");
+  const servicesHref = localePath(locale, "/portal/services");
+  const invoicesHref = localePath(locale, "/portal/invoices");
+  const accountHref = localePath(locale, "/portal/account");
   const domainsHref = localePath(locale, "/portal/domains");
   const registerDomainHref = localePath(locale, "/portal/domains/register");
   const transferDomainHref = localePath(locale, "/portal/domains/transfer");
@@ -77,7 +82,28 @@ export function buildPortalSections(
       description: t("productsSectionDescription"),
       href: productsHref,
       icon: "products",
-      items: [],
+      items: [
+        {
+          label: t("overviewLink"),
+          href: productsHref,
+          matchPaths: ["/portal/products", "/portal"],
+        },
+        {
+          label: t("servicesLink"),
+          href: servicesHref,
+          matchPaths: ["/portal/services"],
+        },
+        {
+          label: t("invoicesLink"),
+          href: invoicesHref,
+          matchPaths: ["/portal/invoices"],
+        },
+        {
+          label: t("topbarMyAccount"),
+          href: accountHref,
+          matchPaths: ["/portal/account"],
+        },
+      ],
       emptyState: {
         title: t("productsEmptyTitle"),
         description: t("productsEmptyDescription"),
@@ -178,8 +204,10 @@ export function buildPortalFooterColumns(
       title: t("productsSectionTitle"),
       items: [
         { label: t("overviewLink"), href: homeHref },
+        { label: t("servicesLink"), href: localePath(locale, "/portal/services") },
+        { label: t("invoicesLink"), href: localePath(locale, "/portal/invoices") },
         { label: t("ticketsLink"), href: ticketsHref },
-        { label: t("submenuContactUs"), href: localePath(locale, "/portal/tickets/new") },
+        { label: t("topbarMyAccount"), href: localePath(locale, "/portal/account") },
       ],
     },
     {

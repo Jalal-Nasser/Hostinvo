@@ -69,6 +69,10 @@ class Service extends Model
     protected function casts(): array
     {
         return [
+            'registration_date' => 'date',
+            'next_due_date' => 'date',
+            'termination_date' => 'date',
+            'price' => 'integer',
             'activated_at' => 'datetime',
             'suspended_at' => 'datetime',
             'terminated_at' => 'datetime',

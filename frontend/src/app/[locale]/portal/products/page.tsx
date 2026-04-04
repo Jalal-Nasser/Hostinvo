@@ -21,11 +21,14 @@ export default async function PortalProductsPage({
     <PortalShell
       actions={
         <div className="flex flex-wrap gap-3">
-          <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/domains/register")}>
-            {t("productsBrowseDomainsButton")}
+          <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/services")}>
+            {t("servicesLink")}
           </Link>
-          <Link className={portalTheme.primaryButtonClass} href={localePath(params.locale, "/portal/tickets/new")}>
-            {t("contactSupportButton")}
+          <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/invoices")}>
+            {t("invoicesLink")}
+          </Link>
+          <Link className={portalTheme.primaryButtonClass} href={localePath(params.locale, "/portal/account")}>
+            {t("topbarMyAccount")}
           </Link>
         </div>
       }
@@ -42,24 +45,24 @@ export default async function PortalProductsPage({
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <article className={[portalTheme.subtleSurfaceClass, "p-5"].join(" ")}>
-            <h3 className="text-lg font-semibold text-white">{t("productsProvisioningHelpTitle")}</h3>
-            <p className="mt-3 text-sm leading-7 text-[#aebad4]">{t("productsProvisioningHelpDescription")}</p>
+            <h3 className="text-lg font-semibold text-white">{t("servicesLink")}</h3>
+            <p className="mt-3 text-sm leading-7 text-[#aebad4]">{t("portalProductsServicesDescription")}</p>
             <div className="mt-5">
-              <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/tickets/new")}>
-                {t("contactSupportButton")}
+              <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/services")}>
+                {t("servicesLink")}
               </Link>
             </div>
           </article>
 
           <article className={[portalTheme.subtleSurfaceClass, "p-5"].join(" ")}>
-            <h3 className="text-lg font-semibold text-white">{t("productsDomainOptionsTitle")}</h3>
-            <p className="mt-3 text-sm leading-7 text-[#aebad4]">{t("productsDomainOptionsDescription")}</p>
+            <h3 className="text-lg font-semibold text-white">{t("invoicesLink")}</h3>
+            <p className="mt-3 text-sm leading-7 text-[#aebad4]">{t("portalProductsInvoicesDescription")}</p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link className={portalTheme.primaryButtonClass} href={localePath(params.locale, "/portal/domains/register")}>
-                {t("registerDomainButton")}
+              <Link className={portalTheme.primaryButtonClass} href={localePath(params.locale, "/portal/invoices")}>
+                {t("invoicesLink")}
               </Link>
-              <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/domains/pricing")}>
-                {t("productsPricingButton")}
+              <Link className={portalTheme.secondaryButtonClass} href={localePath(params.locale, "/portal/tickets/new")}>
+                {t("contactSupportButton")}
               </Link>
             </div>
           </article>
