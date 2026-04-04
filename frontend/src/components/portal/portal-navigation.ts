@@ -28,7 +28,12 @@ export function resolvePortalSectionKey(currentPath: string): PortalSectionKey {
     return "domains";
   }
 
-  if (currentPath.startsWith("/portal/tickets")) {
+  if (
+    currentPath.startsWith("/portal/tickets") ||
+    currentPath.startsWith("/portal/network-status") ||
+    currentPath.startsWith("/portal/knowledgebase") ||
+    currentPath.startsWith("/portal/news")
+  ) {
     return "support";
   }
 
@@ -50,6 +55,9 @@ export function buildPortalSections(
   const pricingDomainHref = localePath(locale, "/portal/domains/pricing");
   const ticketsHref = localePath(locale, "/portal/tickets");
   const newTicketHref = localePath(locale, "/portal/tickets/new");
+  const networkStatusHref = localePath(locale, "/portal/network-status");
+  const knowledgebaseHref = localePath(locale, "/portal/knowledgebase");
+  const newsHref = localePath(locale, "/portal/news");
 
   return [
     {
@@ -100,10 +108,10 @@ export function buildPortalSections(
       href: `${homeHref}#website-security`,
       icon: "website-security",
       items: [
-        { label: t("submenuSecurityGuides"), href: `${homeHref}#knowledgebase` },
-        { label: t("submenuLatestAdvisories"), href: `${homeHref}#news` },
-        { label: t("submenuKnowledgebase"), href: `${homeHref}#knowledgebase` },
-        { label: t("submenuNetworkStatus"), href: `${homeHref}#network-status` },
+        { label: t("submenuSecurityGuides"), href: knowledgebaseHref },
+        { label: t("submenuLatestAdvisories"), href: newsHref },
+        { label: t("submenuKnowledgebase"), href: knowledgebaseHref },
+        { label: t("submenuNetworkStatus"), href: networkStatusHref },
       ],
     },
     {
@@ -124,8 +132,21 @@ export function buildPortalSections(
           href: newTicketHref,
           matchPaths: ["/portal/tickets/new"],
         },
-        { label: t("submenuKnowledgebase"), href: `${homeHref}#knowledgebase` },
-        { label: t("submenuNews"), href: `${homeHref}#news` },
+        {
+          label: t("submenuNetworkStatus"),
+          href: networkStatusHref,
+          matchPaths: ["/portal/network-status"],
+        },
+        {
+          label: t("submenuKnowledgebase"),
+          href: knowledgebaseHref,
+          matchPaths: ["/portal/knowledgebase"],
+        },
+        {
+          label: t("submenuNews"),
+          href: newsHref,
+          matchPaths: ["/portal/news"],
+        },
       ],
     },
   ];
@@ -137,6 +158,9 @@ export function buildPortalFooterColumns(
 ) {
   const homeHref = localePath(locale, "/portal");
   const ticketsHref = localePath(locale, "/portal/tickets");
+  const networkStatusHref = localePath(locale, "/portal/network-status");
+  const knowledgebaseHref = localePath(locale, "/portal/knowledgebase");
+  const newsHref = localePath(locale, "/portal/news");
 
   return [
     {
@@ -163,9 +187,9 @@ export function buildPortalFooterColumns(
       items: [
         { label: t("ticketsLink"), href: ticketsHref },
         { label: t("submenuContactUs"), href: localePath(locale, "/portal/tickets/new") },
-        { label: t("submenuNetworkStatus"), href: `${homeHref}#network-status` },
-        { label: t("submenuKnowledgebase"), href: `${homeHref}#knowledgebase` },
-        { label: t("submenuNews"), href: `${homeHref}#news` },
+        { label: t("submenuNetworkStatus"), href: networkStatusHref },
+        { label: t("submenuKnowledgebase"), href: knowledgebaseHref },
+        { label: t("submenuNews"), href: newsHref },
       ],
     },
   ] as const;
