@@ -539,6 +539,11 @@ export async function WorkspaceShell({
             </div>
 
             <div className="flex flex-col items-start gap-3 lg:items-end">
+              {actions ? (
+                <div className="flex flex-wrap items-center justify-start gap-3 self-stretch lg:justify-end lg:self-auto">
+                  {actions}
+                </div>
+              ) : null}
               <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/75 px-4 py-3 text-sm text-muted">
                 <p className="font-semibold text-foreground">{user.name}</p>
                 <p className="mt-1">{user.email}</p>
@@ -570,8 +575,6 @@ export async function WorkspaceShell({
             ))}
           </nav>
         ) : null}
-
-        {actions ? <div className="flex flex-wrap items-center gap-3">{actions}</div> : null}
 
         {children}
       </div>

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { PortalShell } from "@/components/dashboard/portal-shell";
+import { Button } from "@/components/ui/button";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { domainStatuses, fetchDomainsFromCookies, type DomainStatus } from "@/lib/domains";
@@ -19,6 +20,9 @@ export default async function PortalDomainsPage({
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Domains");
+  const isArabic = params.locale === "ar";
+  const registerDomainHref = localePath(params.locale, "/portal/domains/register");
+  const transferDomainHref = localePath(params.locale, "/portal/domains/transfer");
   const domainsResponse = await fetchDomainsFromCookies(cookies().toString(), "client", {
     search: searchParams?.search,
     status: searchParams?.status,
@@ -36,6 +40,11 @@ export default async function PortalDomainsPage({
 
   return (
     <PortalShell
+      actions={
+        <Button asChild>
+          <Link href={registerDomainHref}>{t("registerDomainCta")}</Link>
+        </Button>
+      }
       currentPath="/portal/domains"
       description={t("portalListDescription")}
       locale={params.locale as AppLocale}
@@ -87,9 +96,26 @@ export default async function PortalDomainsPage({
       </section>
 
       {domains.length === 0 ? (
-        <section className="glass-card p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("emptyStateTitle")}</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">{t("portalEmptyStateDescription")}</p>
+        <section className="glass-card p-8 md:p-10">
+          <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+            <h2 className="text-2xl font-semibold text-foreground">{t("emptyStateTitle")}</h2>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-muted">
+              {t("portalEmptyStateDescription")}
+            </p>
+            <div
+              className={[
+                "ms-auto me-auto mt-6 flex flex-wrap items-center justify-center gap-3",
+                isArabic ? "flex-row-reverse" : "",
+              ].join(" ")}
+            >
+              <Button asChild>
+                <Link href={registerDomainHref}>{t("registerDomainButton")}</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href={transferDomainHref}>{t("transferDomainButton")}</Link>
+              </Button>
+            </div>
+          </div>
         </section>
       ) : (
         <section className="grid gap-4">
