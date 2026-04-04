@@ -109,7 +109,7 @@ export function DomainHero({
               />
             </svg>
             <input
-              className="h-11 w-full border-0 bg-transparent ps-3 pe-3 text-[15px] text-[#13254a] outline-none placeholder:text-[#8aa1c7]"
+              className="h-11 w-full border-0 bg-transparent ps-3 pe-3 text-[15px] !text-[#13254a] caret-[#1a65ff] outline-none placeholder:!text-[#8aa1c7] selection:bg-[#2f87ff] selection:text-white"
               onChange={(event) => setQuery(event.target.value)}
               placeholder={placeholder}
               value={query}
