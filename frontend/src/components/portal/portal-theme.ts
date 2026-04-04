@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
 
+import type { PortalSectionKey } from "@/components/portal/portal-navigation";
+
 export const portalThemeVariables = {
   "--background": "#1d2432",
   "--foreground": "#f4f7ff",
@@ -22,7 +24,7 @@ export const portalTheme = {
   flyoutClass:
     "h-screen w-[248px] border-e border-[rgba(82,99,129,0.14)] bg-[linear-gradient(180deg,rgba(44,55,77,0.48)_0%,rgba(34,41,57,0.58)_100%)] backdrop-blur-[34px] shadow-[20px_0_34px_rgba(4,8,18,0.16)]",
   utilityStripClass:
-    "rounded-[12px] border border-[rgba(104,123,158,0.14)] bg-[linear-gradient(180deg,rgba(49,58,77,0.8)_0%,rgba(38,45,61,0.82)_100%)] shadow-[0_10px_24px_rgba(4,8,18,0.2)] backdrop-blur-xl",
+    "rounded-[12px] border border-[rgba(103,135,194,0.18)] bg-[linear-gradient(90deg,rgba(71,94,139,0.92)_0%,rgba(46,58,83,0.94)_36%,rgba(29,36,50,0.98)_100%)] shadow-[0_10px_24px_rgba(4,8,18,0.24)] backdrop-blur-xl",
   heroClass:
     "rounded-[16px] border border-[rgba(125,169,255,0.24)] bg-[linear-gradient(135deg,#1d91ff_0%,#2164ec_48%,#173ebf_100%)] shadow-[0_24px_44px_rgba(6,14,34,0.34)]",
   surfaceClass:
@@ -54,3 +56,21 @@ export const portalTheme = {
   sectionKickerClass:
     "text-[10px] font-semibold uppercase tracking-[0.3em] text-[#8ea4ca]",
 } as const;
+
+const portalHeaderCardBaseClass =
+  "rounded-[18px] border shadow-[0_22px_44px_rgba(5,10,22,0.28)] backdrop-blur-xl";
+
+const portalHeaderCardVariants: Record<PortalSectionKey, string> = {
+  products:
+    "border-[rgba(110,129,164,0.18)] bg-[radial-gradient(circle_at_top_left,rgba(94,116,156,0.24)_0%,transparent_30%),linear-gradient(135deg,rgba(50,60,80,0.96)_0%,rgba(35,43,59,0.98)_60%,rgba(27,34,47,0.99)_100%)]",
+  domains:
+    "border-[rgba(103,146,232,0.2)] bg-[radial-gradient(circle_at_top_left,rgba(73,137,255,0.28)_0%,transparent_30%),linear-gradient(135deg,rgba(56,84,134,0.94)_0%,rgba(41,55,87,0.96)_44%,rgba(29,36,50,0.99)_100%)]",
+  "website-security":
+    "border-[rgba(88,145,188,0.2)] bg-[radial-gradient(circle_at_top_left,rgba(69,145,201,0.24)_0%,transparent_30%),linear-gradient(135deg,rgba(47,69,92,0.96)_0%,rgba(34,47,64,0.98)_54%,rgba(25,33,46,0.99)_100%)]",
+  support:
+    "border-[rgba(110,126,188,0.2)] bg-[radial-gradient(circle_at_top_left,rgba(96,119,212,0.24)_0%,transparent_30%),linear-gradient(135deg,rgba(53,62,96,0.96)_0%,rgba(37,44,67,0.98)_52%,rgba(27,34,47,0.99)_100%)]",
+};
+
+export function resolvePortalHeaderCardClass(sectionKey: PortalSectionKey): string {
+  return [portalHeaderCardBaseClass, portalHeaderCardVariants[sectionKey]].join(" ");
+}

@@ -11,7 +11,11 @@ import {
   resolvePortalSectionKey,
 } from "@/components/portal/portal-navigation";
 import { PortalRailNav } from "@/components/portal/portal-rail-nav";
-import { portalTheme, portalThemeVariables } from "@/components/portal/portal-theme";
+import {
+  portalTheme,
+  portalThemeVariables,
+  resolvePortalHeaderCardClass,
+} from "@/components/portal/portal-theme";
 import { PortalTopbar } from "@/components/portal/portal-topbar";
 import { type AppLocale } from "@/i18n/routing";
 import {
@@ -102,7 +106,12 @@ export async function PortalShell({
           </div>
 
           {showPageIntro ? (
-            <section className="glass-card mb-7 ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7">
+            <section
+              className={[
+                resolvePortalHeaderCardClass(activeSection.key),
+                "mb-7 ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7",
+              ].join(" ")}
+            >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className={portalTheme.sectionKickerClass}>
