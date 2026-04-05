@@ -72,7 +72,8 @@ export function PortalFlyoutMenu({
             href={localePath(locale, "/portal")}
             className="w-[102px] shrink-0"
             src={branding?.logoUrl}
-            alt={branding?.portalName || "Hostinvo"}
+            alt={branding?.portalName || section.title}
+            fallbackText={!branding?.logoUrl ? (branding?.portalName || section.title) : undefined}
           />
         </div>
 

@@ -21,6 +21,18 @@ function joinClasses(...classes: Array<string | undefined | false>): string {
   return classes.filter(Boolean).join(" ");
 }
 
+function railLogoInitials(value: string): string {
+  const initials = value
+    .trim()
+    .split(/\s+/)
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || "CP";
+}
+
 export function PortalRailNav({
   locale,
   sections,
@@ -29,7 +41,7 @@ export function PortalRailNav({
   onSectionHover,
   onSectionFocus,
   logoSrc,
-  logoAlt = "Hostinvo",
+  logoAlt = "Client portal",
 }: PortalRailNavProps) {
   if (mobile) {
     return (
@@ -71,24 +83,30 @@ export function PortalRailNav({
       <Link
         href={localePath(locale, "/portal")}
         className="inline-flex items-center justify-center rounded-[20px] border border-[rgba(110,128,158,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-        aria-label="Hostinvo portal"
+        aria-label={logoAlt}
       >
-        {(logoSrc || "/icon.png").startsWith("/") ? (
-          <Image
-            src={logoSrc || "/icon.png"}
-            alt={logoAlt}
-            width={54}
-            height={54}
-            className="h-[46px] w-[46px] object-contain"
-            priority
-          />
+        {logoSrc ? (
+          logoSrc.startsWith("/") ? (
+            <Image
+              src={logoSrc}
+              alt={logoAlt}
+              width={54}
+              height={54}
+              className="h-[46px] w-[46px] object-contain"
+              priority
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoSrc}
+              alt={logoAlt}
+              className="h-[46px] w-[46px] object-contain"
+            />
+          )
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoSrc || "/icon.png"}
-            alt={logoAlt}
-            className="h-[46px] w-[46px] object-contain"
-          />
+          <span className="inline-flex h-[46px] w-[46px] items-center justify-center rounded-[14px] bg-[linear-gradient(180deg,rgba(74,128,232,0.22)_0%,rgba(39,59,104,0.18)_100%)] text-sm font-semibold uppercase tracking-[0.12em] text-[#eff5ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            {railLogoInitials(logoAlt)}
+          </span>
         )}
       </Link>
 

@@ -24,9 +24,8 @@ export function BrandLogo({
   alt = "Hostinvo",
   fallbackText,
 }: BrandLogoProps) {
-  const imageSrc = src ?? "/hostinvo-logo.png";
-
-  const logo = (
+  const imageSrc = src === undefined ? "/hostinvo-logo.png" : src;
+  const logo = imageSrc ? (
     imageSrc.startsWith("/") ? (
       <Image
         src={imageSrc}
@@ -44,15 +43,19 @@ export function BrandLogo({
         className={joinClasses("h-auto w-full", imageClassName)}
       />
     )
-  );
+  ) : null;
 
   const content = fallbackText ? (
-    <div className="flex items-center gap-3">
-      <div className="min-w-0">{logo}</div>
+    logo ? (
+      <div className="flex items-center gap-3">
+        <div className="min-w-0">{logo}</div>
+        <span className="truncate text-sm font-semibold text-current">{fallbackText}</span>
+      </div>
+    ) : (
       <span className="truncate text-sm font-semibold text-current">{fallbackText}</span>
-    </div>
+    )
   ) : (
-    logo
+    logo ?? <span className="truncate text-sm font-semibold text-current">{alt}</span>
   );
 
   if (!href) {

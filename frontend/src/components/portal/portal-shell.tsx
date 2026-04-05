@@ -76,6 +76,10 @@ export async function PortalShell({
     ? []
     : buildPortalFooterColumns(locale, t, portalConfig?.footer_links ?? []);
   const railLogoSrc = branding?.favicon_url || branding?.logo_url || null;
+  const portalBrandName =
+    branding?.portal_name?.trim() ||
+    user.tenant?.name?.trim() ||
+    (locale === "ar" ? "بوابة العملاء" : "Client portal");
 
   return (
     <main
@@ -90,7 +94,7 @@ export async function PortalShell({
             locale={locale}
             sections={sections}
             logoSrc={railLogoSrc}
-            logoAlt={branding?.portal_name || user.tenant?.name || "Hostinvo"}
+            logoAlt={portalBrandName}
           />
         </div>
       </div>
@@ -111,7 +115,7 @@ export async function PortalShell({
               mobile
               sections={sections}
               logoSrc={railLogoSrc}
-              logoAlt={branding?.portal_name || user.tenant?.name || "Hostinvo"}
+              logoAlt={portalBrandName}
             />
             {activeSection.items.length > 0 ? (
               <PortalFlyoutMenu

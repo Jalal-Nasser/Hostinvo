@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { PortalSocialIcon } from "@/components/portal/portal-icons";
 import { PortalLocaleSelect } from "@/components/portal/portal-locale-select";
 import { portalTheme } from "@/components/portal/portal-theme";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -32,10 +31,23 @@ export function PortalFooter({
   t,
   branding,
 }: PortalFooterProps) {
+  const currentYear = new Date().getFullYear();
+  const brandName =
+    branding?.portal_name?.trim() ||
+    branding?.company_name?.trim() ||
+    (locale === "ar" ? "بوابة العملاء" : "Client portal");
+  const footerSummary =
+    branding?.portal_tagline?.trim() ||
+    branding?.company_name?.trim() ||
+    null;
   const emptyState =
     locale === "ar"
       ? "لم يتم نشر روابط بوابة مخصصة بعد. ستظهر هنا الروابط والمعلومات التي يضيفها مدير المستأجر."
       : "No custom portal links have been published yet. Tenant-managed footer links will appear here once the admin adds them.";
+  const copyrightText =
+    locale === "ar"
+      ? `حقوق النشر © ${currentYear} ${brandName}. جميع الحقوق محفوظة.`
+      : `Copyright © ${currentYear} ${brandName}. All rights reserved.`;
 
   return (
     <footer className="mt-12 border-t border-[rgba(104,123,158,0.12)] pt-10">
@@ -45,22 +57,12 @@ export function PortalFooter({
             href={localePath(locale, "/portal")}
             className="w-[138px]"
             src={branding?.logo_url}
-            alt={branding?.portal_name || "Hostinvo"}
+            alt={brandName}
+            fallbackText={!branding?.logo_url ? brandName : undefined}
           />
-          <p className="mt-5 text-[13px] leading-7 text-[#aebad4]">
-            {branding?.portal_tagline || t("footerContactLabel")}
-          </p>
-
-          <div className="mt-4 flex items-center gap-3">
-            {(["facebook", "twitter", "linkedin"] as const).map((icon) => (
-              <span
-                key={icon}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(104,123,158,0.14)] bg-[rgba(255,255,255,0.04)]"
-              >
-                <PortalSocialIcon icon={icon} />
-              </span>
-            ))}
-          </div>
+          {footerSummary ? (
+            <p className="mt-5 text-[13px] leading-7 text-[#aebad4]">{footerSummary}</p>
+          ) : null}
         </div>
 
         {columns.length === 0 ? (
@@ -92,7 +94,7 @@ export function PortalFooter({
       </div>
 
       <div className="mt-10 flex flex-col gap-3 border-t border-[rgba(104,123,158,0.12)] pt-5 text-[12px] text-[#94a8cd] md:flex-row md:items-center md:justify-between">
-        <p>{t("footerCopyright")}</p>
+        <p>{copyrightText}</p>
         <PortalLocaleSelect
           currentLocale={locale}
           currentPath={currentPath}

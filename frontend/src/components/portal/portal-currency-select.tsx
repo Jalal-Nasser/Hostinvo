@@ -9,22 +9,43 @@ type PortalCurrencySelectProps = {
   options: string[];
 };
 
-const portalCurrencyStorageKey = "hostinvo.portal.currency.v1";
+const portalCurrencyStorageKey = "portal.currency.v1";
 
 export function PortalCurrencySelect({
   label,
   options,
 }: PortalCurrencySelectProps) {
-  const [selectedCurrency, setSelectedCurrency] = useState(options[0] ?? "USD");
+  const normalizedOptions = Array.from(
+    new Set(
+      options
+        .map((option) => option.trim().toUpperCase())
+        .filter((option) => option.length > 0),
+    ),
+  );
+  const fallbackCurrency = normalizedOptions[0] ?? "USD";
+  const [selectedCurrency, setSelectedCurrency] = useState(fallbackCurrency);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const canChangeCurrency = normalizedOptions.length > 1;
 
   useEffect(() => {
+    const nextOptions = Array.from(
+      new Set(
+        options
+          .map((option) => option.trim().toUpperCase())
+          .filter((option) => option.length > 0),
+      ),
+    );
+    const nextFallbackCurrency = nextOptions[0] ?? "USD";
     const storedCurrency = window.localStorage.getItem(portalCurrencyStorageKey);
 
-    if (storedCurrency && options.includes(storedCurrency)) {
+    if (storedCurrency && nextOptions.includes(storedCurrency)) {
       setSelectedCurrency(storedCurrency);
+      return;
     }
+
+    setSelectedCurrency(nextFallbackCurrency);
+    window.localStorage.setItem(portalCurrencyStorageKey, nextFallbackCurrency);
   }, [options]);
 
   useEffect(() => {
@@ -53,15 +74,22 @@ export function PortalCurrencySelect({
     <div ref={containerRef} className="relative">
       <button
         className={portalTheme.utilityLinkClass}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (canChangeCurrency) {
+            setOpen((current) => !current);
+          }
+        }}
         type="button"
+        aria-label={label}
+        aria-haspopup={canChangeCurrency ? "menu" : undefined}
+        disabled={!canChangeCurrency}
       >
         {selectedCurrency || label}
       </button>
 
       {open ? (
         <div className="absolute top-full z-40 mt-2 min-w-[112px] rounded-[12px] border border-[rgba(104,123,158,0.18)] bg-[linear-gradient(180deg,rgba(41,50,68,0.98)_0%,rgba(31,38,52,0.98)_100%)] p-2 shadow-[0_18px_32px_rgba(5,10,22,0.28)] backdrop-blur-xl">
-          {options.map((option) => (
+          {normalizedOptions.map((option) => (
             <button
               key={option}
               className={[

@@ -16,6 +16,9 @@ type PortalTopbarProps = {
 };
 
 export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
+  const defaultCurrency =
+    branding?.default_currency?.trim().toUpperCase() || "USD";
+
   return (
     <div className={[portalTheme.utilityStripClass, "mb-5 flex min-h-[40px] items-center ps-4 pe-4 py-2"].join(" ")}>
       <div className="hidden min-w-0 items-center gap-2 lg:flex">
@@ -31,7 +34,10 @@ export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
           label={t("topbarViewCart")}
         />
         <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
-        <PortalCurrencySelect label={t("topbarCurrency")} options={["USD", "SAR", "EUR"]} />
+        <PortalCurrencySelect
+          label={t("topbarCurrency")}
+          options={[defaultCurrency]}
+        />
         <span className="h-3 w-px bg-[rgba(104,123,158,0.2)]" />
         <Link className={portalTheme.utilityLinkClass} href={localePath(locale, "/portal/account")}>
           {t("topbarMyAccount")}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import localFont from "next/font/local";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -6,6 +7,7 @@ import { notFound } from "next/navigation";
 
 import "../globals.css";
 import { localeDirection, routing, type AppLocale } from "@/i18n/routing";
+import { fetchPortalConfigFromCookies } from "@/lib/tenant-admin";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -19,11 +21,37 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata: Metadata = {
-  title: "Hostinvo",
-  description:
-    "Hostinvo launch-ready multi-tenant SaaS hosting automation platform with licensing and provider onboarding.",
-};
+const defaultMetadataTitle = "Client portal";
+const defaultMetadataDescription =
+  "Tenant portal for billing, domains, services, and support.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const portalConfig = await fetchPortalConfigFromCookies(cookies().toString())
+    .catch(() => null);
+  const branding = portalConfig?.branding ?? null;
+  const title =
+    branding?.portal_name.trim() ||
+    branding?.company_name.trim() ||
+    defaultMetadataTitle;
+  const description =
+    branding?.portal_tagline.trim() ||
+    branding?.company_name.trim() ||
+    defaultMetadataDescription;
+  const favicon = branding?.favicon_url || "/favicon.ico";
+
+  return {
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
+    description,
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+  };
+}
 
 export default async function LocaleLayout({
   children,
