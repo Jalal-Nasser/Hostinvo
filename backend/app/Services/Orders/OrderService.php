@@ -8,7 +8,10 @@ use App\Contracts\Repositories\Orders\OrderRepositoryInterface;
 use App\Models\ConfigurableOption;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +24,7 @@ class OrderService
         private readonly OrderRepositoryInterface $orders,
         private readonly ClientRepositoryInterface $clients,
         private readonly ProductRepositoryInterface $products,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -58,8 +62,10 @@ class OrderService
 
             $order = $this->orders->create($this->extractOrderAttributes($summary));
             $this->orders->syncItems($order, $summary['items']);
+            $resolvedOrder = $this->getForDisplay($order);
+            $this->dispatchOrderPlacedNotification($resolvedOrder);
 
-            return $this->getForDisplay($order);
+            return $resolvedOrder;
         });
     }
 
@@ -90,9 +96,45 @@ class OrderService
                 'placed_at' => $order->placed_at ?? now(),
                 'user_id' => $order->user_id ?? $actor->id,
             ]);
+            $resolvedOrder = $this->getForDisplay($order);
+            $this->dispatchOrderPlacedNotification($resolvedOrder);
 
-            return $this->getForDisplay($order);
+            return $resolvedOrder;
         });
+    }
+
+    private function dispatchOrderPlacedNotification(Order $order): void
+    {
+        $order->loadMissing('client');
+        $client = $order->client;
+
+        if (! $client || ! filled($client->email)) {
+            return;
+        }
+
+        $tenant = Tenant::query()->withoutGlobalScopes()->find($order->tenant_id);
+
+        if (! $tenant) {
+            return;
+        }
+
+        $this->notifications->send(
+            email: $client->email,
+            event: NotificationEventCatalog::EVENT_ORDER_PLACED,
+            context: [
+                'client' => [
+                    'name' => $client->display_name,
+                    'email' => $client->email,
+                ],
+                'order' => [
+                    'reference_number' => $order->reference_number,
+                    'status' => $order->status,
+                    'total' => number_format($order->total_minor / 100, 2).' '.$order->currency,
+                ],
+            ],
+            tenant: $tenant,
+            locale: $client->preferred_locale ?: $tenant->default_locale,
+        );
     }
 
     public function delete(Order $order): void

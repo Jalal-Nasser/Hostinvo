@@ -7,7 +7,10 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\TenantUser;
 use App\Models\User;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Licensing\LicenseService;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +22,8 @@ class TenantManagementService
 {
     public function __construct(
         private readonly LicenseService $licenseService,
+        private readonly EmailVerificationService $emailVerification,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -94,6 +99,8 @@ class TenantManagementService
                 'password' => Hash::make((string) $payload['owner_password']),
                 'locale' => (string) ($payload['default_locale'] ?? 'en'),
                 'is_active' => true,
+                'email_verification_required' => true,
+                'email_verified_at' => null,
             ]);
             $owner->save();
 
@@ -131,6 +138,30 @@ class TenantManagementService
                 License::PLAN_FREE_TRIAL,
             );
             $tenant->save();
+
+            $this->emailVerification->send($owner, $tenant->default_locale);
+            $this->notifications->send(
+                email: $owner->email,
+                event: NotificationEventCatalog::EVENT_FREE_TRIAL_WELCOME,
+                context: [
+                    'user' => [
+                        'name' => $owner->name,
+                        'email' => $owner->email,
+                    ],
+                    'tenant' => [
+                        'name' => $tenant->name,
+                    ],
+                    'license' => [
+                        'expires_at' => data_get($license, 'license.expires_at'),
+                    ],
+                    'links' => [
+                        'login_url' => rtrim((string) config('app.marketing_url', config('app.frontend_url')), '/')
+                            .'/'.$tenant->default_locale.'/auth/login',
+                    ],
+                ],
+                tenant: $tenant,
+                locale: $tenant->default_locale,
+            );
 
             return $this->getForDisplay($tenant);
         });
@@ -220,6 +251,28 @@ class TenantManagementService
         $tenant->forceFill([
             'status' => $status,
         ])->save();
+
+        $tenant->loadMissing('owner');
+
+        if ($tenant->owner) {
+            $this->notifications->send(
+                email: $tenant->owner->email,
+                event: $status === 'active'
+                    ? NotificationEventCatalog::EVENT_TENANT_REACTIVATED
+                    : NotificationEventCatalog::EVENT_TENANT_SUSPENDED,
+                context: [
+                    'user' => [
+                        'name' => $tenant->owner->name,
+                        'email' => $tenant->owner->email,
+                    ],
+                    'tenant' => [
+                        'name' => $tenant->name,
+                    ],
+                ],
+                tenant: $tenant,
+                locale: $tenant->default_locale,
+            );
+        }
 
         return $this->getForDisplay($tenant);
     }

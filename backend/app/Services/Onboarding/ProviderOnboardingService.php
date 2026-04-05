@@ -9,9 +9,11 @@ use App\Models\Server;
 use App\Models\Tenant;
 use App\Models\TenantUser;
 use App\Models\User;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Licensing\LicenseService;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +22,8 @@ class ProviderOnboardingService
 {
     public function __construct(
         private readonly LicenseService $licenseService,
+        private readonly EmailVerificationService $emailVerification,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -48,6 +52,8 @@ class ProviderOnboardingService
                 'password' => (string) $payload['password'],
                 'locale' => $payload['default_locale'] ?? 'en',
                 'is_active' => true,
+                'email_verification_required' => true,
+                'email_verified_at' => null,
             ]);
             $user->save();
 
@@ -106,16 +112,34 @@ class ProviderOnboardingService
             );
             $tenant->save();
 
-            Auth::guard('web')->login($user, true);
-
-            if ($request->hasSession()) {
-                $request->session()->regenerate();
-                $request->session()->put('tenant_id', $tenant->id);
-            }
+            $this->emailVerification->send($user, $tenant->default_locale);
+            $this->notifications->send(
+                email: $user->email,
+                event: NotificationEventCatalog::EVENT_FREE_TRIAL_WELCOME,
+                context: [
+                    'user' => [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ],
+                    'tenant' => [
+                        'name' => $tenant->name,
+                    ],
+                    'license' => [
+                        'expires_at' => data_get($licensePayload, 'license.expires_at'),
+                    ],
+                    'links' => [
+                        'login_url' => rtrim((string) config('app.marketing_url', config('app.frontend_url')), '/')
+                            .'/'.$tenant->default_locale.'/auth/login',
+                    ],
+                ],
+                tenant: $tenant,
+                locale: $tenant->default_locale,
+            );
 
             return [
                 'user' => $user->loadMissing(['tenant', 'roles.permissions']),
                 'license' => $licensePayload,
+                'verification_required' => true,
             ];
         });
     }

@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -65,6 +66,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_verification_required' => 'boolean',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
@@ -111,5 +113,15 @@ class User extends Authenticatable
     public function ticketReplies(): HasMany
     {
         return $this->hasMany(TicketReply::class)->latest();
+    }
+
+    public function mfaMethods(): HasMany
+    {
+        return $this->hasMany(UserMfaMethod::class)->latest('created_at');
+    }
+
+    public function recoveryCodes(): HasMany
+    {
+        return $this->hasMany(UserRecoveryCode::class)->latest('id');
     }
 }

@@ -9,7 +9,10 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
@@ -23,6 +26,7 @@ class InvoiceService
         private readonly InvoiceRepositoryInterface $invoices,
         private readonly ClientRepositoryInterface $clients,
         private readonly OrderRepositoryInterface $orders,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -53,8 +57,10 @@ class InvoiceService
 
             $invoice = $this->invoices->create($this->extractInvoiceAttributes($summary));
             $this->invoices->syncItems($invoice, $summary['items']);
+            $resolvedInvoice = $this->getForDisplay($invoice);
+            $this->dispatchInvoiceCreatedNotification($resolvedInvoice);
 
-            return $this->getForDisplay($invoice);
+            return $resolvedInvoice;
         });
     }
 
@@ -400,5 +406,40 @@ class InvoiceService
     private function generateReferenceNumber(): string
     {
         return 'INV-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6));
+    }
+
+    private function dispatchInvoiceCreatedNotification(Invoice $invoice): void
+    {
+        $invoice->loadMissing('client');
+        $client = $invoice->client;
+
+        if (! $client || ! filled($client->email)) {
+            return;
+        }
+
+        $tenant = Tenant::query()->withoutGlobalScopes()->find($invoice->tenant_id);
+
+        if (! $tenant) {
+            return;
+        }
+
+        $this->notifications->send(
+            email: $client->email,
+            event: NotificationEventCatalog::EVENT_INVOICE_CREATED,
+            context: [
+                'client' => [
+                    'name' => $client->display_name,
+                    'email' => $client->email,
+                ],
+                'invoice' => [
+                    'reference_number' => $invoice->reference_number,
+                    'status' => $invoice->status,
+                    'total' => number_format($invoice->total_minor / 100, 2).' '.$invoice->currency,
+                    'due_date' => $invoice->due_date?->toDateString(),
+                ],
+            ],
+            tenant: $tenant,
+            locale: $client->preferred_locale ?: $tenant->default_locale,
+        );
     }
 }

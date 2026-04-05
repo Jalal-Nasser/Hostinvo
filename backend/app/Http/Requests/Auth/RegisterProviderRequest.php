@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Requests\Concerns\ValidatesTurnstile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class RegisterProviderRequest extends FormRequest
 {
+    use ValidatesTurnstile;
+
     public function authorize(): bool
     {
         return true;
@@ -31,6 +34,12 @@ class RegisterProviderRequest extends FormRequest
             'license_key' => ['nullable', 'string', 'max:120'],
             'license_domain' => ['required_with:license_key', 'string', 'max:255'],
             'license_instance_id' => ['required_with:license_key', 'string', 'max:191'],
+            'turnstile_token' => ['nullable', 'string'],
         ];
+    }
+
+    protected function turnstileFormKey(): ?string
+    {
+        return 'provider_register';
     }
 }

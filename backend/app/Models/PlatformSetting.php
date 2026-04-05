@@ -9,12 +9,13 @@ class PlatformSetting extends Model
     protected $fillable = [
         'key',
         'value',
+        'is_encrypted',
     ];
 
     protected function casts(): array
     {
         return [
-            'value' => 'array',
+            'is_encrypted' => 'boolean',
         ];
     }
 }

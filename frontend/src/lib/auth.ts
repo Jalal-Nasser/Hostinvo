@@ -5,6 +5,8 @@ export type AuthenticatedUser = {
   email: string;
   locale: string;
   is_active: boolean;
+  email_verified_at?: string | null;
+  email_verification_required?: boolean;
   last_login_at: string | null;
   tenant?: {
     id: string;
@@ -70,6 +72,8 @@ export const backendOrigin = new URL(apiBaseUrl).origin;
 
 export const sessionCookieName =
   process.env.NEXT_PUBLIC_SESSION_COOKIE ?? "hostinvo_session";
+export const authStateCookieName =
+  process.env.NEXT_PUBLIC_AUTH_STATE_COOKIE ?? "hostinvo_auth_state";
 
 export function statefulApiHeaders(
   cookieHeader: string,
@@ -92,6 +96,30 @@ export function localePath(locale: string, path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
 
   return `/${locale}${normalized}`;
+}
+
+export function readBrowserCookie(name: string): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const match = document.cookie
+    .split("; ")
+    .find((cookie) => cookie.startsWith(`${name}=`));
+
+  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
+}
+
+export async function ensureCsrfCookie(): Promise<void> {
+  await fetch(`${backendOrigin}/sanctum/csrf-cookie`, { credentials: "include" });
+}
+
+export function tenantHostHeader(): Record<string, string> {
+  if (typeof window === "undefined" || window.location.hostname === "") {
+    return {};
+  }
+
+  return { "X-Tenant-Host": window.location.hostname };
 }
 
 export async function getAuthenticatedUserFromCookies(

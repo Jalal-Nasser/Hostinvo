@@ -15,6 +15,7 @@ class NotificationTemplate extends Model
 
     protected $fillable = [
         'tenant_id',
+        'scope',
         'event',
         'locale',
         'subject',

@@ -5,6 +5,7 @@ namespace App\Services\Auth;
 use App\Contracts\Repositories\Auth\UserRepositoryInterface;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Auth\Data\LoginResult;
 use App\Services\Tenancy\TenantContextService;
 use App\Support\Auth\PasswordResetTenantContext;
 use Illuminate\Auth\Events\PasswordReset;
@@ -25,9 +26,10 @@ class AuthService
     public function __construct(
         private readonly UserRepositoryInterface $users,
         private readonly PasswordResetTenantContext $passwordResetTenantContext,
+        private readonly MfaService $mfa,
     ) {}
 
-    public function login(array $payload, Request $request): User
+    public function login(array $payload, Request $request): LoginResult
     {
         $user = $this->users->findByEmail($payload['email']);
         $passwordValid = $this->verifyPasswordInConstantTime($user, (string) $payload['password']);
@@ -40,6 +42,14 @@ class AuthService
 
         $this->ensureLoginAllowed($user);
 
+        if ($this->mfa->shouldChallenge($user)) {
+            $this->mfa->clearPendingState($request);
+
+            return LoginResult::mfaRequired(
+                $this->mfa->begin($user, (bool) ($payload['remember'] ?? false), $request)
+            );
+        }
+
         Auth::guard('web')->login($user, (bool) ($payload['remember'] ?? false));
         $request->session()->regenerate();
         $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
@@ -50,7 +60,9 @@ class AuthService
 
         $this->users->save($user);
 
-        return $this->currentUser($user);
+        return LoginResult::authenticated(
+            $this->currentUser($user)
+        );
     }
 
     public function logout(Request $request): void
@@ -169,6 +181,12 @@ class AuthService
         if (! $user->is_active) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.inactive')],
+            ]);
+        }
+
+        if ($user->email_verification_required && ! $user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'email' => [__('auth.email_verification_required')],
             ]);
         }
 

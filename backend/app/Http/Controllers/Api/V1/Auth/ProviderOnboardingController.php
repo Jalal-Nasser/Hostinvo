@@ -22,6 +22,7 @@ class ProviderOnboardingController extends Controller
         return $this->success([
             'user' => (new AuthenticatedUserResource($result['user']))->resolve($request),
             'license' => $result['license'],
+            'verification_required' => (bool) ($result['verification_required'] ?? false),
         ], status: Response::HTTP_CREATED);
     }
 

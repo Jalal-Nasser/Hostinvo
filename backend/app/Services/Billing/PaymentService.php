@@ -12,6 +12,8 @@ use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\WebhookLog;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use App\Payments\DataTransferObjects\GatewayCheckoutSession;
 use App\Payments\DataTransferObjects\GatewayConfiguration;
 use App\Payments\DataTransferObjects\GatewayWebhookPayload;
@@ -29,6 +31,7 @@ class PaymentService
         private readonly InvoiceRepositoryInterface $invoices,
         private readonly TenantRepositoryInterface $tenants,
         private readonly PaymentGatewayManager $gateways,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -94,7 +97,13 @@ class PaymentService
                 $this->applyCompletedPaymentToInvoice($invoice->fresh(), $payment->fresh());
             }
 
-            return $payment->load(['client', 'invoice', 'transactions']);
+            $resolvedPayment = $payment->load(['client', 'invoice', 'transactions']);
+
+            if ($status === Payment::STATUS_COMPLETED) {
+                $this->dispatchPaymentReceiptNotification($resolvedPayment);
+            }
+
+            return $resolvedPayment;
         });
     }
 
@@ -410,6 +419,8 @@ class PaymentService
         GatewayWebhookPayload $payload
     ): Payment {
         return DB::transaction(function () use ($payment, $transaction, $payload): Payment {
+            $wasCompleted = $payment->status === Payment::STATUS_COMPLETED;
+
             if ($payment->status === Payment::STATUS_COMPLETED && $payload->isCompleted()) {
                 $this->syncGatewayResponse($payment, $transaction, $payload);
 
@@ -424,7 +435,13 @@ class PaymentService
                 $this->applyCompletedPaymentToInvoice($invoice, $payment->fresh());
             }
 
-            return $payment->fresh(['client', 'invoice', 'transactions']);
+            $resolvedPayment = $payment->fresh(['client', 'invoice', 'transactions']);
+
+            if ($payload->isCompleted() && ! $wasCompleted) {
+                $this->dispatchPaymentReceiptNotification($resolvedPayment);
+            }
+
+            return $resolvedPayment;
         });
     }
 
@@ -592,5 +609,48 @@ class PaymentService
             'paid_at' => $amountPaidMinor > 0 ? ($invoice->paid_at ?? $payment->paid_at ?? now()) : null,
             'refunded_at' => $refundedAmountMinor > 0 ? ($invoice->refunded_at ?? $payment->paid_at ?? now()) : null,
         ]);
+    }
+
+    private function dispatchPaymentReceiptNotification(Payment $payment): void
+    {
+        if ($payment->type !== Payment::TYPE_PAYMENT || $payment->status !== Payment::STATUS_COMPLETED) {
+            return;
+        }
+
+        $payment->loadMissing(['client', 'invoice']);
+        $client = $payment->client;
+        $invoice = $payment->invoice;
+
+        if (! $client || ! $invoice || ! filled($client->email)) {
+            return;
+        }
+
+        $tenant = $this->tenants->findById($payment->tenant_id);
+
+        if (! $tenant) {
+            return;
+        }
+
+        $this->notifications->send(
+            email: $client->email,
+            event: NotificationEventCatalog::EVENT_PAYMENT_RECEIPT,
+            context: [
+                'client' => [
+                    'name' => $client->display_name,
+                    'email' => $client->email,
+                ],
+                'invoice' => [
+                    'reference_number' => $invoice->reference_number,
+                    'total' => number_format($invoice->total_minor / 100, 2).' '.$invoice->currency,
+                ],
+                'payment' => [
+                    'amount' => number_format($payment->amount_minor / 100, 2).' '.$payment->currency,
+                    'reference' => $payment->reference,
+                    'method' => $payment->payment_method,
+                ],
+            ],
+            tenant: $tenant,
+            locale: $client->preferred_locale ?: $tenant->default_locale,
+        );
     }
 }
