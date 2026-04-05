@@ -1150,14 +1150,14 @@
     "suspendTenantButton": "تعليق المستأجر",
     "tenantActivatedSuccess": "تم تنشيط المستأجر بنجاح.",
     "tenantSuspendedSuccess": "تم تعليق المستأجر بنجاح.",
-    "impersonationTitle": "تسجيل الدخول كمستأجر",
-    "impersonationHeading": "وصول الانتحال",
-    "impersonationDescription": "افتح لوحة إدارة المستأجر أو بوابة العميل في علامة تبويب جديدة للتحقق من تجربة المستأجر.",
-    "impersonateAdminButton": "الدخول كمدير مستأجر",
-    "impersonatePortalButton": "الدخول كبوابة عميل",
-    "impersonationAdminSuccess": "تم بدء جلسة مدير المستأجر في علامة تبويب جديدة.",
-    "impersonationPortalSuccess": "تم بدء جلسة بوابة العميل في علامة تبويب جديدة.",
-    "returnToPlatformOwner": "العودة إلى مالك المنصة"
+    "impersonationTitle": "مساحة عمل المستأجر",
+    "impersonationHeading": "الدخول إلى سياق المستأجر",
+    "impersonationDescription": "بدّل سياق المستأجر النشط مع بقائك مسجلاً كمالك للمنصة، ثم تابع إلى لوحة المستأجر أو بوابة العميل.",
+    "impersonateAdminButton": "دخول اللوحة",
+    "impersonatePortalButton": "فتح بوابة العميل",
+    "impersonationAdminSuccess": "تم فتح لوحة المستأجر ضمن سياق المستأجر المحدد.",
+    "impersonationPortalSuccess": "تم فتح بوابة العميل ضمن سياق المستأجر المحدد.",
+    "returnToPlatformOwner": "الخروج من سياق المستأجر"
   },
   "Support": {
     "listTitle": "التذاكر",

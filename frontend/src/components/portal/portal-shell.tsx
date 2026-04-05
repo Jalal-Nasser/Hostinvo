@@ -59,6 +59,7 @@ export async function PortalShell({
   const t = await getTranslations("Portal");
   const portalConfig = await fetchPortalConfigFromCookies(cookieHeader);
   const branding = portalConfig?.branding ?? null;
+  const activeTenant = user.active_tenant ?? user.tenant ?? null;
   const sections = buildPortalSections(locale, t, portalConfig?.surface);
   const activeSectionKey = resolvePortalSectionKey(currentPath);
   const activeSection = sections.find((section) => section.key === activeSectionKey) ?? {
@@ -78,7 +79,7 @@ export async function PortalShell({
   const railLogoSrc = branding?.favicon_url || branding?.logo_url || null;
   const portalBrandName =
     branding?.portal_name?.trim() ||
-    user.tenant?.name?.trim() ||
+    activeTenant?.name?.trim() ||
     (locale === "ar" ? "بوابة العملاء" : "Client portal");
 
   return (

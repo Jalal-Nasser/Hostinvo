@@ -13,8 +13,10 @@ import {
   canAccessClientPortal,
   defaultWorkspacePath,
   getAuthenticatedUserFromCookies,
+  hasActiveTenantContext,
   hasAnyPermission,
   hasRole,
+  isPlatformOwnerContext,
   localePath,
   type WorkspaceMode,
 } from "@/lib/auth";
@@ -200,11 +202,12 @@ export async function WorkspaceShell({
   const portalT = await getTranslations("Portal");
   const provisioningT = await getTranslations("Provisioning");
   const workspaceT = await getTranslations("Workspace");
+  const activeTenant = user.active_tenant ?? user.tenant ?? null;
 
   const hasAdminWorkspace = canAccessAdminWorkspace(user);
-  const isPlatformOwner = hasRole(user, "super_admin");
-  const hasPortalWorkspace = canAccessClientPortal(user) && !isPlatformOwner;
-  const isImpersonating = Boolean(user.impersonation?.active);
+  const isPlatformOwner = isPlatformOwnerContext(user);
+  const hasPortalWorkspace = canAccessClientPortal(user);
+  const hasTenantContextReturn = hasRole(user, "super_admin") && hasActiveTenantContext(user);
   const overviewHref = hasAdminWorkspace
     ? localePath(locale, "/dashboard")
     : defaultWorkspacePath(locale, user);
@@ -235,7 +238,7 @@ export async function WorkspaceShell({
       active:
         currentPath === "/dashboard/tenants" ||
         currentPath.startsWith("/dashboard/tenants/"),
-      visible: hasRole(user, "super_admin"),
+      visible: hasRole(user, "super_admin") && !hasActiveTenantContext(user),
       icon: "tenants",
       section: "primary",
     },
@@ -503,10 +506,10 @@ export async function WorkspaceShell({
               <div className="mt-6 rounded-xl border border-[#e5e7eb] bg-[#faf9f5] p-4">
                 <p className="dashboard-kicker">{dashboardT("tenantLabel")}</p>
                 <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#0a1628]">
-                  {user.tenant?.name ?? workspaceT("adminBadge")}
+                  {activeTenant?.name ?? workspaceT("adminBadge")}
                 </p>
                 <p className="mt-2 text-sm text-[#6b7280]">
-                  {user.tenant?.slug ?? user.email}
+                  {activeTenant?.slug ?? user.email}
                 </p>
               </div>
 
@@ -553,7 +556,7 @@ export async function WorkspaceShell({
 
                     <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#6b7280]">
                       <span className="rounded-lg border border-[#e5e7eb] bg-[#fcfcfb] px-3 py-1.5 font-medium text-[#123055]">
-                        {user.tenant?.name ?? workspaceT("adminBadge")}
+                        {activeTenant?.name ?? workspaceT("adminBadge")}
                       </span>
                       <span>{user.name}</span>
                       <span className="text-[#c0cad5]">/</span>
@@ -586,7 +589,7 @@ export async function WorkspaceShell({
                         </Link>
                       ) : null}
 
-                      {isImpersonating ? <ImpersonationReturn locale={locale} /> : null}
+                      {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
                       <LocaleSwitcher currentLocale={locale} path={currentPath} />
                       <LogoutButton />
                       {actions}

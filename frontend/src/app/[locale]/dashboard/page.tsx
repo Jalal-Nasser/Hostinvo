@@ -12,7 +12,7 @@ import {
   canAccessClientPortal,
   getAuthenticatedUserFromCookies,
   hasAnyPermission,
-  hasRole,
+  isPlatformOwnerContext,
   localePath,
 } from "@/lib/auth";
 import { fetchAdminDashboardSummary } from "@/lib/dashboard";
@@ -68,7 +68,7 @@ export default async function DashboardPage({
   const workspaceT = await getTranslations("Workspace");
   const summary = await fetchAdminDashboardSummary(cookieHeader, user);
   const revenueActivityData = buildRevenueActivityData(params.locale, summary);
-  const isPlatformOwner = hasRole(user, "super_admin");
+  const isPlatformOwner = isPlatformOwnerContext(user);
 
   const actions = isPlatformOwner
     ? []

@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources\Auth;
 
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Tenancy\TenantContextService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +16,13 @@ class AuthenticatedUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         $this->resource->loadMissing(['tenant', 'roles.permissions']);
+        $activeTenantId = $request->hasSession()
+            ? $request->session()->get(TenantContextService::ACTIVE_TENANT_SESSION_KEY)
+            : null;
+        $activeTenant = is_string($activeTenantId) && $activeTenantId !== ''
+            ? Tenant::query()->find($activeTenantId)
+            : null;
+        $tenant = $activeTenant ?? $this->tenant;
         $impersonatorId = $request->session()->get('impersonator_id');
         $impersonator = null;
 
@@ -31,18 +40,25 @@ class AuthenticatedUserResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'tenant_id' => $this->tenant_id,
+            'tenant_id' => $activeTenant?->getKey() ?? $this->tenant_id,
             'name' => $this->name,
             'email' => $this->email,
             'locale' => $this->locale,
             'is_active' => $this->is_active,
             'last_login_at' => $this->last_login_at,
-            'tenant' => $this->when($this->tenant, [
-                'id' => $this->tenant?->id,
-                'name' => $this->tenant?->name,
-                'slug' => $this->tenant?->slug,
-                'status' => $this->tenant?->status,
-                'default_locale' => $this->tenant?->default_locale,
+            'tenant' => $this->when($tenant, [
+                'id' => $tenant?->id,
+                'name' => $tenant?->name,
+                'slug' => $tenant?->slug,
+                'status' => $tenant?->status,
+                'default_locale' => $tenant?->default_locale,
+            ]),
+            'active_tenant' => $this->when($activeTenant, [
+                'id' => $activeTenant?->id,
+                'name' => $activeTenant?->name,
+                'slug' => $activeTenant?->slug,
+                'status' => $activeTenant?->status,
+                'default_locale' => $activeTenant?->default_locale,
             ]),
             'roles' => $this->roles->map(fn ($role) => [
                 'id' => $role->id,

@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Contracts\Repositories\Auth\TenantRepositoryInterface;
+use App\Models\Role;
+use App\Services\Tenancy\TenantContextService;
 use App\Support\Tenancy\CurrentTenant;
 use Closure;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ class ResolveTenant
 {
     public function __construct(
         private readonly TenantRepositoryInterface $tenants,
+        private readonly TenantContextService $tenantContextService,
     ) {}
 
     /**
@@ -25,7 +28,37 @@ class ResolveTenant
         $user = $request->user();
         $sessionStore = $request->hasSession() ? $request->session() : Session::driver();
 
-        if (! $user || blank($user->tenant_id)) {
+        if (! $user) {
+            $currentTenant->clear();
+            app()->forgetInstance('tenant');
+
+            return $next($request);
+        }
+
+        if ($user->hasRole(Role::SUPER_ADMIN)) {
+            $tenant = $this->tenantContextService->resolveActiveTenant($sessionStore);
+
+            if (! $tenant) {
+                $sessionStore->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
+                $sessionStore->forget('tenant_id');
+                $currentTenant->clear();
+                app()->forgetInstance('tenant');
+
+                return $next($request);
+            }
+
+            $scopedUser = $this->tenantContextService->applyToUser($user, $tenant);
+
+            Auth::setUser($scopedUser);
+            $request->setUserResolver(static fn () => $scopedUser);
+            $sessionStore->put('tenant_id', $tenant->getKey());
+            $currentTenant->set($tenant);
+            app()->instance('tenant', $tenant);
+
+            return $next($request);
+        }
+
+        if (blank($user->tenant_id)) {
             $currentTenant->clear();
             app()->forgetInstance('tenant');
 

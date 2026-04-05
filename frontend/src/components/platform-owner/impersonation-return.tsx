@@ -6,7 +6,7 @@ import { useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { localePath } from "@/lib/auth";
-import { stopImpersonation } from "@/lib/tenants";
+import { clearTenantContext } from "@/lib/tenants";
 
 type ImpersonationReturnProps = {
   locale: string;
@@ -20,13 +20,7 @@ export function ImpersonationReturn({ locale, variant = "outline" }: Impersonati
 
   function handleStop() {
     startTransition(async () => {
-      const result = await stopImpersonation();
-
-      if (result.data?.redirect) {
-        router.push(localePath(locale, result.data.redirect));
-        router.refresh();
-        return;
-      }
+      await clearTenantContext();
 
       router.push(localePath(locale, "/dashboard/tenants"));
       router.refresh();

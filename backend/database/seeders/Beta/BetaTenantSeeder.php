@@ -74,17 +74,19 @@ class BetaTenantSeeder extends Seeder
 
             $owner->roles()->syncWithoutDetaching([$ownerRole->id]);
 
-            TenantUser::query()->updateOrCreate(
-                [
-                    'tenant_id' => $tenant->id,
-                    'user_id' => $owner->id,
-                ],
-                [
-                    'role_id' => $ownerRole->id,
-                    'is_primary' => true,
-                    'joined_at' => now(),
-                ],
-            );
+            $tenantUser = TenantUser::query()->firstOrNew([
+                'tenant_id' => $tenant->id,
+                'user_id' => $owner->id,
+            ]);
+
+            $tenantUser->forceFill([
+                'tenant_id' => $tenant->id,
+                'user_id' => $owner->id,
+                'role_id' => $ownerRole->id,
+                'is_primary' => true,
+                'joined_at' => now(),
+            ]);
+            $tenantUser->save();
 
             if ($tenant->owner_user_id !== $owner->id) {
                 $tenant->forceFill(['owner_user_id' => $owner->id])->save();
@@ -102,4 +104,3 @@ class BetaTenantSeeder extends Seeder
         }
     }
 }
-

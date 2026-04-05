@@ -5,6 +5,7 @@ namespace App\Services\Auth;
 use App\Contracts\Repositories\Auth\UserRepositoryInterface;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Tenancy\TenantContextService;
 use App\Support\Auth\PasswordResetTenantContext;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -41,6 +42,7 @@ class AuthService
 
         Auth::guard('web')->login($user, (bool) ($payload['remember'] ?? false));
         $request->session()->regenerate();
+        $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
         $user->forceFill([
             'last_login_at' => now(),
         ]);
@@ -57,6 +59,7 @@ class AuthService
 
         Auth::guard('web')->logout();
 
+        $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
         $request->session()->forget('tenant_id');
         $request->session()->invalidate();
         $request->session()->regenerateToken();

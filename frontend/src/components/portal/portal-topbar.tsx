@@ -19,18 +19,19 @@ type PortalTopbarProps = {
 export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
   const defaultCurrency =
     branding?.default_currency?.trim().toUpperCase() || "USD";
-  const isImpersonating = Boolean(user.impersonation?.active);
+  const activeTenant = user.active_tenant ?? user.tenant ?? null;
+  const hasTenantContextReturn = user.roles.some((role) => role.name === "super_admin") && Boolean(activeTenant);
 
   return (
     <div className={[portalTheme.utilityStripClass, "mb-5 flex min-h-[40px] items-center ps-4 pe-4 py-2"].join(" ")}>
       <div className="hidden min-w-0 items-center gap-2 lg:flex">
         <span className="rounded-full border border-[rgba(104,123,158,0.18)] bg-[rgba(255,255,255,0.04)] ps-2.5 pe-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#c3d2ee]">
-          {branding?.portal_name || user.tenant?.name || t("overviewTitle")}
+          {branding?.portal_name || activeTenant?.name || t("overviewTitle")}
         </span>
       </div>
 
       <div className="ms-auto flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.14em]">
-        {isImpersonating ? <ImpersonationReturn locale={locale} variant="outline" /> : null}
+        {hasTenantContextReturn ? <ImpersonationReturn locale={locale} variant="outline" /> : null}
         <PortalCartLink
           className={portalTheme.utilityLinkClass}
           href={localePath(locale, "/portal/cart")}

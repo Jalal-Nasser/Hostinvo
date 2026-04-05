@@ -13,6 +13,13 @@ export type AuthenticatedUser = {
     status: string;
     default_locale: string;
   } | null;
+  active_tenant?: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    default_locale: string;
+  } | null;
   roles: Array<{
     id: number;
     name: string;
@@ -134,11 +141,23 @@ export function hasAnyPermission(
   return permissions.some((permission) => hasPermission(user, permission));
 }
 
+export function hasActiveTenantContext(user: AuthenticatedUser | null): boolean {
+  return Boolean(user?.active_tenant?.id ?? user?.tenant?.id ?? user?.tenant_id);
+}
+
+export function isPlatformOwnerContext(user: AuthenticatedUser | null): boolean {
+  return hasRole(user, "super_admin") && !hasActiveTenantContext(user);
+}
+
 export function canAccessAdminWorkspace(user: AuthenticatedUser | null): boolean {
   return hasPermission(user, "dashboard.view");
 }
 
 export function canAccessClientPortal(user: AuthenticatedUser | null): boolean {
+  if (hasRole(user, "super_admin")) {
+    return hasPermission(user, "client.portal.access") && hasActiveTenantContext(user);
+  }
+
   return hasPermission(user, "client.portal.access");
 }
 

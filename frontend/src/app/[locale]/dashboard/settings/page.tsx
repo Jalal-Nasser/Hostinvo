@@ -4,7 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { tenantAdminCopy } from "@/components/tenant-admin/copy";
 import { type AppLocale } from "@/i18n/routing";
-import { getAuthenticatedUserFromCookies, hasRole, localePath } from "@/lib/auth";
+import { getAuthenticatedUserFromCookies, isPlatformOwnerContext, localePath } from "@/lib/auth";
 import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export default async function SettingsPage({ params }: Readonly<SettingsPageProp
   const copy = tenantAdminCopy(params.locale);
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
-  const isPlatformOwner = hasRole(user, "super_admin");
+  const isPlatformOwner = isPlatformOwnerContext(user);
 
   const cards = [
     {

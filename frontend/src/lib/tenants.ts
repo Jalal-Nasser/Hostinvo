@@ -150,6 +150,26 @@ export async function suspendTenant(
   return submitAdminJson<TenantRecord>(`tenants/${tenantId}/suspend`, "POST", {});
 }
 
+export async function switchTenantContext(
+  tenantId: string,
+): Promise<
+  MutationResult<{
+    tenant: Pick<TenantRecord, "id" | "name" | "slug" | "status">;
+  }>
+> {
+  return submitAdminJson<{ tenant: Pick<TenantRecord, "id" | "name" | "slug" | "status"> }>(
+    `tenants/${tenantId}/switch`,
+    "POST",
+    {},
+  );
+}
+
+export async function clearTenantContext(): Promise<
+  MutationResult<{ cleared: boolean }>
+> {
+  return submitAdminJson<{ cleared: boolean }>("tenant-context/clear", "POST", {});
+}
+
 export async function impersonateTenantAdmin(
   tenantId: string,
 ): Promise<MutationResult<{ redirect: string }>> {

@@ -8,8 +8,7 @@ import { StatusBanner } from "@/components/tenant-admin/status-banner";
 import { Button } from "@/components/ui/button";
 import { localePath } from "@/lib/auth";
 import {
-  impersonateTenantAdmin,
-  impersonateTenantPortal,
+  switchTenantContext,
 } from "@/lib/tenants";
 
 type TenantImpersonationActionsProps = {
@@ -32,12 +31,9 @@ export function TenantImpersonationActions({
     setError(null);
 
     startTransition(async () => {
-      const result =
-        mode === "admin"
-          ? await impersonateTenantAdmin(tenantId)
-          : await impersonateTenantPortal(tenantId);
+      const result = await switchTenantContext(tenantId);
 
-      if (result.error || !result.data) {
+      if (result.error) {
         setError(result.error ?? t("serviceUnavailable"));
         return;
       }
@@ -47,12 +43,12 @@ export function TenantImpersonationActions({
           ? localePath(locale, "/dashboard")
           : localePath(locale, "/portal");
 
-      window.open(targetPath, "_blank", "noopener,noreferrer");
       setMessage(
         mode === "admin"
           ? t("impersonationAdminSuccess")
           : t("impersonationPortalSuccess"),
       );
+      router.push(targetPath);
       router.refresh();
     });
   }

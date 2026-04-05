@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
-import { getAuthenticatedUserFromCookies, hasRole, localePath } from "@/lib/auth";
+import { getAuthenticatedUserFromCookies, isPlatformOwnerContext, localePath } from "@/lib/auth";
 import { fetchProductGroupsFromCookies, fetchProductsFromCookies } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export default async function ProductsPage({
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
 
-  if (user && hasRole(user, "super_admin")) {
+  if (user && isPlatformOwnerContext(user)) {
     redirect(localePath(params.locale, "/dashboard/plans"));
   }
   const [groupsResponse, productsResponse] = await Promise.all([

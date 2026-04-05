@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\LicensingController;
 use App\Http\Controllers\Api\V1\PlanCatalogController;
 use App\Http\Controllers\Api\V1\WebhookController;
+use App\Http\Controllers\Api\V1\Admin\TenantContextController;
 use Illuminate\Support\Facades\Route;
 
 $supportedWebhookGateways = array_keys((array) config('payments.gateways', []));
@@ -18,6 +19,14 @@ Route::middleware(['api'])
         Route::prefix('auth')
             ->name('auth.')
             ->group(base_path('routes/api/v1/auth.php'));
+
+        Route::prefix('admin')
+            ->name('admin.')
+            ->middleware(['auth:sanctum'])
+            ->group(function (): void {
+                Route::post('tenants/{tenant}/switch', [TenantContextController::class, 'switchTenant'])->name('tenants.switch');
+                Route::post('tenant-context/clear', [TenantContextController::class, 'clear'])->name('tenant-context.clear');
+            });
 
         Route::prefix('admin')
             ->name('admin.')

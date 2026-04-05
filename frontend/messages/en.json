@@ -1150,14 +1150,14 @@
     "suspendTenantButton": "Suspend tenant",
     "tenantActivatedSuccess": "Tenant activated successfully.",
     "tenantSuspendedSuccess": "Tenant suspended successfully.",
-    "impersonationTitle": "Login as tenant",
-    "impersonationHeading": "Impersonation access",
-    "impersonationDescription": "Open the tenant admin dashboard or client portal in a new tab to validate that tenant experience.",
-    "impersonateAdminButton": "Login as tenant admin",
-    "impersonatePortalButton": "Login as client portal",
-    "impersonationAdminSuccess": "Tenant admin session started in a new tab.",
-    "impersonationPortalSuccess": "Client portal session started in a new tab.",
-    "returnToPlatformOwner": "Return to platform owner"
+    "impersonationTitle": "Tenant workspace",
+    "impersonationHeading": "Enter tenant context",
+    "impersonationDescription": "Switch the active tenant context while staying logged in as platform owner, then continue into the tenant dashboard or client portal.",
+    "impersonateAdminButton": "Enter dashboard",
+    "impersonatePortalButton": "Open Client Portal",
+    "impersonationAdminSuccess": "Tenant dashboard opened in the selected tenant context.",
+    "impersonationPortalSuccess": "Client portal opened in the selected tenant context.",
+    "returnToPlatformOwner": "Exit tenant context"
   },
   "Support": {
     "listTitle": "Tickets",
