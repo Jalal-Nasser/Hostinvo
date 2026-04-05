@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { TenantForm } from "@/components/platform-owner/tenant-form";
+import { TenantImpersonationButtons } from "@/components/platform-owner/tenant-impersonation-buttons";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
@@ -156,6 +157,11 @@ export default async function TenantsPage({
                       >
                         {t("viewTenantButton")}
                       </Link>
+                      <TenantImpersonationButtons
+                        tenantId={tenant.id}
+                        locale={params.locale}
+                        compact
+                      />
                     </div>
                   </div>
 

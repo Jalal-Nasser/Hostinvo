@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { TenantForm } from "@/components/platform-owner/tenant-form";
-import { TenantImpersonationActions } from "@/components/platform-owner/tenant-impersonation-actions";
+import { TenantImpersonationButtons } from "@/components/platform-owner/tenant-impersonation-buttons";
 import { TenantStatusActions } from "@/components/platform-owner/tenant-status-actions";
 import { type AppLocale } from "@/i18n/routing";
 import {
@@ -45,20 +45,12 @@ export default async function TenantDetailPage({
   return (
     <DashboardShell
       actions={
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href={localePath(params.locale, "/dashboard/tenants")}
-            className="btn-secondary whitespace-nowrap"
-          >
-            {t("backToTenantsButton")}
-          </Link>
-          <Link
-            href={localePath(params.locale, "/dashboard/tenants")}
-            className="btn-ghost whitespace-nowrap border border-[#e5e7eb] bg-white"
-          >
-            {t("impersonationTitle")}
-          </Link>
-        </div>
+        <Link
+          href={localePath(params.locale, "/dashboard/tenants")}
+          className="btn-secondary whitespace-nowrap"
+        >
+          {t("backToTenantsButton")}
+        </Link>
       }
       currentPath="/dashboard/tenants"
       description={t("detailPageDescription")}
@@ -101,7 +93,20 @@ export default async function TenantDetailPage({
 
         <div className="grid gap-6">
           <TenantStatusActions tenantId={tenant.id} status={tenant.status} />
-          <TenantImpersonationActions tenantId={tenant.id} locale={params.locale} />
+          <section className="glass-card p-6 md:p-8">
+            <div className="flex flex-col gap-2">
+              <p className="dashboard-kicker">{t("impersonationTitle")}</p>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+                {t("impersonationHeading")}
+              </h2>
+              <p className="text-sm leading-7 text-[#6b7280]">
+                {t("impersonationDescription")}
+              </p>
+            </div>
+            <div className="mt-6">
+              <TenantImpersonationButtons tenantId={tenant.id} locale={params.locale} />
+            </div>
+          </section>
 
           <section className="glass-card p-6 md:p-8">
             <div className="flex flex-col gap-2">

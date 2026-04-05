@@ -4,7 +4,8 @@ import { setRequestLocale } from "next-intl/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { tenantAdminCopy } from "@/components/tenant-admin/copy";
 import { type AppLocale } from "@/i18n/routing";
-import { localePath } from "@/lib/auth";
+import { getAuthenticatedUserFromCookies, hasRole, localePath } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,9 @@ type SettingsPageProps = {
 export default async function SettingsPage({ params }: Readonly<SettingsPageProps>) {
   setRequestLocale(params.locale);
   const copy = tenantAdminCopy(params.locale);
+  const cookieHeader = cookies().toString();
+  const user = await getAuthenticatedUserFromCookies(cookieHeader);
+  const isPlatformOwner = hasRole(user, "super_admin") && !user?.tenant_id;
 
   const cards = [
     {
@@ -38,6 +42,74 @@ export default async function SettingsPage({ params }: Readonly<SettingsPageProp
       href: localePath(params.locale, "/dashboard/content"),
     },
   ];
+
+  if (isPlatformOwner) {
+    return (
+      <DashboardShell
+        currentPath="/dashboard/settings"
+        description={copy.settings.platformDescription}
+        locale={params.locale as AppLocale}
+        title={copy.settings.platformTitle}
+      >
+        <section className="glass-card p-6 md:p-8">
+          <p className="dashboard-kicker">{copy.settings.platformKicker}</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+            {copy.settings.platformHeading}
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-[#6b7280]">
+            {copy.settings.platformNote}
+          </p>
+        </section>
+
+        <section className="grid gap-5 xl:grid-cols-3">
+          <article className="glass-card p-6 md:p-8">
+            <p className="dashboard-kicker">{copy.settings.platformCardKicker}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+              {copy.settings.platformPlansTitle}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-[#6b7280]">
+              {copy.settings.platformPlansDescription}
+            </p>
+            <div className="mt-6">
+              <Link className="btn-primary" href={localePath(params.locale, "/dashboard/products")}>
+                {copy.settings.platformPlansCta}
+              </Link>
+            </div>
+          </article>
+
+          <article className="glass-card p-6 md:p-8">
+            <p className="dashboard-kicker">{copy.settings.platformCardKicker}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+              {copy.settings.platformTenantsTitle}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-[#6b7280]">
+              {copy.settings.platformTenantsDescription}
+            </p>
+            <div className="mt-6">
+              <Link className="btn-primary" href={localePath(params.locale, "/dashboard/tenants")}>
+                {copy.settings.platformTenantsCta}
+              </Link>
+            </div>
+          </article>
+
+          <article className="glass-card p-6 md:p-8">
+            <p className="dashboard-kicker">{copy.settings.platformCardKicker}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+              {copy.settings.platformBillingTitle}
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-[#6b7280]">
+              {copy.settings.platformBillingDescription}
+            </p>
+            <div className="mt-6">
+              <Link className="btn-secondary" href={localePath(params.locale, "/dashboard/licenses")}>
+                {copy.settings.platformBillingCta}
+              </Link>
+            </div>
+          </article>
+        </section>
+      </DashboardShell>
+    );
+  }
 
   return (
     <DashboardShell

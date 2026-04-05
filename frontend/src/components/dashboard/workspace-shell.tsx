@@ -46,6 +46,7 @@ type WorkspaceNavItem = {
     | "orders"
     | "invoices"
     | "payments"
+    | "licenses"
     | "domains"
     | "support"
     | "servers"
@@ -101,6 +102,12 @@ function SidebarIcon({
       return (
         <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 7.5A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5v9A2.5 2.5 0 0117.5 19h-11A2.5 2.5 0 014 16.5v-9zm0 2.5h16m-4.5 4H17" />
+        </svg>
+      );
+    case "licenses":
+      return (
+        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 5h8l4 4v9.5A1.5 1.5 0 0117.5 20h-10A1.5 1.5 0 016 18.5v-12A1.5 1.5 0 017.5 5zm8 1.5V10H19.5M9 13h6m-6 3h6" />
         </svg>
       );
     case "domains":
@@ -195,7 +202,7 @@ export async function WorkspaceShell({
   const workspaceT = await getTranslations("Workspace");
 
   const hasAdminWorkspace = canAccessAdminWorkspace(user);
-  const isPlatformOwner = hasRole(user, "super_admin") && !user.tenant_id;
+  const isPlatformOwner = hasRole(user, "super_admin");
   const hasPortalWorkspace = canAccessClientPortal(user) && !isPlatformOwner;
   const isImpersonating = Boolean(user.impersonation?.active);
   const overviewHref = hasAdminWorkspace
@@ -430,6 +437,16 @@ export async function WorkspaceShell({
         section: "primary",
       },
       {
+        href: localePath(locale, "/dashboard/orders"),
+        label: dashboardT("ordersLink"),
+        active:
+          currentPath === "/dashboard/orders" ||
+          currentPath.startsWith("/dashboard/orders/"),
+        visible: true,
+        icon: "orders",
+        section: "primary",
+      },
+      {
         href: localePath(locale, "/dashboard/products"),
         label: dashboardT("platformPlansLink"),
         active:
@@ -440,11 +457,11 @@ export async function WorkspaceShell({
         section: "primary",
       },
       {
-        href: localePath(locale, "/dashboard/payments"),
-        label: dashboardT("paymentsLink"),
-        active: currentPath === "/dashboard/payments",
+        href: localePath(locale, "/dashboard/licenses"),
+        label: dashboardT("licenseBillingLink"),
+        active: currentPath === "/dashboard/licenses",
         visible: true,
-        icon: "payments",
+        icon: "licenses",
         section: "primary",
       },
       {
