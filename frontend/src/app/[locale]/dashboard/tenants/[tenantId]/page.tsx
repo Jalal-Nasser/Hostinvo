@@ -45,12 +45,20 @@ export default async function TenantDetailPage({
   return (
     <DashboardShell
       actions={
-        <Link
-          href={localePath(params.locale, "/dashboard/tenants")}
-          className="btn-secondary whitespace-nowrap"
-        >
-          {t("backToTenantsButton")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={localePath(params.locale, "/dashboard/tenants")}
+            className="btn-secondary whitespace-nowrap"
+          >
+            {t("backToTenantsButton")}
+          </Link>
+          <Link
+            href={localePath(params.locale, "/dashboard/tenants")}
+            className="btn-ghost whitespace-nowrap border border-[#e5e7eb] bg-white"
+          >
+            {t("impersonationTitle")}
+          </Link>
+        </div>
       }
       currentPath="/dashboard/tenants"
       description={t("detailPageDescription")}

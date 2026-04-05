@@ -195,7 +195,8 @@ export async function WorkspaceShell({
   const workspaceT = await getTranslations("Workspace");
 
   const hasAdminWorkspace = canAccessAdminWorkspace(user);
-  const hasPortalWorkspace = canAccessClientPortal(user);
+  const isPlatformOwner = hasRole(user, "super_admin") && !user.tenant_id;
+  const hasPortalWorkspace = canAccessClientPortal(user) && !isPlatformOwner;
   const isImpersonating = Boolean(user.impersonation?.active);
   const overviewHref = hasAdminWorkspace
     ? localePath(locale, "/dashboard")
@@ -211,7 +212,6 @@ export async function WorkspaceShell({
     mode === "admin" && hasAdminWorkspace
       ? await fetchTenantBrandingFromCookies(cookieHeader)
       : null;
-  const isPlatformOwner = hasRole(user, "super_admin") && !user.tenant_id;
 
   const adminNavigation: WorkspaceNavItem[] = [
     {

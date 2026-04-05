@@ -70,7 +70,9 @@ export default async function DashboardPage({
   const revenueActivityData = buildRevenueActivityData(params.locale, summary);
   const isPlatformOwner = hasRole(user, "super_admin");
 
-  const actions = [
+  const actions = isPlatformOwner
+    ? []
+    : [
     hasAnyPermission(user, ["clients.manage"]) ? (
       <Link
         key="new-client"
@@ -98,7 +100,7 @@ export default async function DashboardPage({
         {t("newTicketLink")}
       </Link>
     ) : null,
-  ].filter(Boolean);
+    ].filter(Boolean);
 
   const headerStats = [
     {
