@@ -211,6 +211,7 @@ export async function WorkspaceShell({
     mode === "admin" && hasAdminWorkspace
       ? await fetchTenantBrandingFromCookies(cookieHeader)
       : null;
+  const isPlatformOwner = hasRole(user, "super_admin") && !user.tenant_id;
 
   const adminNavigation: WorkspaceNavItem[] = [
     {
@@ -409,10 +410,61 @@ export async function WorkspaceShell({
   ];
 
   if (mode === "admin") {
-    const primaryNavigation = adminNavigation.filter(
+    const platformOwnerNavigation: WorkspaceNavItem[] = [
+      {
+        href: overviewHref,
+        label: overviewLabel,
+        active: currentPath === "/dashboard" || currentPath === "/portal",
+        visible: true,
+        icon: "dashboard",
+        section: "primary",
+      },
+      {
+        href: localePath(locale, "/dashboard/tenants"),
+        label: dashboardT("tenantsLink"),
+        active:
+          currentPath === "/dashboard/tenants" ||
+          currentPath.startsWith("/dashboard/tenants/"),
+        visible: true,
+        icon: "tenants",
+        section: "primary",
+      },
+      {
+        href: localePath(locale, "/dashboard/products"),
+        label: dashboardT("platformPlansLink"),
+        active:
+          currentPath === "/dashboard/products" ||
+          currentPath.startsWith("/dashboard/products/"),
+        visible: true,
+        icon: "products",
+        section: "primary",
+      },
+      {
+        href: localePath(locale, "/dashboard/payments"),
+        label: dashboardT("paymentsLink"),
+        active: currentPath === "/dashboard/payments",
+        visible: true,
+        icon: "payments",
+        section: "primary",
+      },
+      {
+        href: localePath(locale, "/dashboard/settings"),
+        label: dashboardT("settingsLink"),
+        active:
+          currentPath === "/dashboard/settings" ||
+          currentPath.startsWith("/dashboard/settings/") ||
+          currentPath.startsWith("/dashboard/content"),
+        visible: true,
+        icon: "settings",
+        section: "primary",
+      },
+    ];
+
+    const navigationSource = isPlatformOwner ? platformOwnerNavigation : adminNavigation;
+    const primaryNavigation = navigationSource.filter(
       (item) => item.visible && item.section !== "secondary",
     );
-    const secondaryNavigation = adminNavigation.filter(
+    const secondaryNavigation = navigationSource.filter(
       (item) => item.visible && item.section === "secondary",
     );
 
