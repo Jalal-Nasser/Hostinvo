@@ -65,6 +65,33 @@ export function tenantAdminCopy(locale: string) {
         ? "أدر الأخبار، قاعدة المعرفة، الحوادث، كتل المحتوى وروابط التذييل."
         : "Manage announcements, knowledgebase, incidents, content blocks, and footer links.",
       openModule: isArabic ? "فتح الوحدة" : "Open module",
+      platformTitle: isArabic ? "إعدادات منصة SaaS" : "SaaS platform settings",
+      platformDescription: isArabic
+        ? "إعدادات مالك المنصة لإدارة الخطط والتسعير، الفوترة، والمستأجرين."
+        : "Platform owner controls for plans, license billing, and tenant operations.",
+      platformKicker: isArabic ? "مالك المنصة" : "Platform owner",
+      platformHeading: isArabic
+        ? "إدارة خطط الترخيص وفوترة المستأجرين"
+        : "Manage licensing plans and tenant billing",
+      platformNote: isArabic
+        ? "هذه الإعدادات تخص العلامة التجارية للمنصة وخيارات الترخيص. إعدادات هوية المستأجر والبوابة تبقى داخل كل لوحة مستأجر."
+        : "These settings control the SaaS brand and licensing options. Tenant identity and portal settings live inside each tenant workspace.",
+      platformCardKicker: isArabic ? "خيارات المنصة" : "Platform controls",
+      platformPlansTitle: isArabic ? "الخطط والتسعير" : "Plans & pricing",
+      platformPlansDescription: isArabic
+        ? "عدّل خطط الترخيص المعروضة في الموقع التسويقي ولوحة المالك."
+        : "Manage the license plans surfaced on the marketing site and owner dashboard.",
+      platformPlansCta: isArabic ? "إدارة الخطط" : "Manage plans",
+      platformTenantsTitle: isArabic ? "المستأجرون" : "Tenants",
+      platformTenantsDescription: isArabic
+        ? "اعرض المستأجرين، حالاتهم، وتراخيصهم."
+        : "Review tenants, their status, and license posture.",
+      platformTenantsCta: isArabic ? "عرض المستأجرين" : "View tenants",
+      platformBillingTitle: isArabic ? "فوترة التراخيص" : "License billing",
+      platformBillingDescription: isArabic
+        ? "راقب فوترة التراخيص وربط بوابات الدفع."
+        : "Monitor license billing and connect payment gateways.",
+      platformBillingCta: isArabic ? "عرض فوترة التراخيص" : "Open license billing",
     },
     branding: {
       pageTitle: isArabic ? "الهوية والعلامة" : "Branding & identity",

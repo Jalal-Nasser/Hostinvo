@@ -20,7 +20,7 @@ export default async function SettingsPage({ params }: Readonly<SettingsPageProp
   const copy = tenantAdminCopy(params.locale);
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
-  const isPlatformOwner = hasRole(user, "super_admin") && !user?.tenant_id;
+  const isPlatformOwner = hasRole(user, "super_admin");
 
   const cards = [
     {
@@ -71,7 +71,7 @@ export default async function SettingsPage({ params }: Readonly<SettingsPageProp
               {copy.settings.platformPlansDescription}
             </p>
             <div className="mt-6">
-              <Link className="btn-primary" href={localePath(params.locale, "/dashboard/products")}>
+              <Link className="btn-primary" href={localePath(params.locale, "/dashboard/plans")}>
                 {copy.settings.platformPlansCta}
               </Link>
             </div>

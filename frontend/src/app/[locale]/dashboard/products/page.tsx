@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
-import { localePath } from "@/lib/auth";
+import { getAuthenticatedUserFromCookies, hasRole, localePath } from "@/lib/auth";
 import { fetchProductGroupsFromCookies, fetchProductsFromCookies } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,11 @@ export default async function ProductsPage({
 
   const t = await getTranslations("Catalog");
   const cookieHeader = cookies().toString();
+  const user = await getAuthenticatedUserFromCookies(cookieHeader);
+
+  if (user && hasRole(user, "super_admin")) {
+    redirect(localePath(params.locale, "/dashboard/plans"));
+  }
   const [groupsResponse, productsResponse] = await Promise.all([
     fetchProductGroupsFromCookies(cookieHeader, { per_page: "100" }),
     fetchProductsFromCookies(cookieHeader, {

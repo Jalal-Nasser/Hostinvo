@@ -447,11 +447,9 @@ export async function WorkspaceShell({
         section: "primary",
       },
       {
-        href: localePath(locale, "/dashboard/products"),
+        href: localePath(locale, "/dashboard/plans"),
         label: dashboardT("platformPlansLink"),
-        active:
-          currentPath === "/dashboard/products" ||
-          currentPath.startsWith("/dashboard/products/"),
+        active: currentPath === "/dashboard/plans",
         visible: true,
         icon: "products",
         section: "primary",

@@ -35,7 +35,7 @@ export default async function LicenseBillingPage({
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             className="btn-primary"
-            href={localePath(params.locale, "/dashboard/products")}
+            href={localePath(params.locale, "/dashboard/plans")}
           >
             {t("licenseBillingPlansButton")}
           </Link>
