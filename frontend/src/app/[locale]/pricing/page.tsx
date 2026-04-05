@@ -5,6 +5,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
+import { fetchPublicPlans } from "@/lib/public-plans";
 
 export default async function PricingPage({
   params,
@@ -12,6 +13,33 @@ export default async function PricingPage({
   setRequestLocale(params.locale);
   const locale = params.locale as AppLocale;
   const content = getLaunchContent(locale);
+  const publicPlans = await fetchPublicPlans();
+  const pricingNote = publicPlans?.pricing_note || content.pricingNote;
+  const maxClientsLabel = (max: number) =>
+    locale === "ar" ? `حتى ${max} عميل` : `Up to ${max} clients`;
+  const plans = content.plans.map((plan) => {
+    const override = publicPlans?.plans.find((item) => item.key === plan.key);
+    if (!override) {
+      return plan;
+    }
+
+    const price =
+      override.monthly_price === null || override.monthly_price === undefined
+        ? plan.price
+        : `$${override.monthly_price}`;
+
+    const limits = [...plan.limits];
+    if (override.max_clients) {
+      limits[0] = maxClientsLabel(override.max_clients);
+    }
+
+    return {
+      ...plan,
+      name: override.label || plan.name,
+      price,
+      limits,
+    };
+  });
 
   return (
     <MarketingShell
@@ -23,10 +51,10 @@ export default async function PricingPage({
       <section className="bg-[#f7faff] py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-6 inline-block rounded-full border border-[rgba(4,141,254,0.2)] bg-[#e0f0ff] px-5 py-2 text-center text-sm font-semibold text-[#0054c5]">
-            {content.pricingNote}
+            {pricingNote}
           </div>
           <div className="grid gap-6 lg:grid-cols-4">
-            {content.plans.map((plan) => (
+            {plans.map((plan) => (
               <div
                 key={plan.key}
                 className={plan.featured ? "pricing-card-featured relative" : "pricing-card"}

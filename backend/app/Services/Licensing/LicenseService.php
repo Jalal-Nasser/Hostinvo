@@ -1015,7 +1015,18 @@ class LicenseService
      */
     private function planDefaults(string $plan): array
     {
-        return (array) config('licensing.plans.'.$plan, []);
+        $defaults = (array) config('licensing.plans.'.$plan, []);
+
+        try {
+            $overrides = app(\App\Services\Platform\PlatformSettingService::class)
+                ->get('licensing_plans', []);
+        } catch (\Throwable) {
+            $overrides = [];
+        }
+
+        $override = (array) ($overrides[$plan] ?? []);
+
+        return array_replace($defaults, $override);
     }
 
     private function gracePeriodHours(): int

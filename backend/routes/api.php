@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\LicensingController;
+use App\Http\Controllers\Api\V1\PlanCatalogController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,7 @@ Route::middleware(['api'])
     ->name('api.v1.')
     ->group(function () use ($supportedWebhookGateways): void {
         Route::get('/health', HealthCheckController::class)->name('health');
+        Route::get('/plans', PlanCatalogController::class)->name('plans.index');
 
         Route::prefix('auth')
             ->name('auth.')
@@ -42,5 +44,13 @@ Route::middleware(['api'])
             ->group(function (): void {
                 Route::post('validate', [LicensingController::class, 'validateLicense'])->name('validate');
                 Route::post('activate', [LicensingController::class, 'activate'])->name('activate');
+            });
+
+        Route::prefix('platform')
+            ->name('platform.')
+            ->middleware(['auth:sanctum'])
+            ->group(function (): void {
+                Route::get('plans', [PlanCatalogController::class, 'index'])->name('plans.index');
+                Route::put('plans', [\App\Http\Controllers\Api\V1\Admin\PlatformPlanController::class, 'update'])->name('plans.update');
             });
     });

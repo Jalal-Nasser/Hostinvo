@@ -7,6 +7,7 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath, portalUrl } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
+import { fetchPublicPlans } from "@/lib/public-plans";
 
 type CompatibilityPlatform = {
   key: "cpanel" | "plesk" | "linux";
@@ -62,6 +63,33 @@ export default async function LocaleHomePage({
   setRequestLocale(params.locale);
   const locale = params.locale as AppLocale;
   const content = getLaunchContent(locale);
+  const publicPlans = await fetchPublicPlans();
+  const pricingNote = publicPlans?.pricing_note || content.pricingNote;
+  const maxClientsLabel = (max: number) =>
+    locale === "ar" ? `حتى ${max} عميل` : `Up to ${max} clients`;
+  const plans = content.plans.map((plan) => {
+    const override = publicPlans?.plans.find((item) => item.key === plan.key);
+    if (!override) {
+      return plan;
+    }
+
+    const price =
+      override.monthly_price === null || override.monthly_price === undefined
+        ? plan.price
+        : `$${override.monthly_price}`;
+
+    const limits = [...plan.limits];
+    if (override.max_clients) {
+      limits[0] = maxClientsLabel(override.max_clients);
+    }
+
+    return {
+      ...plan,
+      name: override.label || plan.name,
+      price,
+      limits,
+    };
+  });
   const compatibility =
     locale === "ar"
       ? {
@@ -421,11 +449,11 @@ export default async function LocaleHomePage({
             </h2>
             <p className="mt-3 text-lg text-[#4a5e7a]">{content.sections.plansDescription}</p>
             <p className="mt-4 inline-block rounded-full border border-[rgba(4,141,254,0.2)] bg-[#e0f0ff] px-4 py-1.5 text-sm font-medium text-[#0054c5]">
-              {content.pricingNote}
+              {pricingNote}
             </p>
           </div>
           <div className="mt-16 grid gap-6 lg:grid-cols-4">
-            {content.plans.map((plan) => (
+            {plans.map((plan) => (
               <div key={plan.key} className={`${plan.featured ? "pricing-card-featured relative" : "pricing-card"}`}>
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#faf9f5] px-4 py-1 text-xs font-bold text-[#048dfe] shadow-md">
