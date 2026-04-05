@@ -15,13 +15,25 @@ class TenantBrandingController extends Controller
     {
         $this->authorize('viewAny', TenantSetting::class);
 
-        return $this->success($brandingService->get($request->user()->tenant));
+        $tenant = $request->user()?->tenant;
+
+        if (! $tenant) {
+            return $this->failure('Tenant branding settings require an active tenant workspace.', 422);
+        }
+
+        return $this->success($brandingService->get($tenant));
     }
 
     public function update(UpdateTenantBrandingRequest $request, TenantBrandingService $brandingService): JsonResponse
     {
+        $tenant = $request->user()?->tenant;
+
+        if (! $tenant) {
+            return $this->failure('Tenant branding settings require an active tenant workspace.', 422);
+        }
+
         return $this->success(
-            $brandingService->update($request->user()->tenant, $request->validated())
+            $brandingService->update($tenant, $request->validated())
         );
     }
 }

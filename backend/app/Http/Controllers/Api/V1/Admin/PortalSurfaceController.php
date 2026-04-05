@@ -15,13 +15,25 @@ class PortalSurfaceController extends Controller
     {
         $this->authorize('viewAny', TenantSetting::class);
 
-        return $this->success($portalSurfaceService->get($request->user()->tenant));
+        $tenant = $request->user()?->tenant;
+
+        if (! $tenant) {
+            return $this->failure('Portal surface settings require an active tenant workspace.', 422);
+        }
+
+        return $this->success($portalSurfaceService->get($tenant));
     }
 
     public function update(UpdatePortalSurfaceRequest $request, PortalSurfaceService $portalSurfaceService): JsonResponse
     {
+        $tenant = $request->user()?->tenant;
+
+        if (! $tenant) {
+            return $this->failure('Portal surface settings require an active tenant workspace.', 422);
+        }
+
         return $this->success(
-            $portalSurfaceService->update($request->user()->tenant, $request->validated())
+            $portalSurfaceService->update($tenant, $request->validated())
         );
     }
 }
