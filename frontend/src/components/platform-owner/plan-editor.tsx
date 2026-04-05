@@ -129,142 +129,146 @@ export function PlanEditor({ initial }: PlanEditorProps) {
 
       <section className="grid gap-5">
         {sortedPlans.map((plan) => (
-          <div key={plan.id} className="glass-card p-6 md:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <div key={plan.id} className="glass-card p-0">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.15rem] bg-gradient-to-r from-[#0b4acb] via-[#1285ff] to-[#0a2f8f] px-6 py-4 text-white">
               <div>
-                <p className="dashboard-kicker">{t("planLabel")}</p>
-                <h3 className="mt-2 text-xl font-semibold text-[#0a1628]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[rgba(255,255,255,0.7)]">
+                  {t("planLabel")}
+                </p>
+                <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-white">
                   {plan.label}
                 </h3>
               </div>
-              <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-4 py-1 text-xs font-semibold text-[#036deb]">
+              <span className="rounded-full border border-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.16)] px-4 py-1 text-xs font-semibold text-white">
                 {plan.key.replace("_", " ")}
               </span>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planLabelName")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.label}
-                  onChange={(event) => updatePlan(plan.key, { label: event.target.value })}
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planMarketingName")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.marketing_name ?? ""}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { marketing_name: event.target.value })
-                  }
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planMonthlyPrice")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.monthly_price}
-                  type="number"
-                  min={0}
-                  step={1}
-                  disabled={plan.is_trial}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { monthly_price: Number(event.target.value) })
-                  }
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planMaxClients")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.max_clients}
-                  type="number"
-                  min={0}
-                  step={1}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { max_clients: Number(event.target.value) })
-                  }
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planMaxServices")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.max_services}
-                  type="number"
-                  min={0}
-                  step={1}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { max_services: Number(event.target.value) })
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <label className="text-sm font-semibold text-[#123055] md:col-span-2 xl:col-span-2">
-                {t("planDescription")}
-                <textarea
-                  className="mt-2 min-h-[92px] w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.description ?? ""}
-                  onChange={(event) => updatePlan(plan.key, { description: event.target.value })}
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planActivationLimit")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.activation_limit}
-                  type="number"
-                  min={0}
-                  step={1}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { activation_limit: Number(event.target.value) })
-                  }
-                />
-              </label>
-
-              <label className="text-sm font-semibold text-[#123055]">
-                {t("planDurationDays")}
-                <input
-                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                  value={plan.duration_days}
-                  type="number"
-                  min={0}
-                  step={1}
-                  disabled={!plan.is_trial}
-                  onChange={(event) =>
-                    updatePlan(plan.key, { duration_days: Number(event.target.value) })
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="mt-4">
-              <p className="text-sm font-semibold text-[#123055]">
-                {t("planFeatures")}
-              </p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, index) => (
+            <div className="px-6 pb-6 pt-5 md:px-8">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planLabelName")}
                   <input
-                    key={`${plan.key}-feature-${index}`}
-                    className="w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
-                    value={plan.features?.[index] ?? ""}
-                    onChange={(event) => {
-                      const features = [...(plan.features ?? [])];
-                      features[index] = event.target.value;
-                      updatePlan(plan.key, { features });
-                    }}
-                    placeholder={t("planFeaturePlaceholder")}
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.label}
+                    onChange={(event) => updatePlan(plan.key, { label: event.target.value })}
                   />
-                ))}
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planMarketingName")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.marketing_name ?? ""}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { marketing_name: event.target.value })
+                    }
+                  />
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planMonthlyPrice")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.monthly_price ?? ""}
+                    type="number"
+                    min={0}
+                    step={1}
+                    disabled={plan.is_trial}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { monthly_price: Number(event.target.value) })
+                    }
+                  />
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planMaxClients")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.max_clients}
+                    type="number"
+                    min={0}
+                    step={1}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { max_clients: Number(event.target.value) })
+                    }
+                  />
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planMaxServices")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.max_services ?? ""}
+                    type="number"
+                    min={0}
+                    step={1}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { max_services: Number(event.target.value) })
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <label className="text-sm font-semibold text-[#123055] md:col-span-2 xl:col-span-2">
+                  {t("planDescription")}
+                  <textarea
+                    className="mt-2 min-h-[92px] w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.description ?? ""}
+                    onChange={(event) => updatePlan(plan.key, { description: event.target.value })}
+                  />
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planActivationLimit")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.activation_limit ?? ""}
+                    type="number"
+                    min={0}
+                    step={1}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { activation_limit: Number(event.target.value) })
+                    }
+                  />
+                </label>
+
+                <label className="text-sm font-semibold text-[#123055]">
+                  {t("planDurationDays")}
+                  <input
+                    className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.duration_days ?? ""}
+                    type="number"
+                    min={0}
+                    step={1}
+                    disabled={!plan.is_trial}
+                    onChange={(event) =>
+                      updatePlan(plan.key, { duration_days: Number(event.target.value) })
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-[#123055]">
+                  {t("planFeatures")}
+                </p>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <input
+                      key={`${plan.key}-feature-${index}`}
+                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                      value={plan.features?.[index] ?? ""}
+                      onChange={(event) => {
+                        const features = [...(plan.features ?? [])];
+                        features[index] = event.target.value;
+                        updatePlan(plan.key, { features });
+                      }}
+                      placeholder={t("planFeaturePlaceholder")}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
