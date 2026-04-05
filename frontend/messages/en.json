@@ -79,6 +79,7 @@
   },
   "Dashboard": {
     "overviewTitle": "Tenant dashboard",
+    "overviewTitlePlatformOwner": "Platform Owner Dashboard",
     "overviewDescription": "Review the current tenant context, assigned roles, and the available client, catalog, order, billing, and provisioning entry points before later business modules are added.",
     "overviewLink": "Overview",
     "clientsLink": "Clients",
@@ -1111,7 +1112,15 @@
     "activateTenantButton": "Activate tenant",
     "suspendTenantButton": "Suspend tenant",
     "tenantActivatedSuccess": "Tenant activated successfully.",
-    "tenantSuspendedSuccess": "Tenant suspended successfully."
+    "tenantSuspendedSuccess": "Tenant suspended successfully.",
+    "impersonationTitle": "Login as tenant",
+    "impersonationHeading": "Impersonation access",
+    "impersonationDescription": "Open the tenant admin dashboard or client portal in a new tab to validate that tenant experience.",
+    "impersonateAdminButton": "Login as tenant admin",
+    "impersonatePortalButton": "Login as client portal",
+    "impersonationAdminSuccess": "Tenant admin session started in a new tab.",
+    "impersonationPortalSuccess": "Client portal session started in a new tab.",
+    "returnToPlatformOwner": "Return to platform owner"
   },
   "Support": {
     "listTitle": "Tickets",

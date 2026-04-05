@@ -104,7 +104,7 @@ export default async function TenantsPage({
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[440px_minmax(0,1fr)]">
+      <div className="grid gap-6">
         <TenantForm locale={params.locale} mode="create" />
 
         <section className="glass-card p-6 md:p-8">

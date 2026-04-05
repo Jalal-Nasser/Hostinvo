@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { TenantForm } from "@/components/platform-owner/tenant-form";
+import { TenantImpersonationActions } from "@/components/platform-owner/tenant-impersonation-actions";
 import { TenantStatusActions } from "@/components/platform-owner/tenant-status-actions";
 import { type AppLocale } from "@/i18n/routing";
 import {
@@ -92,6 +93,7 @@ export default async function TenantDetailPage({
 
         <div className="grid gap-6">
           <TenantStatusActions tenantId={tenant.id} status={tenant.status} />
+          <TenantImpersonationActions tenantId={tenant.id} locale={params.locale} />
 
           <section className="glass-card p-6 md:p-8">
             <div className="flex flex-col gap-2">

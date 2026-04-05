@@ -182,6 +182,37 @@ class TenantManagementService
         return $this->setStatus($tenant, 'suspended');
     }
 
+    public function resolveImpersonationUser(Tenant $tenant): ?User
+    {
+        if ($tenant->relationLoaded('owner') && $tenant->owner) {
+            return $tenant->owner;
+        }
+
+        $tenant->loadMissing('owner');
+
+        if ($tenant->owner) {
+            return $tenant->owner;
+        }
+
+        $ownerRole = $this->tenantOwnerRole();
+
+        $owner = User::query()
+            ->where('tenant_id', $tenant->id)
+            ->whereHas('roles', function ($query) use ($ownerRole): void {
+                $query->where('roles.id', $ownerRole->id);
+            })
+            ->first();
+
+        if ($owner) {
+            return $owner;
+        }
+
+        return User::query()
+            ->where('tenant_id', $tenant->id)
+            ->orderBy('created_at')
+            ->first();
+    }
+
     private function setStatus(Tenant $tenant, string $status): Tenant
     {
         $tenant->forceFill([

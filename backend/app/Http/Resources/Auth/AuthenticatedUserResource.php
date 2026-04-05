@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Auth;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,6 +14,20 @@ class AuthenticatedUserResource extends JsonResource
     public function toArray(Request $request): array
     {
         $this->resource->loadMissing(['tenant', 'roles.permissions']);
+        $impersonatorId = $request->session()->get('impersonator_id');
+        $impersonator = null;
+
+        if ($impersonatorId) {
+            $impersonatorModel = User::query()->find($impersonatorId);
+
+            if ($impersonatorModel) {
+                $impersonator = [
+                    'id' => $impersonatorModel->id,
+                    'name' => $impersonatorModel->name,
+                    'email' => $impersonatorModel->email,
+                ];
+            }
+        }
 
         return [
             'id' => $this->id,
@@ -39,6 +54,11 @@ class AuthenticatedUserResource extends JsonResource
                 'name' => $permission->name,
                 'display_name' => $permission->display_name,
             ]),
+            'impersonation' => [
+                'active' => (bool) $impersonatorId,
+                'impersonator' => $impersonator,
+                'started_at' => $request->session()->get('impersonation_started_at'),
+            ],
         ];
     }
 }

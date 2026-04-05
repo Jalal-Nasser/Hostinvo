@@ -149,3 +149,27 @@ export async function suspendTenant(
 ): Promise<MutationResult<TenantRecord>> {
   return submitAdminJson<TenantRecord>(`tenants/${tenantId}/suspend`, "POST", {});
 }
+
+export async function impersonateTenantAdmin(
+  tenantId: string,
+): Promise<MutationResult<{ redirect: string }>> {
+  return submitAdminJson<{ redirect: string }>(
+    `tenants/${tenantId}/impersonate-admin`,
+    "POST",
+    {},
+  );
+}
+
+export async function impersonateTenantPortal(
+  tenantId: string,
+): Promise<MutationResult<{ redirect: string }>> {
+  return submitAdminJson<{ redirect: string }>(
+    `tenants/${tenantId}/impersonate-portal`,
+    "POST",
+    {},
+  );
+}
+
+export async function stopImpersonation(): Promise<MutationResult<{ redirect: string }>> {
+  return submitAdminJson<{ redirect: string }>("impersonation/stop", "POST", {});
+}

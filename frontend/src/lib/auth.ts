@@ -23,6 +23,15 @@ export type AuthenticatedUser = {
     name: string;
     display_name: string;
   }>;
+  impersonation?: {
+    active: boolean;
+    started_at?: string | null;
+    impersonator?: {
+      id: string;
+      name: string;
+      email: string;
+    } | null;
+  };
 };
 
 export type WorkspaceMode = "admin" | "portal";

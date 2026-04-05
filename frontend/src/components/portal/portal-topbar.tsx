@@ -4,6 +4,7 @@ import { PortalCartLink } from "@/components/portal/portal-cart-link";
 import { PortalCurrencySelect } from "@/components/portal/portal-currency-select";
 import { PortalLogoutButton } from "@/components/portal/portal-logout-button";
 import { portalTheme } from "@/components/portal/portal-theme";
+import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import type { AuthenticatedUser } from "@/lib/auth";
 import { localePath } from "@/lib/auth";
 import type { TenantBrandingRecord } from "@/lib/tenant-admin";
@@ -18,6 +19,7 @@ type PortalTopbarProps = {
 export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
   const defaultCurrency =
     branding?.default_currency?.trim().toUpperCase() || "USD";
+  const isImpersonating = Boolean(user.impersonation?.active);
 
   return (
     <div className={[portalTheme.utilityStripClass, "mb-5 flex min-h-[40px] items-center ps-4 pe-4 py-2"].join(" ")}>
@@ -28,6 +30,7 @@ export function PortalTopbar({ locale, user, t, branding }: PortalTopbarProps) {
       </div>
 
       <div className="ms-auto flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.14em]">
+        {isImpersonating ? <ImpersonationReturn locale={locale} variant="outline" /> : null}
         <PortalCartLink
           className={portalTheme.utilityLinkClass}
           href={localePath(locale, "/portal/cart")}

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { type AppLocale } from "@/i18n/routing";
 import {
   canAccessAdminWorkspace,
@@ -195,6 +196,7 @@ export async function WorkspaceShell({
 
   const hasAdminWorkspace = canAccessAdminWorkspace(user);
   const hasPortalWorkspace = canAccessClientPortal(user);
+  const isImpersonating = Boolean(user.impersonation?.active);
   const overviewHref = hasAdminWorkspace
     ? localePath(locale, "/dashboard")
     : defaultWorkspacePath(locale, user);
@@ -517,6 +519,7 @@ export async function WorkspaceShell({
                         </Link>
                       ) : null}
 
+                      {isImpersonating ? <ImpersonationReturn locale={locale} /> : null}
                       <LocaleSwitcher currentLocale={locale} path={currentPath} />
                       <LogoutButton />
                       {actions}
