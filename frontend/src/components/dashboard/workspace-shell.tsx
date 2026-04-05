@@ -13,6 +13,7 @@ import {
   defaultWorkspacePath,
   getAuthenticatedUserFromCookies,
   hasAnyPermission,
+  hasRole,
   localePath,
   type WorkspaceMode,
 } from "@/lib/auth";
@@ -50,7 +51,8 @@ type WorkspaceNavItem = {
     | "settings"
     | "products"
     | "groups"
-    | "provisioning";
+    | "provisioning"
+    | "tenants";
   section?: WorkspaceNavSection;
 };
 
@@ -142,6 +144,12 @@ function SidebarIcon({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
         </svg>
       );
+    case "tenants":
+      return (
+        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 18.5A2.5 2.5 0 016.5 16H10a2.5 2.5 0 012.5 2.5M6.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zm7.5 10A2.5 2.5 0 0116.5 16H18a2.5 2.5 0 012.5 2.5M16.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zM10.5 12h3" />
+        </svg>
+      );
   }
 }
 
@@ -209,6 +217,16 @@ export async function WorkspaceShell({
       active: currentPath === "/dashboard" || currentPath === "/portal",
       visible: true,
       icon: "dashboard",
+      section: "primary",
+    },
+    {
+      href: localePath(locale, "/dashboard/tenants"),
+      label: dashboardT("tenantsLink"),
+      active:
+        currentPath === "/dashboard/tenants" ||
+        currentPath.startsWith("/dashboard/tenants/"),
+      visible: hasRole(user, "super_admin"),
+      icon: "tenants",
       section: "primary",
     },
     {

@@ -110,6 +110,14 @@ export function hasPermission(
   return user.permissions.some((item) => item.name === permission);
 }
 
+export function hasRole(user: AuthenticatedUser | null, roleName: string): boolean {
+  if (!user) {
+    return false;
+  }
+
+  return user.roles.some((role) => role.name === roleName);
+}
+
 export function hasAnyPermission(
   user: AuthenticatedUser | null,
   permissions: string[],

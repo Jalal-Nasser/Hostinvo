@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\V1\Admin\ServerPackageController;
 use App\Http\Controllers\Api\V1\Admin\ServiceController;
 use App\Http\Controllers\Api\V1\Admin\ServiceProvisioningController;
 use App\Http\Controllers\Api\V1\Admin\SupportOverviewController;
+use App\Http\Controllers\Api\V1\Admin\TenantController;
 use App\Http\Controllers\Api\V1\Admin\TenantBrandingController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\TicketDepartmentController;
@@ -86,6 +87,9 @@ Route::put('servers/{server}/packages', [ServerPackageController::class, 'update
 Route::apiResource('servers', ServerController::class);
 Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
 Route::apiResource('services', ServiceController::class);
+Route::apiResource('tenants', TenantController::class)->only(['index', 'store', 'show', 'update']);
+Route::post('tenants/{tenant}/activate', [TenantController::class, 'activate'])->name('tenants.activate');
+Route::post('tenants/{tenant}/suspend', [TenantController::class, 'suspend'])->name('tenants.suspend');
 Route::get('settings/branding', [TenantBrandingController::class, 'show'])->name('settings.branding.show');
 Route::post('settings/branding', [TenantBrandingController::class, 'update'])->name('settings.branding.update');
 Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])->name('settings.portal-surface.show');
