@@ -1024,7 +1024,14 @@ class LicenseService
             $overrides = [];
         }
 
-        $override = (array) ($overrides[$plan] ?? []);
+        $override = [];
+
+        foreach ($overrides as $item) {
+            if (is_array($item) && ($item['key'] ?? null) === $plan) {
+                $override = $item;
+                break;
+            }
+        }
 
         return array_replace($defaults, $override);
     }

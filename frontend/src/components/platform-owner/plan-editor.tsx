@@ -15,6 +15,9 @@ type PlanDraft = PlatformPlan & { id: string };
 function normalizePlan(plan: PlatformPlan): PlanDraft {
   return {
     ...plan,
+    marketing_name: plan.marketing_name ?? "",
+    description: plan.description ?? "",
+    features: plan.features ?? [],
     monthly_price: plan.monthly_price ?? 0,
     max_services: plan.max_services ?? 0,
     activation_limit: plan.activation_limit ?? 0,
@@ -58,6 +61,9 @@ export function PlanEditor({ initial }: PlanEditorProps) {
       plans: plans.map((plan) => ({
         key: plan.key,
         label: plan.label.trim(),
+        marketing_name: plan.marketing_name?.trim() || null,
+        description: plan.description?.trim() || null,
+        features: (plan.features ?? []).map((feature) => feature.trim()).filter(Boolean),
         monthly_price: plan.is_trial ? null : Number(plan.monthly_price || 0),
         max_clients: Number(plan.max_clients || 0),
         max_services: Number(plan.max_services || 0),
@@ -147,6 +153,17 @@ export function PlanEditor({ initial }: PlanEditorProps) {
               </label>
 
               <label className="text-sm font-semibold text-[#123055]">
+                {t("planMarketingName")}
+                <input
+                  className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                  value={plan.marketing_name ?? ""}
+                  onChange={(event) =>
+                    updatePlan(plan.key, { marketing_name: event.target.value })
+                  }
+                />
+              </label>
+
+              <label className="text-sm font-semibold text-[#123055]">
                 {t("planMonthlyPrice")}
                 <input
                   className="mt-2 w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
@@ -191,6 +208,15 @@ export function PlanEditor({ initial }: PlanEditorProps) {
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="text-sm font-semibold text-[#123055] md:col-span-2 xl:col-span-2">
+                {t("planDescription")}
+                <textarea
+                  className="mt-2 min-h-[92px] w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                  value={plan.description ?? ""}
+                  onChange={(event) => updatePlan(plan.key, { description: event.target.value })}
+                />
+              </label>
+
               <label className="text-sm font-semibold text-[#123055]">
                 {t("planActivationLimit")}
                 <input
@@ -219,6 +245,27 @@ export function PlanEditor({ initial }: PlanEditorProps) {
                   }
                 />
               </label>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-[#123055]">
+                {t("planFeatures")}
+              </p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <input
+                    key={`${plan.key}-feature-${index}`}
+                    className="w-full rounded-xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#0a1628] outline-none transition focus:border-[#036deb]"
+                    value={plan.features?.[index] ?? ""}
+                    onChange={(event) => {
+                      const features = [...(plan.features ?? [])];
+                      features[index] = event.target.value;
+                      updatePlan(plan.key, { features });
+                    }}
+                    placeholder={t("planFeaturePlaceholder")}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         ))}

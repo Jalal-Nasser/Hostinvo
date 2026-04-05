@@ -78,15 +78,16 @@ export default async function LocaleHomePage({
         ? plan.price
         : `$${override.monthly_price}`;
 
-    const limits = [...plan.limits];
+    const limits = override.features?.length ? [...override.features] : [...plan.limits];
     if (override.max_clients) {
       limits[0] = maxClientsLabel(override.max_clients);
     }
 
     return {
       ...plan,
-      name: override.label || plan.name,
+      name: override.marketing_name || override.label || plan.name,
       price,
+      description: override.description || plan.description,
       limits,
     };
   });

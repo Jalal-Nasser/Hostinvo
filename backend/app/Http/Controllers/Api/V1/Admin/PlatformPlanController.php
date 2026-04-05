@@ -21,15 +21,25 @@ class PlatformPlanController extends Controller
         $pricingNote = $settings->get('pricing_note', ['value' => null]);
 
         $plans = [];
+        $overrideMap = [];
+
+        foreach ($overrides as $override) {
+            if (is_array($override) && isset($override['key'])) {
+                $overrideMap[$override['key']] = $override;
+            }
+        }
 
         foreach (License::plans() as $planKey) {
             $planDefaults = (array) ($defaults[$planKey] ?? []);
-            $override = (array) ($overrides[$planKey] ?? []);
+            $override = (array) ($overrideMap[$planKey] ?? []);
             $merged = array_replace($planDefaults, $override);
 
             $plans[] = [
                 'key' => $planKey,
                 'label' => (string) ($merged['label'] ?? ucfirst(str_replace('_', ' ', $planKey))),
+                'marketing_name' => $merged['marketing_name'] ?? null,
+                'description' => $merged['description'] ?? null,
+                'features' => $merged['features'] ?? [],
                 'monthly_price' => $merged['monthly_price'] ?? null,
                 'max_clients' => (int) ($merged['max_clients'] ?? 0),
                 'max_services' => (int) ($merged['max_services'] ?? 0),
@@ -53,6 +63,9 @@ class PlatformPlanController extends Controller
         foreach ($payload['plans'] as $plan) {
             $plans[$plan['key']] = [
                 'label' => $plan['label'],
+                'marketing_name' => $plan['marketing_name'] ?? null,
+                'description' => $plan['description'] ?? null,
+                'features' => $plan['features'] ?? [],
                 'monthly_price' => $plan['monthly_price'] ?? null,
                 'max_clients' => $plan['max_clients'],
                 'max_services' => $plan['max_services'] ?? null,
@@ -62,13 +75,15 @@ class PlatformPlanController extends Controller
             ];
         }
 
-        $settings->put('licensing_plans', $plans);
+        $settings->put('licensing_plans', array_values($plans));
         $settings->put('pricing_note', ['value' => $payload['pricing_note'] ?? null]);
 
         return response()->json([
             'message' => 'Plans updated.',
-            'plans' => $plans,
-            'pricing_note' => $payload['pricing_note'] ?? null,
+            'data' => [
+                'pricing_note' => $payload['pricing_note'] ?? null,
+                'plans' => array_values($plans),
+            ],
         ], Response::HTTP_OK);
     }
 }

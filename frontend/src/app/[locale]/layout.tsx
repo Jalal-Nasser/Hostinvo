@@ -21,9 +21,9 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const defaultMetadataTitle = "Client portal";
+const defaultMetadataTitle = "Hostinvo";
 const defaultMetadataDescription =
-  "Tenant portal for billing, domains, services, and support.";
+  "Hostinvo platform for tenant management, billing, and client operations.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const portalConfig = await fetchPortalConfigFromCookies(cookies().toString())
