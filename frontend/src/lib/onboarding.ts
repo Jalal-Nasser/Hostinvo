@@ -40,6 +40,7 @@ export type RegisterProviderPayload = {
   license_key?: string;
   license_domain?: string;
   license_instance_id?: string;
+  turnstile_token?: string;
 };
 
 type ApiEnvelope<T> = {
@@ -80,7 +81,9 @@ function extractErrorMessage(payload: unknown, fallback: string): string {
   return response.message ?? firstError ?? fallback;
 }
 
-export async function registerProvider(payload: RegisterProviderPayload): Promise<{
+export async function registerProvider(
+  payload: RegisterProviderPayload,
+): Promise<{
   ok: boolean;
   message?: string;
 }> {
@@ -105,7 +108,10 @@ export async function registerProvider(payload: RegisterProviderPayload): Promis
 
     return {
       ok: false,
-      message: extractErrorMessage(errorPayload, "Provider registration failed."),
+      message: extractErrorMessage(
+        errorPayload,
+        "Provider registration failed.",
+      ),
     };
   }
 
@@ -134,11 +140,15 @@ export async function fetchOnboardingStatus(): Promise<{
 
     return {
       ok: false,
-      message: extractErrorMessage(payload, "Unable to load onboarding status."),
+      message: extractErrorMessage(
+        payload,
+        "Unable to load onboarding status.",
+      ),
     };
   }
 
-  const payload = (await response.json()) as ApiEnvelope<OnboardingStatusPayload>;
+  const payload =
+    (await response.json()) as ApiEnvelope<OnboardingStatusPayload>;
 
   return {
     ok: true,
@@ -174,7 +184,10 @@ export async function updateOnboardingCompany(payload: {
 
     return {
       ok: false,
-      message: extractErrorMessage(errorPayload, "Unable to save company settings."),
+      message: extractErrorMessage(
+        errorPayload,
+        "Unable to save company settings.",
+      ),
     };
   }
 

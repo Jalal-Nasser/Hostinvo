@@ -2,21 +2,15 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 
-import { backendOrigin, localePath } from "@/lib/auth";
-
-function readCookie(name: string): string | null {
-  const match = document.cookie
-    .split("; ")
-    .find((cookie) => cookie.startsWith(`${name}=`));
-
-  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
-}
-
-async function ensureCsrfCookie() {
-  await fetch(`${backendOrigin}/sanctum/csrf-cookie`, { credentials: "include" });
-}
+import { localePath } from "@/lib/auth";
+import {
+  fetchAuthConfig,
+  submitPasswordReset,
+  type AuthConfigResponse,
+} from "@/lib/auth-security";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const fieldClass =
   "w-full rounded-[1rem] border border-[#cfe0f4] bg-[#faf9f5] px-4 py-3.5 text-sm text-[#0a1628] shadow-[0_10px_26px_rgba(10,55,120,0.04)] outline-none transition placeholder:text-[#8ea6c3] focus:border-[#048dfe] focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
@@ -45,7 +39,12 @@ function PasswordToggle({
       aria-label={label}
     >
       {visible ? (
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-4.5 w-4.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -54,7 +53,12 @@ function PasswordToggle({
           />
         </svg>
       ) : (
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-4.5 w-4.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -86,14 +90,22 @@ export function ResetPasswordForm({
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [authConfig, setAuthConfig] = useState<AuthConfigResponse | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const hasToken = Boolean(token);
+
+  useEffect(() => {
+    fetchAuthConfig().then(setAuthConfig);
+  }, []);
 
   function handleSubmit(formData: FormData) {
     setMessage(null);
     setError(null);
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
-    const passwordConfirmation = String(formData.get("password_confirmation") ?? "");
+    const passwordConfirmation = String(
+      formData.get("password_confirmation") ?? "",
+    );
 
     if (!hasToken) {
       setError(t("tokenMissing"));
@@ -101,47 +113,20 @@ export function ResetPasswordForm({
     }
 
     startTransition(async () => {
-      try {
-        await ensureCsrfCookie();
-        const xsrfToken = readCookie("XSRF-TOKEN");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/reset-password`, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-            ...(typeof window !== "undefined" && window.location.hostname
-              ? { "X-Tenant-Host": window.location.hostname }
-              : {}),
-            ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
-          },
-          body: JSON.stringify({
-            token,
-            email,
-            tenant_id: tenantId,
-            tenant_signature: tenantSignature,
-            password,
-            password_confirmation: passwordConfirmation,
-          }),
-        });
+      const result = await submitPasswordReset({
+        token: token!,
+        email,
+        tenant_id: tenantId,
+        tenant_signature: tenantSignature,
+        password,
+        password_confirmation: passwordConfirmation,
+        turnstile_token: turnstileToken || undefined,
+      });
 
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as
-            | { message?: string; errors?: Record<string, string[]> }
-            | null;
-          const firstFieldError = payload?.errors
-            ? Object.values(payload.errors)[0]?.[0]
-            : null;
-
-          setError(payload?.message ?? firstFieldError ?? t("resetPasswordError"));
-          return;
-        }
-
-        const payload = (await response.json()) as { message?: string };
-        setMessage(payload.message ?? t("resetPasswordSuccess"));
-      } catch {
-        setError(t("serviceUnavailable"));
+      if (result.error === null) {
+        setMessage(result.data?.message ?? t("resetPasswordSuccess"));
+      } else {
+        setError(result.error ?? t("resetPasswordError"));
       }
     });
   }
@@ -156,10 +141,17 @@ export function ResetPasswordForm({
 
       <div className="grid gap-5">
         <div className="grid gap-2">
-          <label className="text-sm font-semibold text-[#123055]">{t("emailLabel")}</label>
+          <label className="text-sm font-semibold text-[#123055]">
+            {t("emailLabel")}
+          </label>
           <div className="relative">
             <div className="pointer-events-none absolute start-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#7f99bb]">
-              <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -181,10 +173,17 @@ export function ResetPasswordForm({
         </div>
 
         <div className="grid gap-2">
-          <label className="text-sm font-semibold text-[#123055]">{t("passwordLabel")}</label>
+          <label className="text-sm font-semibold text-[#123055]">
+            {t("passwordLabel")}
+          </label>
           <div className="relative">
             <div className="pointer-events-none absolute start-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#7f99bb]">
-              <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -215,7 +214,12 @@ export function ResetPasswordForm({
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute start-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#7f99bb]">
-              <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -240,6 +244,15 @@ export function ResetPasswordForm({
           </div>
         </div>
       </div>
+
+      {authConfig?.turnstile.enabled &&
+      authConfig.turnstile.forms["reset_password"] ? (
+        <TurnstileWidget
+          locale={locale}
+          siteKey={authConfig.turnstile.site_key}
+          onTokenChange={setTurnstileToken}
+        />
+      ) : null}
 
       {message ? (
         <div className="rounded-[1rem] border border-[#ccebd8] bg-[#f2fbf6] px-4 py-3 text-sm leading-6 text-[#1f7a46]">

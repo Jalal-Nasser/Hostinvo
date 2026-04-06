@@ -3,21 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
-import { backendOrigin, localePath } from "@/lib/auth";
-
-function readCookie(name: string): string | null {
-  const match = document.cookie
-    .split("; ")
-    .find((cookie) => cookie.startsWith(`${name}=`));
-
-  return match ? decodeURIComponent(match.split("=").slice(1).join("=")) : null;
-}
-
-async function ensureCsrfCookie() {
-  await fetch(`${backendOrigin}/sanctum/csrf-cookie`, { credentials: "include" });
-}
+import { localePath } from "@/lib/auth";
+import {
+  fetchAuthConfig,
+  submitLogin,
+  type AuthConfigResponse,
+} from "@/lib/auth-security";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const fieldClass =
   "w-full rounded-[1rem] border border-[#cfe0f4] bg-[#faf9f5] px-4 py-3.5 text-sm text-[#0a1628] shadow-[0_10px_26px_rgba(10,55,120,0.04)] outline-none transition placeholder:text-[#8ea6c3] focus:border-[#048dfe] focus:bg-[#faf9f5] focus:ring-4 focus:ring-[rgba(4,141,254,0.12)]";
@@ -47,7 +41,12 @@ function PasswordToggle({
       aria-label={label}
     >
       {visible ? (
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-4.5 w-4.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -56,7 +55,12 @@ function PasswordToggle({
           />
         </svg>
       ) : (
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-4.5 w-4.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -82,58 +86,83 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [authConfig, setAuthConfig] = useState<AuthConfigResponse | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+
+  useEffect(() => {
+    fetchAuthConfig().then((config) => setAuthConfig(config));
+  }, []);
+
+  const showTurnstile =
+    authConfig !== null &&
+    authConfig.turnstile.enabled &&
+    authConfig.turnstile.forms["login"] === true;
 
   function handleSubmit(formData: FormData) {
     setError(null);
+
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
     const remember = formData.get("remember") === "on";
 
     startTransition(async () => {
-      try {
-        await ensureCsrfCookie();
-        const xsrfToken = readCookie("XSRF-TOKEN");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-            ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            remember,
-          }),
-        });
+      const result = await submitLogin(
+        {
+          email,
+          password,
+          remember,
+          ...(showTurnstile && turnstileToken
+            ? { turnstile_token: turnstileToken }
+            : {}),
+        },
+        locale,
+      );
 
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as
-            | { message?: string; errors?: Record<string, string[]> }
-            | null;
-
-          setError(payload?.message ?? payload?.errors?.email?.[0] ?? t("loginError"));
-          return;
-        }
-
-        router.replace(localePath(locale, "/dashboard"));
-        router.refresh();
-      } catch {
-        setError(t("serviceUnavailable"));
+      if (result.error) {
+        setError(result.error);
+        return;
       }
+
+      if (!result.data) {
+        setError(t("loginError"));
+        return;
+      }
+
+      const { status, redirectTo } = result.data;
+
+      if (status === "authenticated") {
+        router.replace(redirectTo ?? localePath(locale, "/dashboard"));
+        router.refresh();
+        return;
+      }
+
+      if (status === "mfa_required" || status === "mfa_setup_required") {
+        router.replace(localePath(locale, "/auth/mfa"));
+        return;
+      }
+
+      setError(t("loginError"));
     });
   }
+
+  const isVerificationError = error !== null && /verification/i.test(error);
 
   return (
     <form action={handleSubmit} className="grid gap-6">
       <div className="grid gap-5">
+        {/* ── Email ── */}
         <div className="grid gap-2">
-          <label className="text-sm font-semibold text-[#123055]">{t("emailLabel")}</label>
+          <label className="text-sm font-semibold text-[#123055]">
+            {t("emailLabel")}
+          </label>
           <div className="relative">
             <FieldIcon>
-              <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -153,9 +182,12 @@ export function LoginForm() {
           </div>
         </div>
 
+        {/* ── Password ── */}
         <div className="grid gap-2">
           <div className="flex items-center justify-between gap-4">
-            <label className="text-sm font-semibold text-[#123055]">{t("passwordLabel")}</label>
+            <label className="text-sm font-semibold text-[#123055]">
+              {t("passwordLabel")}
+            </label>
             <Link
               href={localePath(locale, "/auth/forgot-password")}
               className="text-sm font-semibold text-[#036deb] transition hover:text-[#002d8e]"
@@ -165,7 +197,12 @@ export function LoginForm() {
           </div>
           <div className="relative">
             <FieldIcon>
-              <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -184,13 +221,14 @@ export function LoginForm() {
             />
             <PasswordToggle
               visible={showPassword}
-              onToggle={() => setShowPassword((value) => !value)}
+              onToggle={() => setShowPassword((v) => !v)}
               label={showPassword ? t("hidePassword") : t("showPassword")}
             />
           </div>
         </div>
       </div>
 
+      {/* ── Remember me ── */}
       <label className="flex items-center gap-3 text-sm text-[#4d6783]">
         <input
           name="remember"
@@ -200,12 +238,33 @@ export function LoginForm() {
         <span>{t("rememberLabel")}</span>
       </label>
 
+      {/* ── Turnstile (conditional) ── */}
+      {showTurnstile ? (
+        <TurnstileWidget
+          locale={locale}
+          siteKey={authConfig?.turnstile.site_key ?? ""}
+          onTokenChange={(token) => setTurnstileToken(token)}
+        />
+      ) : null}
+
+      {/* ── Error box ── */}
       {error ? (
         <div className="rounded-[1rem] border border-[#ffd5d2] bg-[#fff4f3] px-4 py-3 text-sm leading-6 text-[#b7382d]">
-          {error}
+          <p>{error}</p>
+          {isVerificationError ? (
+            <p className="mt-1">
+              <Link
+                href={localePath(locale, "/auth/verify-email")}
+                className="font-semibold underline transition hover:text-[#8b2920]"
+              >
+                {t("verifyEmailTitle")}
+              </Link>
+            </p>
+          ) : null}
         </div>
       ) : null}
 
+      {/* ── Submit ── */}
       <button
         type="submit"
         disabled={isPending}
@@ -214,6 +273,7 @@ export function LoginForm() {
         {isPending ? t("loggingIn") : t("loginButton")}
       </button>
 
+      {/* ── Divider ── */}
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-[#d6e3f2]" />
         <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#8ca4c0]">
@@ -222,6 +282,7 @@ export function LoginForm() {
         <div className="h-px flex-1 bg-[#d6e3f2]" />
       </div>
 
+      {/* ── No account ── */}
       <p className="text-center text-sm leading-7 text-[#58718c]">
         {t("noAccount")}{" "}
         <Link
