@@ -7,32 +7,23 @@ use Illuminate\Validation\Validator;
 
 trait ValidatesTurnstile
 {
-    public function after(): array
+    public function withValidator(Validator $validator): void
     {
-        $callbacks = [];
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
 
-        if (is_callable('parent::after')) {
-            $callbacks = parent::after();
-        }
+            $form = $this->turnstileFormKey();
 
-        return [
-            ...$callbacks,
-            function (Validator $validator): void {
-                if ($validator->errors()->isNotEmpty()) {
-                    return;
-                }
+            if (! $form) {
+                return;
+            }
 
-                $form = $this->turnstileFormKey();
-
-                if (! $form) {
-                    return;
-                }
-
-                if (! app(TurnstileService::class)->verifyRequest($this, $form)) {
-                    $validator->errors()->add('turnstile_token', __('auth.turnstile_failed'));
-                }
-            },
-        ];
+            if (! app(TurnstileService::class)->verifyRequest($this, $form)) {
+                $validator->errors()->add('turnstile_token', __('auth.turnstile_failed'));
+            }
+        });
     }
 
     abstract protected function turnstileFormKey(): ?string;

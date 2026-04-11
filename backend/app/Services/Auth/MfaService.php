@@ -33,6 +33,16 @@ class MfaService
         return $this->confirmedTotpMethod($user) !== null;
     }
 
+    public function hasConfirmedPasskey(User $user): bool
+    {
+        return $this->confirmedPasskeyMethod($user) !== null;
+    }
+
+    public function hasAnyConfirmedMethod(User $user): bool
+    {
+        return $this->hasConfirmedTotp($user) || $this->hasConfirmedPasskey($user);
+    }
+
     public function begin(User $user, bool $remember, Request $request): string
     {
         $request->session()->put($this->pendingSessionKey(), [
@@ -41,13 +51,13 @@ class MfaService
             'started_at' => now()->toIso8601String(),
         ]);
 
-        return $this->hasConfirmedTotp($user) ? 'mfa_required' : 'mfa_setup_required';
+        return $this->hasAnyConfirmedMethod($user) ? 'mfa_required' : 'mfa_setup_required';
     }
 
     public function pendingStatus(Request $request): array
     {
         $user = $this->pendingUser($request);
-        $mode = $this->hasConfirmedTotp($user) ? 'challenge' : 'setup';
+        $mode = $this->hasAnyConfirmedMethod($user) ? 'challenge' : 'setup';
         $secret = null;
         $otpAuthUrl = null;
 
@@ -56,12 +66,21 @@ class MfaService
             $otpAuthUrl = $this->totp->buildOtpAuthUrl($user, $secret);
         }
 
+        $methods = [];
+        if ($this->hasConfirmedTotp($user)) {
+            $methods[] = UserMfaMethod::TYPE_TOTP;
+        }
+        if ($this->hasConfirmedPasskey($user)) {
+            $methods[] = UserMfaMethod::TYPE_WEBAUTHN;
+        }
+
         return [
             'mode' => $mode,
             'email' => $user->email,
             'secret' => $secret,
             'otp_auth_url' => $otpAuthUrl,
             'recovery_codes_remaining' => $user->recoveryCodes()->whereNull('used_at')->count(),
+            'methods' => $methods,
         ];
     }
 
@@ -174,6 +193,7 @@ class MfaService
 
         UserMfaMethod::query()
             ->where('user_id', $user->getKey())
+            ->where('type', UserMfaMethod::TYPE_TOTP)
             ->delete();
 
         UserRecoveryCode::query()
@@ -187,6 +207,24 @@ class MfaService
         $request->session()->forget($this->setupSecretSessionKey());
     }
 
+    public function hasPendingChallenge(Request $request): bool
+    {
+        return $request->session()->has($this->pendingSessionKey());
+    }
+
+    public function completePendingLoginForUser(Request $request, User $user): User
+    {
+        $pending = $request->session()->get($this->pendingSessionKey(), []);
+
+        if (! is_array($pending) || ($pending['user_id'] ?? null) !== $user->getKey()) {
+            throw ValidationException::withMessages([
+                'mfa' => [__('auth.mfa_session_missing')],
+            ]);
+        }
+
+        return $this->finalizeLogin($request, $user, (bool) ($pending['remember'] ?? false));
+    }
+
     public function pendingCookieName(): string
     {
         return (string) config('security.mfa.state_cookie', 'hostinvo_auth_state');
@@ -197,17 +235,7 @@ class MfaService
         $pending = $request->session()->get($this->pendingSessionKey(), []);
         $user = $this->pendingUser($request);
 
-        Auth::guard('web')->login($user, (bool) ($pending['remember'] ?? false));
-        $request->session()->regenerate();
-        $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
-        $request->session()->forget($this->pendingSessionKey());
-        $request->session()->forget($this->setupSecretSessionKey());
-        $request->session()->put('tenant_id', $user->tenant_id);
-        $user->forceFill([
-            'last_login_at' => now(),
-        ])->save();
-
-        return $user->loadMissing(['tenant', 'roles.permissions']);
+        return $this->finalizeLogin($request, $user, (bool) ($pending['remember'] ?? false));
     }
 
     private function pendingUser(Request $request): User
@@ -238,11 +266,6 @@ class MfaService
         }
 
         return $user;
-    }
-
-    private function hasPendingChallenge(Request $request): bool
-    {
-        return $request->session()->has($this->pendingSessionKey());
     }
 
     private function setupSecret(Request $request): string
@@ -308,6 +331,31 @@ class MfaService
             ->whereNull('disabled_at')
             ->latest('confirmed_at')
             ->first();
+    }
+
+    private function confirmedPasskeyMethod(User $user): ?UserMfaMethod
+    {
+        return $user->mfaMethods()
+            ->where('type', UserMfaMethod::TYPE_WEBAUTHN)
+            ->whereNotNull('confirmed_at')
+            ->whereNull('disabled_at')
+            ->latest('confirmed_at')
+            ->first();
+    }
+
+    private function finalizeLogin(Request $request, User $user, bool $remember): User
+    {
+        Auth::guard('web')->login($user, $remember);
+        $request->session()->regenerate();
+        $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
+        $request->session()->forget($this->pendingSessionKey());
+        $request->session()->forget($this->setupSecretSessionKey());
+        $request->session()->put('tenant_id', $user->tenant_id);
+        $user->forceFill([
+            'last_login_at' => now(),
+        ])->save();
+
+        return $user->loadMissing(['tenant', 'roles.permissions']);
     }
 
     private function assertPassword(User $user, string $password): void

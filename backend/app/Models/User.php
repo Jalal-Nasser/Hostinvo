@@ -120,6 +120,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserMfaMethod::class)->latest('created_at');
     }
 
+    public function webauthnCredentials(): HasMany
+    {
+        return $this->hasMany(UserWebauthnCredential::class)->latest('created_at');
+    }
+
     public function recoveryCodes(): HasMany
     {
         return $this->hasMany(UserRecoveryCode::class)->latest('id');

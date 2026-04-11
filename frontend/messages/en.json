@@ -115,7 +115,12 @@
     "mfaRecoveryCodesBody": "Store these codes in a safe place. Each can be used once to sign in if you lose your authenticator.",
     "mfaRecoveryCodesDone": "I've saved my recovery codes",
     "mfaSessionExpired": "Authentication session expired. Please sign in again.",
-    "turnstileError": "Security verification failed. Please try again."
+    "turnstileError": "Security verification failed. Please try again.",
+    "passkeyButton": "Use a passkey",
+    "passkeyNotSupported": "Passkeys are not supported in this browser.",
+    "passkeyStartError": "Unable to start passkey sign-in.",
+    "passkeyVerifyError": "Passkey verification failed.",
+    "passkeyCancelled": "Passkey prompt was cancelled."
   },
   "Dashboard": {
     "overviewTitle": "Tenant dashboard",

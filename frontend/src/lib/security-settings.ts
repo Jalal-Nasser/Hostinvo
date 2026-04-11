@@ -1,6 +1,5 @@
 import {
   apiBaseUrl,
-  backendOrigin,
   readBrowserCookie,
   ensureCsrfCookie,
   statefulApiHeaders,

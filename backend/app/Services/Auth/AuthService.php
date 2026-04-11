@@ -43,6 +43,15 @@ class AuthService
         $this->ensureLoginAllowed($user);
 
         if ($this->mfa->shouldChallenge($user)) {
+            // Evict any existing fully-authenticated session before entering the
+            // MFA pending flow. Without this, the GET /auth/mfa/status endpoint
+            // would see the old session as fully authenticated and return
+            // state="authenticated", which causes the MFA challenge page to
+            // immediately redirect to the dashboard — bypassing MFA entirely.
+            if (Auth::guard('web')->check()) {
+                Auth::guard('web')->logout();
+            }
+
             $this->mfa->clearPendingState($request);
 
             return LoginResult::mfaRequired(
@@ -67,7 +76,14 @@ class AuthService
 
     public function logout(Request $request): void
     {
-        $request->user()?->currentAccessToken()?->delete();
+        // Sanctum SPA (cookie/session) authentication uses a TransientToken,
+        // which is not stored in the database and has no delete() method.
+        // Only call delete() for real persisted PersonalAccessToken instances.
+        $token = $request->user()?->currentAccessToken();
+
+        if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            $token->delete();
+        }
 
         Auth::guard('web')->logout();
 

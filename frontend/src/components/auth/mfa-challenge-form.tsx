@@ -7,11 +7,14 @@ import { useLocale, useTranslations } from "next-intl";
 
 import {
   beginMfaSetup,
+  beginPasskeyAuthentication,
   confirmMfaSetup,
   fetchMfaStatus,
+  finishPasskeyAuthentication,
   submitMfaChallenge,
 } from "@/lib/auth-security";
 import { localePath } from "@/lib/auth";
+import { serializeCredential, toRequestOptions } from "@/lib/webauthn";
 
 // ---------------------------------------------------------------------------
 // Shared style constants – mirrors login-form.tsx exactly
@@ -73,10 +76,18 @@ export function MfaChallengeForm() {
   const [view, setView] = useState<ViewState>({ kind: "loading" });
   const [useRecovery, setUseRecovery] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [passkeySupported, setPasskeySupported] = useState(false);
+  const [passkeyAvailable, setPasskeyAvailable] = useState(false);
+  const [passkeyEmail, setPasskeyEmail] = useState<string | null>(null);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
 
   // -------------------------------------------------------------------------
   // Bootstrap: fetch MFA status on mount, then begin setup if needed
   // -------------------------------------------------------------------------
+
+  useEffect(() => {
+    setPasskeySupported(typeof window !== "undefined" && "PublicKeyCredential" in window);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +105,8 @@ export function MfaChallengeForm() {
 
       if (statusResult.data?.state === "pending") {
         const mfa = statusResult.data.mfa;
+        setPasskeyAvailable(Boolean(mfa.methods?.includes("webauthn")));
+        setPasskeyEmail(mfa.email ?? null);
 
         if (mfa.mode === "challenge") {
           setView({ kind: "challenge" });
@@ -155,6 +168,7 @@ export function MfaChallengeForm() {
 
   function handleChallengeSubmit(formData: FormData) {
     setSubmitError(null);
+    setPasskeyError(null);
 
     const code = String(formData.get("code") ?? "");
     const recoveryCode = String(formData.get("recovery_code") ?? "");
@@ -170,6 +184,57 @@ export function MfaChallengeForm() {
       }
 
       setSubmitError(result.error ?? t("mfaChallengeError"));
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Passkey challenge handler
+  // -------------------------------------------------------------------------
+
+  function handlePasskeyChallenge() {
+    setSubmitError(null);
+    setPasskeyError(null);
+
+    startTransition(async () => {
+      if (!passkeySupported) {
+        setPasskeyError(t("passkeyNotSupported"));
+        return;
+      }
+
+      const options = await beginPasskeyAuthentication(
+        passkeyEmail ? { email: passkeyEmail } : undefined,
+      );
+
+      if (!options.data) {
+        setPasskeyError(options.error ?? t("passkeyStartError"));
+        return;
+      }
+
+      try {
+        const requestOptions = toRequestOptions(options.data);
+        const credential = (await navigator.credentials.get({
+          publicKey: requestOptions,
+        })) as PublicKeyCredential | null;
+
+        if (!credential) {
+          setPasskeyError(t("passkeyCancelled"));
+          return;
+        }
+
+        const result = await finishPasskeyAuthentication({
+          credential: serializeCredential(credential),
+        });
+
+        if (result.data?.status === "authenticated") {
+          router.replace(localePath(locale, "/dashboard"));
+          router.refresh();
+          return;
+        }
+
+        setPasskeyError(result.error ?? t("passkeyVerifyError"));
+      } catch {
+        setPasskeyError(t("passkeyVerifyError"));
+      }
     });
   }
 
@@ -257,6 +322,21 @@ export function MfaChallengeForm() {
     return (
       <form action={handleChallengeSubmit} className="grid gap-6">
         <div className="grid gap-5">
+          {passkeyAvailable && passkeySupported ? (
+            <button
+              type="button"
+              onClick={handlePasskeyChallenge}
+              disabled={isPending}
+              className="inline-flex w-full items-center justify-center rounded-[1rem] border border-[#cfe0f4] bg-white px-5 py-3.5 text-base font-semibold text-[#033466] shadow-[0_12px_26px_rgba(10,55,120,0.08)] transition hover:bg-[#f0f7ff] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {t("passkeyButton")}
+            </button>
+          ) : null}
+
+          {passkeyError ? (
+            <div className={errorBoxClass}>{passkeyError}</div>
+          ) : null}
+
           {useRecovery ? (
             <div className="grid gap-2">
               <label className="text-sm font-semibold text-[#123055]">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\MfaController;
 use App\Http\Controllers\Api\V1\Auth\NewPasswordController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Api\V1\Auth\PasskeyController;
 use App\Http\Controllers\Api\V1\Auth\ProviderOnboardingController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,16 @@ Route::middleware('throttle:auth')->group(function (): void {
     Route::post('/mfa/setup', [MfaController::class, 'setup'])->name('mfa.setup');
     Route::post('/mfa/setup/confirm', [MfaController::class, 'confirmSetup'])->name('mfa.setup.confirm');
     Route::post('/mfa/challenge', [MfaController::class, 'challenge'])->name('mfa.challenge');
+    Route::post('/passkeys/authenticate/options', [PasskeyController::class, 'authenticationOptions'])->name('passkeys.authenticate.options');
+    Route::post('/passkeys/authenticate/verify', [PasskeyController::class, 'authenticate'])->name('passkeys.authenticate.verify');
+});
+
+Route::middleware(['auth:sanctum'])->group(function (): void {
+    Route::get('/passkeys', [PasskeyController::class, 'index'])->name('passkeys.index');
+    Route::post('/passkeys/register/options', [PasskeyController::class, 'registrationOptions'])->name('passkeys.register.options');
+    Route::post('/passkeys/register/verify', [PasskeyController::class, 'register'])->name('passkeys.register.verify');
+    Route::put('/passkeys/{credential}', [PasskeyController::class, 'rename'])->name('passkeys.rename');
+    Route::delete('/passkeys/{credential}', [PasskeyController::class, 'destroy'])->name('passkeys.destroy');
 });
 
 Route::middleware(['auth:sanctum', 'resolve.tenant'])->group(function (): void {

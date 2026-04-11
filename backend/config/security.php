@@ -40,4 +40,11 @@ return [
         'window' => 1,
         'recovery_codes_count' => 8,
     ],
+    'passkeys' => [
+        'rp_name' => env('PASSKEY_RP_NAME', env('APP_NAME', 'Hostinvo')),
+        'rp_id' => env('PASSKEY_RP_ID'),
+        'timeout' => (int) env('PASSKEY_TIMEOUT_SECONDS', 30),
+        'user_verification' => env('PASSKEY_USER_VERIFICATION', 'required'),
+        'require_resident_key' => env('PASSKEY_REQUIRE_RESIDENT', 'preferred'),
+    ],
 ];

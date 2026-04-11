@@ -48,7 +48,9 @@ export function tenantAdminCopy(locale: string) {
       removeAsset: isArabic ? "إزالة الملف الحالي" : "Remove current asset",
     },
     settings: {
-      title: isArabic ? "إعدادات البوابة والهوية" : "Portal & identity settings",
+      title: isArabic
+        ? "إعدادات البوابة والهوية"
+        : "Portal & identity settings",
       description: isArabic
         ? "أدر هوية المستأجر، مظهر البوابة، والمحتوى العميلي من لوحة الإدارة دون تعديل الكود."
         : "Manage tenant identity, portal presentation, and client-facing content from the admin dashboard without code edits.",
@@ -91,7 +93,9 @@ export function tenantAdminCopy(locale: string) {
       platformBillingDescription: isArabic
         ? "راقب فوترة التراخيص وربط بوابات الدفع."
         : "Monitor license billing and connect payment gateways.",
-      platformBillingCta: isArabic ? "عرض فوترة التراخيص" : "Open license billing",
+      platformBillingCta: isArabic
+        ? "عرض فوترة التراخيص"
+        : "Open license billing",
     },
     branding: {
       pageTitle: isArabic ? "الهوية والعلامة" : "Branding & identity",
@@ -150,7 +154,9 @@ export function tenantAdminCopy(locale: string) {
       hubDescription: isArabic
         ? "أنشئ وحرر المحتوى الذي يراه العملاء داخل البوابة."
         : "Create and edit the content clients see throughout the portal.",
-      announcementsTitle: isArabic ? "الإعلانات والأخبار" : "Announcements & news",
+      announcementsTitle: isArabic
+        ? "الإعلانات والأخبار"
+        : "Announcements & news",
       announcementsDescription: isArabic
         ? "إعلانات البوابة العميلية والأخبار المنشورة."
         : "Client-facing portal announcements and published news.",
@@ -246,6 +252,19 @@ export function tenantAdminCopy(locale: string) {
         support: isArabic ? "الدعم" : "Support",
         resources: isArabic ? "الموارد" : "Resources",
       },
+    },
+    security: {
+      pageTitle: isArabic ? "أمان الحساب" : "Account security",
+      pageDescription: isArabic
+        ? "أدر المصادقة الثنائية ورموز الاسترداد لحساب المشرف العام."
+        : "Manage two-factor authentication and recovery codes for your super admin account.",
+      mfaTitle: isArabic ? "المصادقة الثنائية" : "Two-Factor Authentication",
+      mfaCardKicker: isArabic ? "أمان الحساب" : "Account security",
+      securityCardTitle: isArabic ? "أمان الحساب" : "Account security",
+      securityCardDescription: isArabic
+        ? "أدر المصادقة الثنائية (TOTP) ورموز الاسترداد لحماية حساب المشرف العام."
+        : "Manage TOTP-based two-factor authentication and recovery codes to protect your super admin account.",
+      securityCardCta: isArabic ? "إدارة الأمان" : "Manage security",
     },
     statuses: {
       draft: isArabic ? "مسودة" : "Draft",

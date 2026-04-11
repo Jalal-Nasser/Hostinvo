@@ -7,6 +7,11 @@ import {
   readBrowserCookie,
   tenantHostHeader,
 } from "@/lib/auth";
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+  SerializedCredential,
+} from "@/lib/webauthn";
 
 export type TurnstilePublicConfig = {
   enabled: boolean;
@@ -20,6 +25,7 @@ export type MfaPendingStatus = {
   secret?: string | null;
   otp_auth_url?: string | null;
   recovery_codes_remaining: number;
+  methods?: string[];
 };
 
 export type MfaAuthenticatedStatus = {
@@ -58,6 +64,15 @@ export type LoginFlowResponse = {
   status: "authenticated" | "mfa_required" | "mfa_setup_required";
   user?: AuthenticatedUser | null;
   redirectTo?: string;
+};
+
+export type PasskeyListResponse = {
+  items: Array<{
+    id: number;
+    label: string;
+    created_at?: string | null;
+    last_used_at?: string | null;
+  }>;
 };
 
 export type MfaStatusResponse =
@@ -567,6 +582,283 @@ export async function disableTotp(payload: {
       errors: null,
       status: response.status,
     };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function fetchPasskeys(): Promise<MutationResult<PasskeyListResponse>> {
+  try {
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys`, {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: PasskeyListResponse; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to load passkeys.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responsePayload?.data ?? null,
+      error: null,
+      errors: null,
+      status: response.status,
+    };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function beginPasskeyRegistration(): Promise<
+  MutationResult<PublicKeyCredentialCreationOptionsJSON>
+> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/register/options`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: PublicKeyCredentialCreationOptionsJSON; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to start passkey registration.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responsePayload?.data ?? null,
+      error: null,
+      errors: null,
+      status: response.status,
+    };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function finishPasskeyRegistration(payload: {
+  credential: SerializedCredential;
+  label?: string;
+}): Promise<MutationResult<{ id: number; label: string }>> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/register/verify`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: { id: number; label: string }; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to register passkey.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responsePayload?.data ?? null,
+      error: null,
+      errors: null,
+      status: response.status,
+    };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function beginPasskeyAuthentication(payload?: {
+  email?: string;
+}): Promise<MutationResult<PublicKeyCredentialRequestOptionsJSON>> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/authenticate/options`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify(payload ?? {}),
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: PublicKeyCredentialRequestOptionsJSON; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to start passkey login.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responsePayload?.data ?? null,
+      error: null,
+      errors: null,
+      status: response.status,
+    };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function finishPasskeyAuthentication(payload: {
+  credential: SerializedCredential;
+}): Promise<MutationResult<LoginFlowResponse>> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/authenticate/verify`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: LoginFlowResponse; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to complete passkey login.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return {
+      data: responsePayload?.data ?? null,
+      error: null,
+      errors: null,
+      status: response.status,
+    };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function renamePasskey(payload: {
+  id: number;
+  label: string;
+}): Promise<MutationResult<null>> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/${payload.id}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify({ label: payload.label }),
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: null; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to rename passkey.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return { data: null, error: null, errors: null, status: response.status };
+  } catch {
+    return { data: null, error: "Service unavailable.", errors: null, status: 0 };
+  }
+}
+
+export async function removePasskey(payload: {
+  id: number;
+  current_password: string;
+}): Promise<MutationResult<null>> {
+  try {
+    await ensureCsrfCookie();
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+    const response = await fetch(`${apiBaseUrl}/auth/passkeys/${payload.id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify({ current_password: payload.current_password }),
+    });
+
+    const responsePayload = (await response.json().catch(() => null)) as
+      | { data?: null; message?: string; errors?: Array<{ message?: string }> | Record<string, string[]> }
+      | null;
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: firstErrorMessage(responsePayload) ?? "Unable to remove passkey.",
+        errors: parseErrors(responsePayload),
+        status: response.status,
+      };
+    }
+
+    return { data: null, error: null, errors: null, status: response.status };
   } catch {
     return { data: null, error: "Service unavailable.", errors: null, status: 0 };
   }

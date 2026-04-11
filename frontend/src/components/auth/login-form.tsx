@@ -7,10 +7,13 @@ import { useEffect, useState, useTransition } from "react";
 
 import { localePath } from "@/lib/auth";
 import {
+  beginPasskeyAuthentication,
   fetchAuthConfig,
+  finishPasskeyAuthentication,
   submitLogin,
   type AuthConfigResponse,
 } from "@/lib/auth-security";
+import { serializeCredential, toRequestOptions } from "@/lib/webauthn";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const fieldClass =
@@ -85,12 +88,19 @@ export function LoginForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [authConfig, setAuthConfig] = useState<AuthConfigResponse | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const [passkeySupported, setPasskeySupported] = useState(false);
+  const [emailValue, setEmailValue] = useState("");
 
   useEffect(() => {
     fetchAuthConfig().then((config) => setAuthConfig(config));
+  }, []);
+
+  useEffect(() => {
+    setPasskeySupported(typeof window !== "undefined" && "PublicKeyCredential" in window);
   }, []);
 
   const showTurnstile =
@@ -100,6 +110,7 @@ export function LoginForm() {
 
   function handleSubmit(formData: FormData) {
     setError(null);
+    setPasskeyError(null);
 
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
@@ -145,6 +156,52 @@ export function LoginForm() {
     });
   }
 
+  function handlePasskeyLogin() {
+    setError(null);
+    setPasskeyError(null);
+
+    startTransition(async () => {
+      if (!passkeySupported) {
+        setPasskeyError(t("passkeyNotSupported"));
+        return;
+      }
+
+      const options = await beginPasskeyAuthentication(
+        emailValue ? { email: emailValue } : undefined,
+      );
+      if (!options.data) {
+        setPasskeyError(options.error ?? t("passkeyStartError"));
+        return;
+      }
+
+      try {
+        const requestOptions = toRequestOptions(options.data);
+        const credential = (await navigator.credentials.get({
+          publicKey: requestOptions,
+        })) as PublicKeyCredential | null;
+
+        if (!credential) {
+          setPasskeyError(t("passkeyCancelled"));
+          return;
+        }
+
+        const result = await finishPasskeyAuthentication({
+          credential: serializeCredential(credential),
+        });
+
+        if (!result.data || result.data.status !== "authenticated") {
+          setPasskeyError(result.error ?? t("passkeyVerifyError"));
+          return;
+        }
+
+        router.replace(result.data.redirectTo ?? localePath(locale, "/dashboard"));
+        router.refresh();
+      } catch {
+        setPasskeyError(t("passkeyVerifyError"));
+      }
+    });
+  }
+
   const isVerificationError = error !== null && /verification/i.test(error);
 
   return (
@@ -178,6 +235,8 @@ export function LoginForm() {
               required
               placeholder={t("emailPlaceholder")}
               className={`${fieldClass} ps-12`}
+              value={emailValue}
+              onChange={(event) => setEmailValue(event.target.value)}
             />
           </div>
         </div>
@@ -274,6 +333,23 @@ export function LoginForm() {
       </button>
 
       {/* ── Divider ── */}
+      {passkeySupported ? (
+        <button
+          type="button"
+          onClick={handlePasskeyLogin}
+          disabled={isPending}
+          className="inline-flex w-full items-center justify-center rounded-[1rem] border border-[#cfe0f4] bg-white px-5 py-3.5 text-base font-semibold text-[#033466] shadow-[0_12px_26px_rgba(10,55,120,0.08)] transition hover:bg-[#f0f7ff] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {t("passkeyButton")}
+        </button>
+      ) : null}
+
+      {passkeyError ? (
+        <div className="rounded-[1rem] border border-[#ffd5d2] bg-[#fff4f3] px-4 py-3 text-sm leading-6 text-[#b7382d]">
+          {passkeyError}
+        </div>
+      ) : null}
+
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-[#d6e3f2]" />
         <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#8ca4c0]">

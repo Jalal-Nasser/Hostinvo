@@ -11,6 +11,7 @@ class UserMfaMethod extends Model
     use HasFactory;
 
     public const TYPE_TOTP = 'totp';
+    public const TYPE_WEBAUTHN = 'webauthn';
 
     protected $fillable = [
         'user_id',
