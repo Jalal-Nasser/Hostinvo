@@ -9,8 +9,8 @@
         "ezyang/htmlpurifier": "4.17",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.3",
-        "lbuchs/webauthn": "^2.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "lbuchs/webauthn": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
