@@ -127,6 +127,7 @@ export type TicketFormPayload = {
   subject: string;
   priority: TicketPriority;
   message: string;
+  turnstile_token?: string;
 };
 
 export type TicketReplyPayload = {

@@ -13,6 +13,14 @@ export type TurnstileSettingsRecord = {
   forms: Record<string, boolean>;
 };
 
+export type TenantMfaPolicyMode = "disabled" | "optional" | "required";
+
+export type TenantMfaPolicyRecord = {
+  owner_admin: TenantMfaPolicyMode;
+  staff: TenantMfaPolicyMode;
+  clients: TenantMfaPolicyMode;
+};
+
 export type ManagedNotificationTemplate = {
   id: number;
   scope: "platform" | "tenant";
@@ -186,6 +194,26 @@ export async function updateTenantTurnstile(
 ): Promise<MutationResult<TurnstileSettingsRecord>> {
   return submitJson<TurnstileSettingsRecord>(
     tenantEndpoint("settings/security/turnstile"),
+    "PUT",
+    payload,
+  );
+}
+
+export async function fetchTenantMfaPolicyFromCookies(
+  cookieHeader: string,
+): Promise<TenantMfaPolicyRecord | null> {
+  return fetchJson<TenantMfaPolicyRecord>(
+    tenantEndpoint("settings/security/mfa-policy"),
+    cookieHeader,
+    "/dashboard/settings/security",
+  );
+}
+
+export async function updateTenantMfaPolicy(
+  payload: TenantMfaPolicyRecord,
+): Promise<MutationResult<TenantMfaPolicyRecord>> {
+  return submitJson<TenantMfaPolicyRecord>(
+    tenantEndpoint("settings/security/mfa-policy"),
     "PUT",
     payload,
   );

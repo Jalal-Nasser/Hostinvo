@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Support;
 
 use App\Http\Requests\Concerns\SanitizesInputContent;
+use App\Http\Requests\Concerns\ValidatesTurnstile;
 use App\Models\Ticket;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -10,6 +11,7 @@ use Illuminate\Validation\Rule;
 class StorePortalTicketRequest extends FormRequest
 {
     use SanitizesInputContent;
+    use ValidatesTurnstile;
 
     public function authorize(): bool
     {
@@ -45,6 +47,7 @@ class StorePortalTicketRequest extends FormRequest
             'priority' => ['required', Rule::in(Ticket::priorities())],
             'message' => ['required', 'string'],
             'metadata' => ['nullable', 'array'],
+            'turnstile_token' => ['nullable', 'string'],
             'client_id' => ['prohibited'],
             'status_id' => ['prohibited'],
             'assigned_to_user_id' => ['prohibited'],
@@ -52,5 +55,9 @@ class StorePortalTicketRequest extends FormRequest
             'is_internal' => ['prohibited'],
         ];
     }
-}
 
+    protected function turnstileFormKey(): ?string
+    {
+        return 'portal_support';
+    }
+}

@@ -3,14 +3,21 @@ import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { StatusBanner } from "@/components/tenant-admin/status-banner";
 import { MfaSettingsPanel } from "@/components/platform-owner/mfa-settings-panel";
+import { StatusBanner } from "@/components/tenant-admin/status-banner";
+import { TenantSecuritySettingsPanel } from "@/components/tenant-admin/tenant-security-settings-panel";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
+  hasPermission,
   hasRole,
+  isPlatformOwnerContext,
   localePath,
 } from "@/lib/auth";
+import {
+  fetchTenantMfaPolicyFromCookies,
+  fetchTenantTurnstileFromCookies,
+} from "@/lib/security-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -21,38 +28,96 @@ export default async function SecuritySettingsPage({
 }>) {
   setRequestLocale(params.locale);
 
+  const isArabic = params.locale === "ar";
+  const copy = {
+    title: isArabic ? "الأمان والوصول" : "Security and access",
+    description: isArabic
+      ? "إدارة المصادقة متعددة العوامل وحماية النماذج لمساحة العمل الحالية."
+      : "Manage multi-factor authentication and form protection for the current workspace.",
+    backToSettings: isArabic ? "العودة إلى الإعدادات" : "Back to settings",
+    tenantOnlyMessage: isArabic
+      ? "هذه الصفحة متاحة فقط داخل مساحة عمل مستأجر فعّالة."
+      : "This page is available only inside an active tenant workspace.",
+    unauthorizedMessage: isArabic
+      ? "ليس لديك صلاحية لإدارة إعدادات الأمان لهذه المساحة."
+      : "You do not have permission to manage security settings for this workspace.",
+    serviceUnavailable: isArabic ? "الخدمة غير متاحة حالياً." : "The service is currently unavailable.",
+  };
+
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
-
-  const isAr = params.locale === "ar";
-  const pageTitle = isAr ? "أمان الحساب" : "Account security";
-  const pageDescription = isAr
-    ? "أدر المصادقة الثنائية ورموز الاسترداد لحساب المشرف العام."
-    : "Manage two-factor authentication and recovery codes for your super admin account.";
-  const notSuperAdminMsg = isAr
-    ? "إعدادات MFA متاحة فقط لحسابات المشرف العام."
-    : "MFA settings are only available for super admin accounts.";
-  const backLabel = isAr ? "العودة إلى الإعدادات" : "Back to settings";
+  const isPlatformOwner = isPlatformOwnerContext(user);
+  const canManageTenantSecurity =
+    hasRole(user, "tenant_owner") ||
+    hasRole(user, "tenant_admin") ||
+    hasPermission(user, "tenant.manage");
 
   const actions = (
     <Link
       href={localePath(params.locale, "/dashboard/settings")}
       className="btn-secondary whitespace-nowrap"
     >
-      {backLabel}
+      {copy.backToSettings}
     </Link>
   );
 
-  if (!hasRole(user, "super_admin")) {
+  if (isPlatformOwner) {
     return (
       <DashboardShell
         actions={actions}
         currentPath="/dashboard/settings/security"
-        description={pageDescription}
+        description={copy.description}
         locale={params.locale as AppLocale}
-        title={pageTitle}
+        title={copy.title}
       >
-        <StatusBanner message={notSuperAdminMsg} tone="error" />
+        <MfaSettingsPanel locale={params.locale} />
+      </DashboardShell>
+    );
+  }
+
+  if (!user?.tenant_id) {
+    return (
+      <DashboardShell
+        actions={actions}
+        currentPath="/dashboard/settings/security"
+        description={copy.description}
+        locale={params.locale as AppLocale}
+        title={copy.title}
+      >
+        <StatusBanner message={copy.tenantOnlyMessage} tone="error" />
+      </DashboardShell>
+    );
+  }
+
+  if (!canManageTenantSecurity) {
+    return (
+      <DashboardShell
+        actions={actions}
+        currentPath="/dashboard/settings/security"
+        description={copy.description}
+        locale={params.locale as AppLocale}
+        title={copy.title}
+      >
+        <StatusBanner message={copy.unauthorizedMessage} tone="error" />
+      </DashboardShell>
+    );
+  }
+
+  const [mfaPolicy, turnstile] = await Promise.all([
+    fetchTenantMfaPolicyFromCookies(cookieHeader),
+    fetchTenantTurnstileFromCookies(cookieHeader),
+  ]);
+
+  if (!mfaPolicy || !turnstile) {
+    return (
+      <DashboardShell
+        actions={actions}
+        currentPath="/dashboard/settings/security"
+        description={copy.description}
+        locale={params.locale as AppLocale}
+        title={copy.title}
+      >
+        <StatusBanner message={copy.serviceUnavailable} tone="error" />
       </DashboardShell>
     );
   }
@@ -61,11 +126,15 @@ export default async function SecuritySettingsPage({
     <DashboardShell
       actions={actions}
       currentPath="/dashboard/settings/security"
-      description={pageDescription}
+      description={copy.description}
       locale={params.locale as AppLocale}
-      title={pageTitle}
+      title={copy.title}
     >
-      <MfaSettingsPanel locale={params.locale} />
+      <TenantSecuritySettingsPanel
+        initialMfaPolicy={mfaPolicy}
+        initialTurnstile={turnstile}
+        locale={params.locale}
+      />
     </DashboardShell>
   );
 }

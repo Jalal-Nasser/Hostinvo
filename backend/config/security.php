@@ -39,6 +39,11 @@ return [
         'time_step' => 30,
         'window' => 1,
         'recovery_codes_count' => 8,
+        'tenant_policy_defaults' => [
+            'owner_admin' => 'disabled',
+            'staff' => 'disabled',
+            'clients' => 'disabled',
+        ],
     ],
     'passkeys' => [
         'rp_name' => env('PASSKEY_RP_NAME', env('APP_NAME', 'Hostinvo')),

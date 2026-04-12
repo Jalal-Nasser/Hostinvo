@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { portalTheme } from "@/components/portal/portal-theme";
 import { localePath } from "@/lib/auth";
+import { fetchAuthConfig, type AuthConfigResponse } from "@/lib/auth-security";
 import { createPortalTicketRequest } from "@/lib/portal-ticket-requests";
 
 type DomainTransferFlowProps = {
@@ -41,6 +43,16 @@ export function DomainTransferFlow({
   const [domainName, setDomainName] = useState(initialQuery);
   const [authCode, setAuthCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [authConfig, setAuthConfig] = useState<AuthConfigResponse | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const showTurnstile =
+    authConfig !== null &&
+    authConfig.turnstile.enabled &&
+    authConfig.turnstile.forms["portal_support"] === true;
+
+  useEffect(() => {
+    fetchAuthConfig().then(setAuthConfig);
+  }, []);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,6 +80,7 @@ export function DomainTransferFlow({
             "This request requires manual registrar-side processing.",
             "Live transfer validation is not connected yet, so please review the request manually and contact the client with the next step.",
           ].join("\n"),
+          ...(showTurnstile && turnstileToken ? { turnstile_token: turnstileToken } : {}),
         });
 
         router.replace(localePath(locale, `/portal/tickets/${ticket.id}`));
@@ -129,6 +142,16 @@ export function DomainTransferFlow({
           <p className="mt-5 rounded-[12px] border border-[rgba(235,87,87,0.28)] bg-[rgba(108,31,45,0.32)] ps-4 pe-4 py-3 text-sm text-[#ffd6d6]">
             {error}
           </p>
+        ) : null}
+
+        {showTurnstile ? (
+          <div className="mt-5">
+            <TurnstileWidget
+              locale={locale}
+              siteKey={authConfig?.turnstile.site_key ?? ""}
+              onTokenChange={setTurnstileToken}
+            />
+          </div>
         ) : null}
 
         <div className={[portalTheme.noteClass, "mt-5"].join(" ")}>{labels.infoNote}</div>

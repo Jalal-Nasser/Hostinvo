@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { backendOrigin, localePath } from "@/lib/auth";
+import { fetchAuthConfig, type AuthConfigResponse } from "@/lib/auth-security";
 import { type ClientRecord } from "@/lib/clients";
 import {
   ticketPriorities,
@@ -82,6 +84,16 @@ export function TicketForm({
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [authConfig, setAuthConfig] = useState<AuthConfigResponse | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  useEffect(() => {
+    if (mode !== "client") {
+      return;
+    }
+
+    fetchAuthConfig().then((config) => setAuthConfig(config));
+  }, [mode]);
 
   const priorityLabels: Record<TicketPriority, string> = {
     low: t("priorityLow"),
@@ -97,6 +109,7 @@ export function TicketForm({
       subject: subject.trim(),
       priority,
       message: message.trim(),
+      ...(showTurnstile && turnstileToken ? { turnstile_token: turnstileToken } : {}),
     };
 
     if (mode === "admin") {
@@ -105,6 +118,12 @@ export function TicketForm({
 
     return payload;
   }
+
+  const showTurnstile =
+    mode === "client" &&
+    authConfig !== null &&
+    authConfig.turnstile.enabled &&
+    authConfig.turnstile.forms["portal_support"] === true;
 
   function handleSubmit() {
     setError(null);
@@ -246,6 +265,16 @@ export function TicketForm({
           <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {success}
           </p>
+        ) : null}
+
+        {showTurnstile ? (
+          <div className="mt-6">
+            <TurnstileWidget
+              locale={locale}
+              siteKey={authConfig?.turnstile.site_key ?? ""}
+              onTokenChange={(token) => setTurnstileToken(token)}
+            />
+          </div>
         ) : null}
 
         <div className="mt-8 flex flex-wrap gap-3">

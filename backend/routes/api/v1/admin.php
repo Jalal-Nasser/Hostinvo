@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\V1\Admin\SupportOverviewController;
 use App\Http\Controllers\Api\V1\Admin\TenantController;
 use App\Http\Controllers\Api\V1\Admin\TenantBrandingController;
 use App\Http\Controllers\Api\V1\Admin\TenantImpersonationController;
+use App\Http\Controllers\Api\V1\Admin\TenantMfaPolicyController;
 use App\Http\Controllers\Api\V1\Admin\TenantNotificationTemplateController;
 use App\Http\Controllers\Api\V1\Admin\TenantTurnstileController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
@@ -100,6 +101,8 @@ Route::get('settings/branding', [TenantBrandingController::class, 'show'])->name
 Route::post('settings/branding', [TenantBrandingController::class, 'update'])->name('settings.branding.update');
 Route::get('settings/security/turnstile', [TenantTurnstileController::class, 'show'])->name('settings.security.turnstile.show');
 Route::put('settings/security/turnstile', [TenantTurnstileController::class, 'update'])->name('settings.security.turnstile.update');
+Route::get('settings/security/mfa-policy', [TenantMfaPolicyController::class, 'show'])->name('settings.security.mfa-policy.show');
+Route::put('settings/security/mfa-policy', [TenantMfaPolicyController::class, 'update'])->name('settings.security.mfa-policy.update');
 Route::get('settings/notifications/templates', [TenantNotificationTemplateController::class, 'index'])->name('settings.notifications.templates.index');
 Route::put('settings/notifications/templates/{event}/{locale}', [TenantNotificationTemplateController::class, 'update'])->name('settings.notifications.templates.update');
 Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])->name('settings.portal-surface.show');

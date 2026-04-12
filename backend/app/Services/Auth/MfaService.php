@@ -9,6 +9,7 @@ use App\Models\UserMfaMethod;
 use App\Models\UserRecoveryCode;
 use App\Services\Security\TotpService;
 use App\Services\Tenancy\TenantContextService;
+use App\Services\Tenancy\TenantMfaPolicyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,12 +21,21 @@ class MfaService
     public function __construct(
         private readonly TotpService $totp,
         private readonly UserRepositoryInterface $users,
+        private readonly TenantMfaPolicyService $tenantMfaPolicies,
     ) {
     }
 
     public function shouldChallenge(User $user): bool
     {
-        return $user->hasRole(Role::SUPER_ADMIN);
+        if ($user->hasRole(Role::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return match ($this->tenantMfaPolicies->modeForUser($user)) {
+            TenantMfaPolicyService::REQUIRED => true,
+            TenantMfaPolicyService::OPTIONAL => $this->hasAnyConfirmedMethod($user),
+            default => false,
+        };
     }
 
     public function hasConfirmedTotp(User $user): bool
@@ -87,7 +97,7 @@ class MfaService
     public function authenticatedStatus(User $user): array
     {
         return [
-            'enrolled' => $this->hasConfirmedTotp($user),
+            'enrolled' => $this->hasAnyConfirmedMethod($user),
             'recovery_codes_remaining' => $user->recoveryCodes()->whereNull('used_at')->count(),
         ];
     }

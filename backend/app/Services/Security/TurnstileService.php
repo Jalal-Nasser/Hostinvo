@@ -29,7 +29,7 @@ class TurnstileService
         return [
             'enabled' => (bool) ($config['enabled'] ?? false),
             'site_key' => (string) ($config['site_key'] ?? ''),
-            'forms' => (array) ($config['forms'] ?? []),
+            'forms' => $this->expandFormAliases((array) ($config['forms'] ?? [])),
         ];
     }
 
@@ -103,6 +103,10 @@ class TurnstileService
     {
         $tenant = $this->requestTenantResolver->resolveFromRequest($request);
 
+        if (! $tenant && $request->user()?->tenant instanceof Tenant) {
+            $tenant = $request->user()->tenant;
+        }
+
         if ($tenant) {
             $tenantConfig = $this->tenantConfig($tenant);
 
@@ -116,10 +120,21 @@ class TurnstileService
 
     private function isEnabledForForm(array $config, string $form): bool
     {
+        $forms = $this->expandFormAliases((array) ($config['forms'] ?? []));
+
         return (bool) ($config['enabled'] ?? false)
             && filled($config['site_key'] ?? null)
             && filled($config['secret_key'] ?? null)
-            && (bool) Arr::get($config, "forms.{$form}", false);
+            && (bool) Arr::get($forms, $form, false);
+    }
+
+    private function expandFormAliases(array $forms): array
+    {
+        return array_merge($forms, [
+            'login' => (bool) ($forms['login'] ?? $forms['client_login'] ?? false),
+            'forgot_password' => (bool) ($forms['forgot_password'] ?? $forms['portal_forgot_password'] ?? false),
+            'reset_password' => (bool) ($forms['reset_password'] ?? $forms['portal_reset_password'] ?? false),
+        ]);
     }
 
     private function normalizePlatformConfig(mixed $payload): array

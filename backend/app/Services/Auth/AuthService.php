@@ -87,10 +87,12 @@ class AuthService
 
         Auth::guard('web')->logout();
 
-        $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
-        $request->session()->forget('tenant_id');
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $request->session()->forget(TenantContextService::ACTIVE_TENANT_SESSION_KEY);
+            $request->session()->forget('tenant_id');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
     }
 
     public function currentUser(User $user): User
