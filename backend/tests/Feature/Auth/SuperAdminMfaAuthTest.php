@@ -164,6 +164,45 @@ class SuperAdminMfaAuthTest extends TestCase
             ->assertJsonPath('data.user.id', $user->getKey());
     }
 
+    public function test_passkey_registration_options_are_returned_in_browser_shape(): void
+    {
+        $user = $this->createSuperAdmin();
+        $csrf = 'test-csrf-token';
+        Sanctum::actingAs($user);
+
+        $response = $this
+            ->withHeaders($this->statefulHeaders($csrf))
+            ->withSession(['_token' => $csrf])
+            ->postJson('/api/v1/auth/passkeys/register/options');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.publicKey.rp.name', config('security.passkeys.rp_name', config('app.name')))
+            ->assertJsonPath('data.publicKey.user.name', $user->email);
+
+        $this->assertIsString(data_get($response->json(), 'data.publicKey.challenge'));
+        $this->assertIsString(data_get($response->json(), 'data.publicKey.user.id'));
+    }
+
+    public function test_passkey_authentication_options_are_returned_in_browser_shape(): void
+    {
+        $user = $this->createSuperAdmin();
+        $csrf = 'test-csrf-token';
+
+        $response = $this
+            ->withHeaders($this->statefulHeaders($csrf))
+            ->withSession(['_token' => $csrf])
+            ->postJson('/api/v1/auth/passkeys/authenticate/options', [
+                'email' => $user->email,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.publicKey.rpId', 'localhost');
+
+        $this->assertIsString(data_get($response->json(), 'data.publicKey.challenge'));
+    }
+
     public function test_logout_works_without_server_error(): void
     {
         $user = $this->createSuperAdmin();

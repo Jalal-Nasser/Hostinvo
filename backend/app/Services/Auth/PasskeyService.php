@@ -49,9 +49,7 @@ class PasskeyService
 
         $request->session()->put(self::REGISTRATION_CHALLENGE_KEY, $this->base64UrlEncode($webauthn->getChallenge()));
 
-        return [
-            'publicKey' => $options,
-        ];
+        return (array) $options;
     }
 
     public function register(User $user, array $credential, ?string $label, Request $request): UserWebauthnCredential
@@ -137,9 +135,7 @@ class PasskeyService
         $request->session()->put(self::AUTH_CHALLENGE_KEY, $this->base64UrlEncode($webauthn->getChallenge()));
         $request->session()->put(self::AUTH_ALLOW_KEY, array_map([$this, 'base64UrlEncode'], $allowCredentials));
 
-        return [
-            'publicKey' => $options,
-        ];
+        return (array) $options;
     }
 
     public function authenticate(array $credential, Request $request): User
