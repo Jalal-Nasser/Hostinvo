@@ -107,6 +107,7 @@ export function LoginForm() {
     authConfig !== null &&
     authConfig.turnstile.enabled &&
     authConfig.turnstile.forms["login"] === true;
+  const showPasskeyButton = passkeySupported && emailValue.trim() !== "";
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -333,7 +334,7 @@ export function LoginForm() {
       </button>
 
       {/* ── Divider ── */}
-      {passkeySupported ? (
+      {showPasskeyButton ? (
         <button
           type="button"
           onClick={handlePasskeyLogin}

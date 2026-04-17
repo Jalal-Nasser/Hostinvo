@@ -16,12 +16,12 @@ class SuperAdminSeeder extends Seeder
     {
         $user = User::query()
             ->whereNull('tenant_id')
-            ->where('email', env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.test'))
+            ->where('email', env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.dev'))
             ->first() ?? new User();
 
         $user->forceFill([
             'tenant_id' => null,
-            'email' => env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.test'),
+            'email' => env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.dev'),
             'name' => env('SUPER_ADMIN_NAME', 'Hostinvo Super Admin'),
             'locale' => env('APP_LOCALE', 'en'),
             'is_active' => true,

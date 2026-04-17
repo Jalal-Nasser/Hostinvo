@@ -277,7 +277,6 @@ export async function AuthShell({
           <div className="flex flex-1 items-center px-6 pb-10 pt-2 sm:px-8 xl:px-10">
             <div className="mx-auto grid w-full max-w-2xl gap-8 lg:max-w-[34rem]">
               <div className="lg:hidden">
-                <BrandLogo href={`/${locale}`} priority className="block w-full max-w-[12rem]" />
                 <div className="mt-6 rounded-[1.75rem] border border-[#d4e6fb] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(240,247,255,0.9))] p-5 shadow-[0_20px_60px_rgba(12,53,120,0.08)]">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#036deb]">
                     {shellCopy.badge}
@@ -292,6 +291,11 @@ export async function AuthShell({
               </div>
 
               <div>
+                <BrandLogo
+                  href={`/${locale}`}
+                  priority
+                  className="mx-auto mb-6 block w-full max-w-[12rem]"
+                />
                 <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#5f7ca5]">
                   {shellCopy.eyebrow}
                 </div>

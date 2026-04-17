@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use WebAuthn\WebAuthn;
+use lbuchs\WebAuthn\WebAuthn;
 
 class PasskeyService
 {
@@ -40,8 +40,9 @@ class PasskeyService
             $user->getKey(),
             $user->email,
             $user->name,
+            (int) config('security.passkeys.timeout', 30),
             $this->requireResidentKey(),
-            $this->userVerification(),
+            $this->requiresUserVerification(),
             null,
             $exclude,
         );
@@ -64,12 +65,11 @@ class PasskeyService
             $this->decodeCredentialComponent($credential, 'response.clientDataJSON'),
             $this->decodeCredentialComponent($credential, 'response.attestationObject'),
             $this->base64UrlDecode($challenge),
-            $this->requireResidentKey(),
-            $this->userVerification(),
+            $this->requiresUserVerification(),
         );
 
         $credentialIdBinary = $data->credentialId;
-        $credentialId = $credentialIdBinary instanceof \WebAuthn\Binary\ByteBuffer
+        $credentialId = $credentialIdBinary instanceof \lbuchs\WebAuthn\Binary\ByteBuffer
             ? $this->base64UrlEncode($credentialIdBinary->getBinaryString())
             : $this->base64UrlEncode((string) $credentialIdBinary);
 
@@ -125,7 +125,13 @@ class PasskeyService
 
         $options = $webauthn->getGetArgs(
             $allowCredentials,
-            $this->userVerification(),
+            (int) config('security.passkeys.timeout', 30),
+            true,
+            true,
+            true,
+            true,
+            true,
+            $this->requiresUserVerification(),
         );
 
         $request->session()->put(self::AUTH_CHALLENGE_KEY, $this->base64UrlEncode($webauthn->getChallenge()));
@@ -172,7 +178,7 @@ class PasskeyService
             (string) $record->public_key,
             $this->base64UrlDecode($challenge),
             (int) $record->sign_count,
-            $this->userVerification(),
+            $this->requiresUserVerification(),
         );
 
         $record->forceFill([
@@ -294,16 +300,12 @@ class PasskeyService
 
     private function webauthn(Request $request): WebAuthn
     {
-        $webauthn = new WebAuthn(
+        return new WebAuthn(
             (string) config('security.passkeys.rp_name', config('app.name', 'Hostinvo')),
             $this->rpId($request),
             null,
             true,
         );
-
-        $webauthn->setTimeout((int) config('security.passkeys.timeout', 30));
-
-        return $webauthn;
     }
 
     private function rpId(Request $request): string
@@ -320,6 +322,11 @@ class PasskeyService
     private function userVerification(): string
     {
         return (string) config('security.passkeys.user_verification', 'required');
+    }
+
+    private function requiresUserVerification(): bool
+    {
+        return $this->userVerification() === 'required';
     }
 
     private function requireResidentKey(): bool
@@ -384,7 +391,7 @@ class PasskeyService
             return null;
         }
 
-        if ($value instanceof \WebAuthn\Binary\ByteBuffer) {
+        if ($value instanceof \lbuchs\WebAuthn\Binary\ByteBuffer) {
             return $this->base64UrlEncode($value->getBinaryString());
         }
 
