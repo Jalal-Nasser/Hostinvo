@@ -1180,6 +1180,8 @@
     "ownerEmailLabel": "بريد المالك الإلكتروني",
     "ownerPasswordLabel": "كلمة مرور المالك",
     "ownerPasswordConfirmationLabel": "تأكيد كلمة مرور المالك",
+    "generatePasswordButton": "توليد كلمة مرور",
+    "passwordGeneratedMessage": "تم توليد كلمة مرور قوية وتعبئتها تلقائياً.",
     "passwordOptionalHint": "اتركه فارغًا للإبقاء على كلمة المرور الحالية",
     "trialProvisioningNotice": "يؤدي إنشاء المستأجر إلى تجهيز حساب المالك وإصدار الترخيص التجريبي الحالي باستخدام أساس الترخيص الموجود بالفعل.",
     "createTenantButton": "إنشاء المستأجر",

@@ -34,7 +34,7 @@ class NotificationDispatchService
                 subjectLine: $resolved['subject'],
                 bodyHtml: $resolved['body_html'],
                 bodyText: $resolved['body_text'],
-                locale: $locale,
+                templateLocale: $locale,
             ));
 
             EmailLog::query()->create([

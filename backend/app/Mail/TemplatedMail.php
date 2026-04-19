@@ -17,7 +17,7 @@ class TemplatedMail extends Mailable
         private readonly string $subjectLine,
         private readonly string $bodyHtml,
         private readonly ?string $bodyText,
-        private readonly string $locale,
+        private readonly string $templateLocale,
     ) {
     }
 
@@ -36,8 +36,8 @@ class TemplatedMail extends Mailable
             with: [
                 'bodyHtml' => $this->bodyHtml,
                 'bodyText' => $this->bodyText,
-                'locale' => $this->locale,
-                'direction' => str_starts_with($this->locale, 'ar') ? 'rtl' : 'ltr',
+                'locale' => $this->templateLocale,
+                'direction' => str_starts_with($this->templateLocale, 'ar') ? 'rtl' : 'ltr',
             ],
         );
     }

@@ -65,7 +65,9 @@ class Tenant extends Model
 
     public function latestLicense(): HasOne
     {
-        return $this->hasOne(License::class)->latestOfMany('issued_at');
+        return $this->hasOne(License::class)
+            ->orderByDesc('issued_at')
+            ->orderByDesc('created_at');
     }
 
     public function webhookLogs(): HasMany

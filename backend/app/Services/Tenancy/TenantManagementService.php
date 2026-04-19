@@ -11,6 +11,7 @@ use App\Services\Auth\EmailVerificationService;
 use App\Services\Licensing\LicenseService;
 use App\Services\Notifications\NotificationDispatchService;
 use App\Services\Notifications\NotificationEventCatalog;
+use Database\Seeders\Auth\RolePermissionSeeder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -298,6 +299,17 @@ class TenantManagementService
 
     private function tenantOwnerRole(): Role
     {
+        $role = Role::query()
+            ->whereNull('tenant_id')
+            ->where('name', Role::TENANT_OWNER)
+            ->first();
+
+        if ($role) {
+            return $role;
+        }
+
+        app(RolePermissionSeeder::class)->run();
+
         $role = Role::query()
             ->whereNull('tenant_id')
             ->where('name', Role::TENANT_OWNER)

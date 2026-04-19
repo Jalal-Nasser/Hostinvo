@@ -47,7 +47,7 @@ class PasskeyService
             $exclude,
         );
 
-        $request->session()->put(self::REGISTRATION_CHALLENGE_KEY, $this->base64UrlEncode($webauthn->getChallenge()));
+        $request->session()->put(self::REGISTRATION_CHALLENGE_KEY, $this->normalizeBinary($webauthn->getChallenge()));
 
         return (array) $options;
     }
@@ -132,7 +132,7 @@ class PasskeyService
             $this->requiresUserVerification(),
         );
 
-        $request->session()->put(self::AUTH_CHALLENGE_KEY, $this->base64UrlEncode($webauthn->getChallenge()));
+        $request->session()->put(self::AUTH_CHALLENGE_KEY, $this->normalizeBinary($webauthn->getChallenge()));
         $request->session()->put(self::AUTH_ALLOW_KEY, array_map([$this, 'base64UrlEncode'], $allowCredentials));
 
         return (array) $options;

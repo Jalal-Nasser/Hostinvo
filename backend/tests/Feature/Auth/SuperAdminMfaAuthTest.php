@@ -39,6 +39,26 @@ class SuperAdminMfaAuthTest extends TestCase
             ->assertJsonPath('data.status', 'mfa_required');
     }
 
+    public function test_super_admin_without_enrolled_mfa_logs_in_directly(): void
+    {
+        $user = $this->createSuperAdmin();
+        $csrf = 'test-csrf-token';
+
+        $response = $this
+            ->withHeaders($this->statefulHeaders($csrf))
+            ->withSession(['_token' => $csrf])
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => 'password',
+                'remember' => false,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.status', 'authenticated')
+            ->assertJsonPath('data.user.id', $user->getKey());
+    }
+
     public function test_super_admin_can_complete_totp_challenge_after_password_step(): void
     {
         $user = $this->createSuperAdmin();
@@ -178,7 +198,11 @@ class SuperAdminMfaAuthTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.publicKey.rp.name', config('security.passkeys.rp_name', config('app.name')))
-            ->assertJsonPath('data.publicKey.user.name', $user->email);
+            ->assertJsonPath('data.publicKey.user.name', $user->email)
+            ->assertSessionHas(
+                'auth.passkeys.registration.challenge',
+                data_get($response->json(), 'data.publicKey.challenge')
+            );
 
         $this->assertIsString(data_get($response->json(), 'data.publicKey.challenge'));
         $this->assertIsString(data_get($response->json(), 'data.publicKey.user.id'));
@@ -198,7 +222,11 @@ class SuperAdminMfaAuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.publicKey.rpId', 'localhost');
+            ->assertJsonPath('data.publicKey.rpId', 'localhost')
+            ->assertSessionHas(
+                'auth.passkeys.authentication.challenge',
+                data_get($response->json(), 'data.publicKey.challenge')
+            );
 
         $this->assertIsString(data_get($response->json(), 'data.publicKey.challenge'));
     }

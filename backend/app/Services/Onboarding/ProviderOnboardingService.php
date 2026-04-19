@@ -13,6 +13,7 @@ use App\Services\Auth\EmailVerificationService;
 use App\Services\Licensing\LicenseService;
 use App\Services\Notifications\NotificationDispatchService;
 use App\Services\Notifications\NotificationEventCatalog;
+use Database\Seeders\Auth\RolePermissionSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -66,6 +67,15 @@ class ProviderOnboardingService
                 ->whereNull('tenant_id')
                 ->where('name', Role::TENANT_OWNER)
                 ->first();
+
+            if (! $role) {
+                app(RolePermissionSeeder::class)->run();
+
+                $role = Role::query()
+                    ->whereNull('tenant_id')
+                    ->where('name', Role::TENANT_OWNER)
+                    ->first();
+            }
 
             if (! $role) {
                 throw ValidationException::withMessages([

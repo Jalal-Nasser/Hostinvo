@@ -28,7 +28,7 @@ class MfaService
     public function shouldChallenge(User $user): bool
     {
         if ($user->hasRole(Role::SUPER_ADMIN)) {
-            return true;
+            return $this->hasAnyConfirmedMethod($user);
         }
 
         return match ($this->tenantMfaPolicies->modeForUser($user)) {

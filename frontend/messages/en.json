@@ -1180,6 +1180,8 @@
     "ownerEmailLabel": "Owner email",
     "ownerPasswordLabel": "Owner password",
     "ownerPasswordConfirmationLabel": "Confirm owner password",
+    "generatePasswordButton": "Generate password",
+    "passwordGeneratedMessage": "A secure password was generated and filled automatically.",
     "passwordOptionalHint": "Leave blank to keep the current password",
     "trialProvisioningNotice": "Creating a tenant provisions the owner account and issues the current trial license using the existing licensing foundation.",
     "createTenantButton": "Create tenant",

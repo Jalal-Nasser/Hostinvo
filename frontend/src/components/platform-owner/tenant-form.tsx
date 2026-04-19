@@ -50,6 +50,21 @@ export function TenantForm({ locale, mode, tenant }: TenantFormProps) {
     [isCreate, isPending, t],
   );
 
+  function generatePassword(length = 18) {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*_-+=";
+    const bytes = new Uint32Array(length);
+
+    if (typeof window !== "undefined" && window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+    } else {
+      for (let index = 0; index < length; index += 1) {
+        bytes[index] = Math.floor(Math.random() * alphabet.length);
+      }
+    }
+
+    return Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("");
+  }
+
   function updateField<K extends keyof TenantFormPayload>(key: K, value: TenantFormPayload[K]) {
     setForm((current) => ({
       ...current,
@@ -99,6 +114,17 @@ export function TenantForm({ locale, mode, tenant }: TenantFormProps) {
 
       router.refresh();
     });
+  }
+
+  function handleGeneratePassword() {
+    const password = generatePassword();
+    setForm((current) => ({
+      ...current,
+      owner_password: password,
+      owner_password_confirmation: password,
+    }));
+    setMessage(t("passwordGeneratedMessage"));
+    setError(null);
   }
 
   return (
@@ -193,7 +219,16 @@ export function TenantForm({ locale, mode, tenant }: TenantFormProps) {
         </label>
 
         <label className="grid gap-2 text-sm font-medium text-foreground">
-          <span>{t("ownerPasswordLabel")}</span>
+          <span className="flex items-center justify-between gap-3">
+            <span>{t("ownerPasswordLabel")}</span>
+            <button
+              type="button"
+              className="text-xs font-semibold text-accent transition hover:text-[#033466]"
+              onClick={handleGeneratePassword}
+            >
+              {t("generatePasswordButton")}
+            </button>
+          </span>
           <input
             className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
             type="password"
