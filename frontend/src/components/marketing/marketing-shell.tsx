@@ -65,7 +65,7 @@ export async function MarketingShell({
           <BrandLogo
             href={localePath(locale, "/")}
             priority
-            className="block w-36 shrink-0 [&_img]:brightness-0 [&_img]:invert"
+            className="block w-36 shrink-0"
           />
           <nav
             className="hidden items-center gap-0.5 lg:flex"
