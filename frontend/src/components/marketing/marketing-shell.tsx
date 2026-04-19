@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
@@ -62,11 +61,19 @@ export async function MarketingShell({
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-50 border-b border-[rgba(148,163,184,0.1)] bg-[rgba(8,12,24,0.72)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3.5 lg:px-8">
-          <BrandLogo
-            href={localePath(locale, "/")}
-            priority
-            className="block w-36 shrink-0"
-          />
+          <Link href={localePath(locale, "/")} className="flex items-center gap-3 shrink-0">
+            <Image
+              src="/icon.png"
+              alt="Hostinvo"
+              width={40}
+              height={40}
+              priority
+              className="rounded-lg"
+            />
+            <span className="text-lg font-bold tracking-tight text-white hidden sm:inline">
+              Hostinvo
+            </span>
+          </Link>
           <nav
             className="hidden items-center gap-0.5 lg:flex"
             aria-label="Main navigation"
