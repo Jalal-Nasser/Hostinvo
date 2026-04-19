@@ -9,12 +9,10 @@ type MetricCardProps = {
 
 export function MetricCard({ label, value, description, href }: MetricCardProps) {
   const content = (
-    <article className="glass-card p-5 md:p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7b8794]">
-        {label}
-      </p>
-      <p className="mt-4 text-4xl font-bold tracking-[-0.05em] text-[#0a1628]">{value}</p>
-      <p className="mt-3 text-sm leading-7 text-[#6b7280]">{description}</p>
+    <article className="stat-tile">
+      <p className="stat-tile-label">{label}</p>
+      <p className="stat-tile-value">{value}</p>
+      <p className="stat-tile-meta">{description}</p>
     </article>
   );
 
@@ -23,7 +21,10 @@ export function MetricCard({ label, value, description, href }: MetricCardProps)
   }
 
   return (
-    <Link className="transition hover:translate-y-[-1px]" href={href}>
+    <Link
+      className="block transition-all hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06),0_8px_20px_rgba(16,24,40,0.06)]"
+      href={href}
+    >
       {content}
     </Link>
   );
