@@ -192,7 +192,7 @@ button {
 
   /* ══════════════════════════════════════════════════════════
      Admin workspace — light theme
-     ══════════════════════════════════════════════════════════ */
+     ══════════════════��═══════════════════════════════════════ */
   .dashboard-workspace .glass-card {
     @apply rounded-xl border border-[#e5e7eb] bg-white;
     box-shadow: var(--shadow-sm);
@@ -393,5 +393,103 @@ button {
     background: rgba(148, 163, 184, 0.1);
     border-color: rgba(148, 163, 184, 0.22);
     color: #cbd5e1;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     Marketing / landing — dark theme scope
+     Re-skins shared classes (.section-label, .feature-card,
+     .pricing-card, .btn-secondary) only when under .marketing-surface.
+     Admin and portal scopes are unaffected.
+     ══════════════════════════════════════════════════════════ */
+
+  .marketing-surface {
+    --mk-bg:          #070B16;
+    --mk-surface:     #0F1729;
+    --mk-surface-2:   #131B30;
+    --mk-surface-3:   #1A2440;
+    --mk-border:      rgba(148, 163, 184, 0.12);
+    --mk-border-strong: rgba(148, 163, 184, 0.22);
+    --mk-ink:         #F1F5FB;
+    --mk-ink-soft:    #D4DEF0;
+    --mk-body:        #93A5C1;
+    --mk-muted:       #667490;
+    --mk-accent:      #048DFE;
+    --mk-accent-soft: rgba(4, 141, 254, 0.12);
+
+    background: var(--mk-bg);
+    color: var(--mk-ink-soft);
+  }
+
+  /* Prevent cream html bg from peeking during overscroll / rubber band */
+  html:has(.marketing-surface) {
+    background: #070B16;
+  }
+
+  .marketing-surface .section-label {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em];
+    background: var(--mk-accent-soft);
+    border: 1px solid rgba(4, 141, 254, 0.28);
+    color: #7BB6FF;
+  }
+
+  .marketing-surface .feature-card {
+    @apply rounded-2xl p-6 transition-all duration-200;
+    background: linear-gradient(180deg, #101A30 0%, #0C1426 100%);
+    border: 1px solid var(--mk-border);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset,
+                0 18px 40px rgba(0, 0, 0, 0.32);
+  }
+  .marketing-surface .feature-card:hover {
+    border-color: rgba(4, 141, 254, 0.32);
+    transform: translateY(-2px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+                0 24px 48px rgba(0, 0, 0, 0.42),
+                0 0 0 1px rgba(4, 141, 254, 0.08);
+  }
+
+  .marketing-surface .pricing-card {
+    @apply rounded-2xl p-8 transition-all duration-200;
+    background: linear-gradient(180deg, #101A30 0%, #0C1426 100%);
+    border: 1px solid var(--mk-border);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset,
+                0 18px 40px rgba(0, 0, 0, 0.32);
+  }
+  .marketing-surface .pricing-card:hover {
+    border-color: rgba(4, 141, 254, 0.3);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+                0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .marketing-surface .pricing-card-featured {
+    @apply rounded-2xl p-8 text-white relative;
+    background: linear-gradient(180deg, #048DFE 0%, #036deb 55%, #0246a8 100%);
+    border: 1px solid rgba(125, 179, 255, 0.4);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset,
+                0 24px 60px rgba(4, 109, 235, 0.42);
+  }
+
+  .marketing-surface .btn-secondary {
+    color: var(--mk-ink);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.2);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  }
+  .marketing-surface .btn-secondary:hover {
+    border-color: rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Marketing nav link active/hover helper (consumed by MarketingShell) */
+  .marketing-nav-link {
+    @apply rounded-lg px-3.5 py-2 text-sm font-medium transition-colors;
+    color: #93A5C1;
+  }
+  .marketing-nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+  .marketing-nav-link-active {
+    background: rgba(4, 141, 254, 0.14);
+    color: #7DB8FF;
   }
 }
