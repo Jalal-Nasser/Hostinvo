@@ -71,7 +71,7 @@ export async function MarketingShell({
               className="rounded-lg"
             />
             <span className="text-lg font-bold tracking-tight text-white hidden sm:inline">
-              Hostinvo
+              ostinvo
             </span>
           </Link>
           <nav
