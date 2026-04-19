@@ -41,6 +41,7 @@ class ContentSanitizer
         $sanitized = trim($this->purifier('template_html')->purify(
             $this->stripDangerousBlocks($value)
         ));
+        $sanitized = $this->restoreTemplatePlaceholders($sanitized);
 
         return $sanitized === '' ? null : $sanitized;
     }
@@ -88,5 +89,14 @@ class ContentSanitizer
         ];
 
         return trim((string) preg_replace($patterns, ' ', $value));
+    }
+
+    private function restoreTemplatePlaceholders(string $value): string
+    {
+        return (string) preg_replace_callback(
+            '/%7B%7B.*?%7D%7D/i',
+            static fn (array $matches): string => rawurldecode($matches[0]),
+            $value,
+        );
     }
 }

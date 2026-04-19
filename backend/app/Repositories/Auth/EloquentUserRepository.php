@@ -4,12 +4,14 @@ namespace App\Repositories\Auth;
 
 use App\Contracts\Repositories\Auth\UserRepositoryInterface;
 use App\Models\User;
+use App\Models\Scopes\TenantScope;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
     public function findByEmail(string $email): ?User
     {
         return User::query()
+            ->withoutGlobalScope(TenantScope::class)
             ->with(['tenant', 'roles.permissions'])
             ->where('email', $email)
             ->first();
@@ -27,6 +29,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function findById(string $id): ?User
     {
         return User::query()
+            ->withoutGlobalScope(TenantScope::class)
             ->with(['tenant', 'roles.permissions'])
             ->find($id);
     }

@@ -115,12 +115,17 @@ class NotificationTemplateService
     private function interpolateTemplate(array $template, array $context): array
     {
         $replacements = $this->buildReplacements($context);
+        $subject = $this->normalizeEncodedPlaceholders((string) ($template['subject'] ?? ''));
+        $bodyHtml = $this->normalizeEncodedPlaceholders((string) ($template['body_html'] ?? ''));
+        $bodyText = $template['body_text'] !== null
+            ? $this->normalizeEncodedPlaceholders((string) $template['body_text'])
+            : null;
 
         return [
-            'subject' => strtr((string) ($template['subject'] ?? ''), $replacements),
-            'body_html' => strtr((string) ($template['body_html'] ?? ''), $replacements),
-            'body_text' => $template['body_text'] !== null
-                ? strtr((string) $template['body_text'], $replacements)
+            'subject' => strtr($subject, $replacements),
+            'body_html' => strtr($bodyHtml, $replacements),
+            'body_text' => $bodyText !== null
+                ? strtr($bodyText, $replacements)
                 : null,
             'is_enabled' => (bool) ($template['is_enabled'] ?? true),
         ];
@@ -152,8 +157,8 @@ class NotificationTemplateService
             NotificationEventCatalog::EVENT_FREE_TRIAL_WELCOME => [
                 'en' => [
                     'subject' => 'Your free trial is ready',
-                    'body_html' => '<p>Hello {{user.name}},</p><p>Your {{tenant.name}} workspace is ready with a 7-day Hostinvo trial.</p><p>You can sign in at <a href="{{links.login_url}}">{{links.login_url}}</a>.</p>',
-                    'body_text' => 'Hello {{user.name}}, your {{tenant.name}} workspace is ready with a 7-day Hostinvo trial. Sign in at {{links.login_url}}.',
+                    'body_html' => '<p>Hello {{user.name}},</p><p>Your <strong>{{tenant.name}}</strong> workspace is ready with a 7-day Hostinvo trial.</p><p>You can open your workspace from the link below.</p><p><a href="{{links.login_url}}" target="_blank" rel="noopener">Open workspace</a></p><p>If you are prompted during first sign-in, verify your email address first.</p><p>{{links.login_url}}</p>',
+                    'body_text' => 'Hello {{user.name}}, your {{tenant.name}} workspace is ready with a 7-day Hostinvo trial. Open your workspace here: {{links.login_url}}. If prompted during first sign-in, verify your email address first.',
                     'is_enabled' => true,
                 ],
                 'ar' => [
@@ -166,8 +171,8 @@ class NotificationTemplateService
             NotificationEventCatalog::EVENT_ACCOUNT_EMAIL_VERIFICATION => [
                 'en' => [
                     'subject' => 'Verify your email address',
-                    'body_html' => '<p>Hello {{user.name}},</p><p>Please verify your email address to activate your Hostinvo account.</p><p><a href="{{verification_url}}">Verify email address</a></p>',
-                    'body_text' => 'Hello {{user.name}}, verify your email address: {{verification_url}}',
+                    'body_html' => '<p>Hello {{user.name}},</p><p>Verify your email address to activate your Hostinvo account and complete your first sign-in.</p><p><a href="{{verification_url}}" target="_blank" rel="noopener">Verify email address</a></p><p>If the button does not open, copy and paste this link into your browser:</p><p>{{verification_url}}</p>',
+                    'body_text' => 'Hello {{user.name}}, verify your email address to activate your Hostinvo account: {{verification_url}}',
                     'is_enabled' => true,
                 ],
                 'ar' => [
@@ -276,5 +281,14 @@ class NotificationTemplateService
                 ],
             ],
         ];
+    }
+
+    private function normalizeEncodedPlaceholders(string $value): string
+    {
+        return (string) preg_replace_callback(
+            '/%7B%7B.*?%7D%7D/i',
+            static fn (array $matches): string => rawurldecode($matches[0]),
+            $value,
+        );
     }
 }
