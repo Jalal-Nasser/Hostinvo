@@ -113,7 +113,7 @@ button {
      Buttons
      ══════════════════════════════════════════════════════════ */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#036deb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-150;
+    @apply inline-flex items-center justify-center gap-2 rounded-none bg-[#036deb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-150;
     box-shadow: var(--shadow-primary);
   }
   .btn-primary:hover {
@@ -130,7 +130,7 @@ button {
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#d0d5dd] bg-white px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition-all duration-150;
+    @apply inline-flex items-center justify-center gap-2 rounded-none border border-[#d0d5dd] bg-white px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition-all duration-150;
     box-shadow: var(--shadow-xs);
   }
   .btn-secondary:hover {
@@ -139,11 +139,11 @@ button {
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#475467] transition-all duration-150 hover:bg-[#f2f4f7] hover:text-[#0a1628];
+    @apply inline-flex items-center justify-center gap-2 rounded-none px-3 py-2 text-sm font-medium text-[#475467] transition-all duration-150 hover:bg-[#f2f4f7] hover:text-[#0a1628];
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#fecaca] bg-white px-4 py-2.5 text-sm font-semibold text-[#b91c1c] transition-all duration-150 hover:bg-[#fef2f2];
+    @apply inline-flex items-center justify-center gap-2 rounded-none border border-[#fecaca] bg-white px-4 py-2.5 text-sm font-semibold text-[#b91c1c] transition-all duration-150 hover:bg-[#fef2f2];
     box-shadow: var(--shadow-xs);
   }
 
@@ -182,11 +182,11 @@ button {
      Auth pages
      ══════════════════════════════════════════════════════════ */
   .auth-input {
-    @apply w-full rounded-lg border border-[#d0d5dd] bg-white px-3.5 py-2.5 text-sm text-[#0a1628] placeholder-[#98a2b3] outline-none transition focus:border-[#036deb] focus:ring-4 focus:ring-[rgba(3,109,235,0.12)];
+    @apply w-full rounded-none border border-[#d0d5dd] bg-white px-3.5 py-2.5 text-sm text-[#0a1628] placeholder-[#98a2b3] outline-none transition focus:border-[#036deb] focus:ring-4 focus:ring-[rgba(3,109,235,0.12)];
   }
 
   .auth-btn-primary {
-    @apply w-full rounded-lg bg-[#036deb] py-3 text-sm font-semibold text-white transition hover:bg-[#0255b6] disabled:cursor-not-allowed disabled:opacity-60;
+    @apply w-full rounded-none bg-[#036deb] py-3 text-sm font-semibold text-white transition hover:bg-[#0255b6] disabled:cursor-not-allowed disabled:opacity-60;
     box-shadow: var(--shadow-primary);
   }
 
