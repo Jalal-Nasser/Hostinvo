@@ -61,7 +61,7 @@ export async function MarketingShell({
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-50 border-b border-[rgba(148,163,184,0.1)] bg-[rgba(8,12,24,0.72)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3.5 lg:px-8">
-          <Link href={localePath(locale, "/")} className="flex items-center gap-3 shrink-0">
+          <Link href={localePath(locale, "/")} className="flex items-center gap-1 shrink-0">
             <Image
               src="/icon.png"
               alt="Hostinvo"
