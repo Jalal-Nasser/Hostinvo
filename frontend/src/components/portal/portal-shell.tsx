@@ -103,7 +103,7 @@ export async function PortalShell({
       <div
         className={[
           "relative min-h-screen",
-          hasActiveDesktopFlyout ? "lg:ps-[360px]" : "lg:ps-[132px]",
+          hasActiveDesktopFlyout ? "lg:ps-[328px]" : "lg:ps-[116px]",
         ].join(" ")}
       >
         <div className="ms-auto me-auto flex min-h-screen w-full max-w-[1360px] flex-col ps-4 pe-4 pt-4 pb-8 md:ps-6 md:pe-6 md:pt-5 lg:ps-8 lg:pe-8 xl:ps-10 xl:pe-10">
@@ -136,7 +136,7 @@ export async function PortalShell({
             <section
               className={[
                 resolvePortalHeaderCardClass(activeSection.key),
-                "mb-7 ps-6 pe-6 py-6 md:ps-7 md:pe-7 md:py-7",
+                "mb-6 px-6 py-6 md:px-7 md:py-7",
               ].join(" ")}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -144,16 +144,16 @@ export async function PortalShell({
                   <p className={portalTheme.sectionKickerClass}>
                     {activeSection.title}
                   </p>
-                  <h1 className="mt-2 text-[1.85rem] font-semibold tracking-[-0.03em] text-white">
+                  <h1 className="mt-2 text-[1.75rem] font-semibold tracking-[-0.028em] text-white md:text-[2rem]">
                     {title}
                   </h1>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-[#aebad4]">
+                  <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#a5b4cf]">
                     {description}
                   </p>
                 </div>
 
                 {actions ? (
-                  <div className="flex flex-wrap items-center gap-3">{actions}</div>
+                  <div className="flex flex-wrap items-center gap-2.5">{actions}</div>
                 ) : null}
               </div>
             </section>

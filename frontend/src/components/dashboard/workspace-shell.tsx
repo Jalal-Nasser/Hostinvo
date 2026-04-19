@@ -34,7 +34,7 @@ type WorkspaceShellProps = {
   mode: WorkspaceMode;
 };
 
-type WorkspaceNavSection = "primary" | "secondary";
+type WorkspaceNavGroup = "core" | "operations" | "catalog";
 
 type WorkspaceNavItem = {
   href: string;
@@ -57,107 +57,109 @@ type WorkspaceNavItem = {
     | "groups"
     | "provisioning"
     | "tenants";
-  section?: WorkspaceNavSection;
+  group?: WorkspaceNavGroup;
 };
 
-function SidebarIcon({
-  icon,
-  active,
-}: {
-  icon: WorkspaceNavItem["icon"];
-  active: boolean;
-}) {
-  const strokeClass = active ? "text-[#036deb]" : "text-[#5f7389]";
+function SidebarIcon({ icon }: { icon: WorkspaceNavItem["icon"] }) {
+  const common = {
+    className: "h-4 w-4",
+    fill: "none" as const,
+    stroke: "currentColor" as const,
+    viewBox: "0 0 24 24",
+    strokeWidth: 1.75,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
 
   switch (icon) {
     case "dashboard":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 5.5A1.5 1.5 0 015.5 4h4A1.5 1.5 0 0111 5.5v4A1.5 1.5 0 019.5 11h-4A1.5 1.5 0 014 9.5v-4zm9 0A1.5 1.5 0 0114.5 4h4A1.5 1.5 0 0120 5.5v7A1.5 1.5 0 0118.5 14h-4a1.5 1.5 0 01-1.5-1.5v-7zm-9 9A1.5 1.5 0 015.5 13h4a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 019.5 20h-4A1.5 1.5 0 014 18.5v-4zm9 3A1.5 1.5 0 0114.5 16h4a1.5 1.5 0 010 3h-4a1.5 1.5 0 010-3z" />
+        <svg {...common}>
+          <path d="M4 5.5A1.5 1.5 0 015.5 4h4A1.5 1.5 0 0111 5.5v4A1.5 1.5 0 019.5 11h-4A1.5 1.5 0 014 9.5v-4zm9 0A1.5 1.5 0 0114.5 4h4A1.5 1.5 0 0120 5.5v7A1.5 1.5 0 0118.5 14h-4a1.5 1.5 0 01-1.5-1.5v-7zm-9 9A1.5 1.5 0 015.5 13h4a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 019.5 20h-4A1.5 1.5 0 014 18.5v-4zm9 3A1.5 1.5 0 0114.5 16h4a1.5 1.5 0 010 3h-4a1.5 1.5 0 010-3z" />
         </svg>
       );
     case "clients":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 19a4 4 0 00-8 0m8 0H8m8 0h2a2 2 0 002-2v-1a6 6 0 00-6-6m-4 9H6a2 2 0 01-2-2v-1a6 6 0 016-6m8-1a3 3 0 11-6 0 3 3 0 016 0zm-8 0a3 3 0 11-6 0 3 3 0 016 0z" />
+        <svg {...common}>
+          <path d="M16 19a4 4 0 00-8 0m8 0H8m8 0h2a2 2 0 002-2v-1a6 6 0 00-6-6m-4 9H6a2 2 0 01-2-2v-1a6 6 0 016-6m8-1a3 3 0 11-6 0 3 3 0 016 0zm-8 0a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       );
     case "services":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 7.5h16M7 4v3.5m10-3.5v3.5M5.5 20h13A1.5 1.5 0 0020 18.5v-11A1.5 1.5 0 0018.5 6h-13A1.5 1.5 0 004 7.5v11A1.5 1.5 0 005.5 20zm2.5-8h3m2 0h3m-8 4h8" />
+        <svg {...common}>
+          <path d="M4 7.5h16M7 4v3.5m10-3.5v3.5M5.5 20h13A1.5 1.5 0 0020 18.5v-11A1.5 1.5 0 0018.5 6h-13A1.5 1.5 0 004 7.5v11A1.5 1.5 0 005.5 20zm2.5-8h3m2 0h3m-8 4h8" />
         </svg>
       );
     case "orders":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 7h13l-1.4 7.01A2 2 0 0116.64 16H9.12a2 2 0 01-1.96-1.61L5 4H3m6 16a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm8 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        <svg {...common}>
+          <path d="M7 7h13l-1.4 7.01A2 2 0 0116.64 16H9.12a2 2 0 01-1.96-1.61L5 4H3m6 16a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm8 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
         </svg>
       );
     case "invoices":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 4h7l5 5v9.5A1.5 1.5 0 0117.5 20h-10A1.5 1.5 0 016 18.5v-13A1.5 1.5 0 017.5 4zm7 1.5V10H18.5M9 13h6m-6 3h6" />
+        <svg {...common}>
+          <path d="M7 4h7l5 5v9.5A1.5 1.5 0 0117.5 20h-10A1.5 1.5 0 016 18.5v-13A1.5 1.5 0 017.5 4zm7 1.5V10H18.5M9 13h6m-6 3h6" />
         </svg>
       );
     case "payments":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 7.5A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5v9A2.5 2.5 0 0117.5 19h-11A2.5 2.5 0 014 16.5v-9zm0 2.5h16m-4.5 4H17" />
+        <svg {...common}>
+          <path d="M4 7.5A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5v9A2.5 2.5 0 0117.5 19h-11A2.5 2.5 0 014 16.5v-9zm0 2.5h16m-4.5 4H17" />
         </svg>
       );
     case "licenses":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 5h8l4 4v9.5A1.5 1.5 0 0117.5 20h-10A1.5 1.5 0 016 18.5v-12A1.5 1.5 0 017.5 5zm8 1.5V10H19.5M9 13h6m-6 3h6" />
+        <svg {...common}>
+          <path d="M7 5h8l4 4v9.5A1.5 1.5 0 0117.5 20h-10A1.5 1.5 0 016 18.5v-12A1.5 1.5 0 017.5 5zm8 1.5V10H19.5M9 13h6m-6 3h6" />
         </svg>
       );
     case "domains":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 20a8 8 0 100-16 8 8 0 000 16zm0 0c2.3 0 4-3.58 4-8s-1.7-8-4-8-4 3.58-4 8 1.7 8 4 8zm-7-8h14M6.34 7h11.32M6.34 17h11.32" />
+        <svg {...common}>
+          <path d="M12 20a8 8 0 100-16 8 8 0 000 16zm0 0c2.3 0 4-3.58 4-8s-1.7-8-4-8-4 3.58-4 8 1.7 8 4 8zm-7-8h14M6.34 7h11.32M6.34 17h11.32" />
         </svg>
       );
     case "support":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 10.5h8M8 14h5m-1-10a8 8 0 00-8 8v5l3-2h5a8 8 0 100-16z" />
+        <svg {...common}>
+          <path d="M8 10.5h8M8 14h5m-1-10a8 8 0 00-8 8v5l3-2h5a8 8 0 100-16z" />
         </svg>
       );
     case "servers":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5.5 6h13A1.5 1.5 0 0120 7.5v3A1.5 1.5 0 0118.5 12h-13A1.5 1.5 0 014 10.5v-3A1.5 1.5 0 015.5 6zm0 6h13A1.5 1.5 0 0120 13.5v3a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 16.5v-3A1.5 1.5 0 015.5 12zM8 9h.01M8 15h.01" />
+        <svg {...common}>
+          <path d="M5.5 6h13A1.5 1.5 0 0120 7.5v3A1.5 1.5 0 0118.5 12h-13A1.5 1.5 0 014 10.5v-3A1.5 1.5 0 015.5 6zm0 6h13A1.5 1.5 0 0120 13.5v3a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 16.5v-3A1.5 1.5 0 015.5 12zM8 9h.01M8 15h.01" />
         </svg>
       );
     case "settings":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.3 4.32a1 1 0 011.4-.94l.99.4a1 1 0 00.9 0l.99-.4a1 1 0 011.4.94l.1 1.07a1 1 0 00.54.79l.95.53a1 1 0 01.27 1.53l-.68.84a1 1 0 000 .95l.68.84a1 1 0 01-.27 1.53l-.95.53a1 1 0 00-.54.79l-.1 1.07a1 1 0 01-1.4.94l-.99-.4a1 1 0 00-.9 0l-.99.4a1 1 0 01-1.4-.94l-.1-1.07a1 1 0 00-.54-.79l-.95-.53a1 1 0 01-.27-1.53l.68-.84a1 1 0 000-.95l-.68-.84a1 1 0 01.27-1.53l.95-.53a1 1 0 00.54-.79l.1-1.07zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <svg {...common}>
+          <path d="M10.3 4.32a1 1 0 011.4-.94l.99.4a1 1 0 00.9 0l.99-.4a1 1 0 011.4.94l.1 1.07a1 1 0 00.54.79l.95.53a1 1 0 01.27 1.53l-.68.84a1 1 0 000 .95l.68.84a1 1 0 01-.27 1.53l-.95.53a1 1 0 00-.54.79l-.1 1.07a1 1 0 01-1.4.94l-.99-.4a1 1 0 00-.9 0l-.99.4a1 1 0 01-1.4-.94l-.1-1.07a1 1 0 00-.54-.79l-.95-.53a1 1 0 01-.27-1.53l.68-.84a1 1 0 000-.95l-.68-.84a1 1 0 01.27-1.53l.95-.53a1 1 0 00.54-.79l.1-1.07zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       );
     case "products":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 7.5L12 4l5 3.5M7 7.5v6L12 17l5-3.5v-6M7 7.5L12 11l5-3.5" />
+        <svg {...common}>
+          <path d="M7 7.5L12 4l5 3.5M7 7.5v6L12 17l5-3.5v-6M7 7.5L12 11l5-3.5" />
         </svg>
       );
     case "groups":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6.5A1.5 1.5 0 015.5 5h5A1.5 1.5 0 0112 6.5v3A1.5 1.5 0 0110.5 11h-5A1.5 1.5 0 014 9.5v-3zm8 0A1.5 1.5 0 0113.5 5h5A1.5 1.5 0 0120 6.5v3A1.5 1.5 0 0118.5 11h-5A1.5 1.5 0 0112 9.5v-3zm-8 8A1.5 1.5 0 015.5 13h5A1.5 1.5 0 0112 14.5v3a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 17.5v-3zm8 1.5h8" />
+        <svg {...common}>
+          <path d="M4 6.5A1.5 1.5 0 015.5 5h5A1.5 1.5 0 0112 6.5v3A1.5 1.5 0 0110.5 11h-5A1.5 1.5 0 014 9.5v-3zm8 0A1.5 1.5 0 0113.5 5h5A1.5 1.5 0 0120 6.5v3A1.5 1.5 0 0118.5 11h-5A1.5 1.5 0 0112 9.5v-3zm-8 8A1.5 1.5 0 015.5 13h5A1.5 1.5 0 0112 14.5v3a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 17.5v-3zm8 1.5h8" />
         </svg>
       );
     case "provisioning":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
+        <svg {...common}>
+          <path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
         </svg>
       );
     case "tenants":
       return (
-        <svg className={`h-4.5 w-4.5 ${strokeClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 18.5A2.5 2.5 0 016.5 16H10a2.5 2.5 0 012.5 2.5M6.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zm7.5 10A2.5 2.5 0 0116.5 16H18a2.5 2.5 0 012.5 2.5M16.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zM10.5 12h3" />
+        <svg {...common}>
+          <path d="M4 18.5A2.5 2.5 0 016.5 16H10a2.5 2.5 0 012.5 2.5M6.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zm7.5 10A2.5 2.5 0 0116.5 16H18a2.5 2.5 0 012.5 2.5M16.5 8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zM10.5 12h3" />
         </svg>
       );
   }
@@ -173,11 +175,23 @@ function SidebarLink({ item }: { item: WorkspaceNavItem }) {
       ].join(" ")}
     >
       <span className="dashboard-sidebar-icon">
-        <SidebarIcon active={item.active} icon={item.icon} />
+        <SidebarIcon icon={item.icon} />
       </span>
       <span className="truncate">{item.label}</span>
     </Link>
   );
+}
+
+function tenantInitials(name: string): string {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || "HV";
 }
 
 export async function WorkspaceShell({
@@ -230,7 +244,7 @@ export async function WorkspaceShell({
       active: currentPath === "/dashboard" || currentPath === "/portal",
       visible: true,
       icon: "dashboard",
-      section: "primary",
+      group: "core",
     },
     {
       href: localePath(locale, "/dashboard/tenants"),
@@ -240,7 +254,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/tenants/"),
       visible: hasRole(user, "super_admin") && !hasActiveTenantContext(user),
       icon: "tenants",
-      section: "primary",
+      group: "core",
     },
     {
       href: localePath(locale, "/dashboard/clients"),
@@ -250,7 +264,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/clients/"),
       visible: hasAnyPermission(user, ["clients.view", "clients.manage"]),
       icon: "clients",
-      section: "primary",
+      group: "core",
     },
     {
       href: localePath(locale, "/dashboard/services"),
@@ -260,7 +274,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/services/"),
       visible: hasAnyPermission(user, ["services.view", "services.manage"]),
       icon: "services",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/orders"),
@@ -270,7 +284,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/orders/"),
       visible: hasAnyPermission(user, ["orders.view", "orders.manage"]),
       icon: "orders",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/invoices"),
@@ -280,7 +294,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/invoices/"),
       visible: hasAnyPermission(user, ["invoices.view", "invoices.manage"]),
       icon: "invoices",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/payments"),
@@ -288,7 +302,7 @@ export async function WorkspaceShell({
       active: currentPath === "/dashboard/payments",
       visible: hasAnyPermission(user, ["payments.view", "payments.manage"]),
       icon: "payments",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/domains"),
@@ -298,7 +312,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/domains/"),
       visible: hasAnyPermission(user, ["domains.view", "domains.manage"]),
       icon: "domains",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/support"),
@@ -316,7 +330,7 @@ export async function WorkspaceShell({
         "support.access",
       ]),
       icon: "support",
-      section: "primary",
+      group: "operations",
     },
     {
       href: localePath(locale, "/dashboard/servers"),
@@ -326,7 +340,33 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/servers/"),
       visible: hasAnyPermission(user, ["servers.view", "servers.manage"]),
       icon: "servers",
-      section: "primary",
+      group: "catalog",
+    },
+    {
+      href: localePath(locale, "/dashboard/products"),
+      label: dashboardT("productsLink"),
+      active:
+        currentPath === "/dashboard/products" ||
+        currentPath.startsWith("/dashboard/products/"),
+      visible: hasAnyPermission(user, ["products.view", "products.manage"]),
+      icon: "products",
+      group: "catalog",
+    },
+    {
+      href: localePath(locale, "/dashboard/product-groups"),
+      label: dashboardT("productGroupsLink"),
+      active: currentPath === "/dashboard/product-groups",
+      visible: hasAnyPermission(user, ["product_groups.view", "product_groups.manage"]),
+      icon: "groups",
+      group: "catalog",
+    },
+    {
+      href: localePath(locale, "/dashboard/provisioning"),
+      label: provisioningT("jobsTitle"),
+      active: currentPath === "/dashboard/provisioning",
+      visible: hasAnyPermission(user, ["provisioning.view", "provisioning.manage"]),
+      icon: "provisioning",
+      group: "catalog",
     },
     {
       href: localePath(locale, "/dashboard/settings"),
@@ -337,33 +377,7 @@ export async function WorkspaceShell({
         currentPath.startsWith("/dashboard/content"),
       visible: hasAdminWorkspace,
       icon: "settings",
-      section: "primary",
-    },
-    {
-      href: localePath(locale, "/dashboard/products"),
-      label: dashboardT("productsLink"),
-      active:
-        currentPath === "/dashboard/products" ||
-        currentPath.startsWith("/dashboard/products/"),
-      visible: hasAnyPermission(user, ["products.view", "products.manage"]),
-      icon: "products",
-      section: "secondary",
-    },
-    {
-      href: localePath(locale, "/dashboard/product-groups"),
-      label: dashboardT("productGroupsLink"),
-      active: currentPath === "/dashboard/product-groups",
-      visible: hasAnyPermission(user, ["product_groups.view", "product_groups.manage"]),
-      icon: "groups",
-      section: "secondary",
-    },
-    {
-      href: localePath(locale, "/dashboard/provisioning"),
-      label: provisioningT("jobsTitle"),
-      active: currentPath === "/dashboard/provisioning",
-      visible: hasAnyPermission(user, ["provisioning.view", "provisioning.manage"]),
-      icon: "provisioning",
-      section: "secondary",
+      group: "catalog",
     },
   ];
 
@@ -427,7 +441,7 @@ export async function WorkspaceShell({
         active: currentPath === "/dashboard" || currentPath === "/portal",
         visible: true,
         icon: "dashboard",
-        section: "primary",
+        group: "core",
       },
       {
         href: localePath(locale, "/dashboard/tenants"),
@@ -437,7 +451,7 @@ export async function WorkspaceShell({
           currentPath.startsWith("/dashboard/tenants/"),
         visible: true,
         icon: "tenants",
-        section: "primary",
+        group: "core",
       },
       {
         href: localePath(locale, "/dashboard/orders"),
@@ -447,7 +461,7 @@ export async function WorkspaceShell({
           currentPath.startsWith("/dashboard/orders/"),
         visible: true,
         icon: "orders",
-        section: "primary",
+        group: "operations",
       },
       {
         href: localePath(locale, "/dashboard/plans"),
@@ -455,7 +469,7 @@ export async function WorkspaceShell({
         active: currentPath === "/dashboard/plans",
         visible: true,
         icon: "products",
-        section: "primary",
+        group: "operations",
       },
       {
         href: localePath(locale, "/dashboard/licenses"),
@@ -463,7 +477,7 @@ export async function WorkspaceShell({
         active: currentPath === "/dashboard/licenses",
         visible: true,
         icon: "licenses",
-        section: "primary",
+        group: "operations",
       },
       {
         href: localePath(locale, "/dashboard/settings"),
@@ -474,102 +488,137 @@ export async function WorkspaceShell({
           currentPath.startsWith("/dashboard/content"),
         visible: true,
         icon: "settings",
-        section: "primary",
+        group: "catalog",
       },
     ];
 
     const navigationSource = isPlatformOwner ? platformOwnerNavigation : adminNavigation;
-    const primaryNavigation = navigationSource.filter(
-      (item) => item.visible && item.section !== "secondary",
-    );
-    const secondaryNavigation = navigationSource.filter(
-      (item) => item.visible && item.section === "secondary",
-    );
+    const visible = navigationSource.filter((item) => item.visible);
+    const groupLabels: Record<WorkspaceNavGroup, string> =
+      locale === "ar"
+        ? { core: "عام", operations: "العمليات", catalog: "الكتالوج" }
+        : { core: "General", operations: "Operations", catalog: "Catalog" };
+    const groupedNav: Array<{ group: WorkspaceNavGroup; items: WorkspaceNavItem[] }> = (
+      ["core", "operations", "catalog"] as WorkspaceNavGroup[]
+    )
+      .map((group) => ({
+        group,
+        items: visible.filter((item) => item.group === group),
+      }))
+      .filter((entry) => entry.items.length > 0);
+
+    const tenantName = activeTenant?.name ?? workspaceT("adminBadge");
+    const tenantMeta = activeTenant?.slug ?? user.email;
 
     return (
       <main className="dashboard-workspace min-h-screen bg-[#faf9f5]">
         <div className="w-full px-4 py-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
-          <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="dashboard-sidebar-surface h-fit lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
-              <div className="flex items-center justify-between gap-3">
+          <div className="grid gap-6 lg:grid-cols-[272px_minmax(0,1fr)]">
+            {/* ───────────── Sidebar ───────────── */}
+            <aside className="dashboard-sidebar-surface flex h-fit flex-col lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+              {/* Brand */}
+              <div className="flex items-center justify-between gap-2 px-2 py-1.5">
                 <BrandLogo
                   href={localePath(locale, "/")}
-                  className="block w-[9.5rem] shrink-0"
+                  className="block w-[8.5rem] shrink-0"
                   src={tenantBranding?.logo_url}
                   alt={tenantBranding?.portal_name || tenantBranding?.company_name || "Hostinvo"}
                 />
-                <span className="rounded-lg bg-[#eff6ff] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
+                <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
                   {workspaceBadge}
                 </span>
               </div>
 
-              <div className="mt-6 rounded-xl border border-[#e5e7eb] bg-[#faf9f5] p-4">
-                <p className="dashboard-kicker">{dashboardT("tenantLabel")}</p>
-                <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#0a1628]">
-                  {activeTenant?.name ?? workspaceT("adminBadge")}
-                </p>
-                <p className="mt-2 text-sm text-[#6b7280]">
-                  {activeTenant?.slug ?? user.email}
-                </p>
+              {/* Active tenant chip */}
+              <div className="mx-2 mt-3 flex items-center gap-2.5 rounded-lg border border-[#e5e7eb] bg-[#fafbfc] px-2.5 py-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[linear-gradient(135deg,#036deb,#1d4ed8)] text-[11px] font-bold tracking-wide text-white">
+                  {tenantInitials(tenantName)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold tracking-[-0.01em] text-[#0a1628]">
+                    {tenantName}
+                  </p>
+                  <p className="truncate text-[11px] text-[#667085]">{tenantMeta}</p>
+                </div>
               </div>
 
-              <nav aria-label={workspaceT("navigationLabel")} className="mt-6 space-y-6">
-                <div className="space-y-2">
-                  {primaryNavigation.map((item) => (
-                    <SidebarLink key={item.href} item={item} />
-                  ))}
-                </div>
-
-                {secondaryNavigation.length > 0 ? (
-                  <div className="space-y-2 border-t border-[#eef2f7] pt-6">
-                    {secondaryNavigation.map((item) => (
-                      <SidebarLink key={item.href} item={item} />
-                    ))}
+              {/* Navigation */}
+              <nav aria-label={workspaceT("navigationLabel")} className="mt-3 flex-1 px-1">
+                {groupedNav.map((entry, index) => (
+                  <div
+                    key={entry.group}
+                    className={index > 0 ? "mt-4 border-t border-[#eef0f4] pt-3" : undefined}
+                  >
+                    <p className="dashboard-sidebar-section-label">{groupLabels[entry.group]}</p>
+                    <div className="space-y-0.5">
+                      {entry.items.map((item) => (
+                        <SidebarLink key={item.href} item={item} />
+                      ))}
+                    </div>
                   </div>
-                ) : null}
+                ))}
               </nav>
 
+              {/* Switch to portal + user footer */}
               {hasPortalWorkspace ? (
-                <div className="mt-6 rounded-xl border border-[#dbeafe] bg-[#eff6ff] p-4">
-                  <p className="dashboard-kicker">{workspaceT("portalBadge")}</p>
-                  <p className="mt-2 text-sm leading-6 text-[#33506f]">
+                <div className="mx-2 mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
+                    {workspaceT("portalBadge")}
+                  </p>
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#1f4064]">
                     {workspaceT("switchToPortal")}
                   </p>
-                  <Link className="btn-secondary mt-4 w-full" href={localePath(locale, "/portal")}>
+                  <Link
+                    className="mt-2.5 inline-flex w-full items-center justify-center rounded-md border border-[#c7dcfd] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#036deb] transition hover:bg-[#f5f9ff]"
+                    href={localePath(locale, "/portal")}
+                  >
                     {workspaceT("switchToPortal")}
                   </Link>
                 </div>
               ) : null}
+
+              <div className="mx-2 mb-1 mt-4 flex items-center gap-2.5 border-t border-[#eef0f4] pt-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef0f4] text-[11px] font-semibold text-[#475467]">
+                  {tenantInitials(user.name || user.email)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[12.5px] font-semibold text-[#0a1628]">{user.name}</p>
+                  <p className="truncate text-[11px] text-[#667085]">{user.email}</p>
+                </div>
+                <LogoutButton />
+              </div>
             </aside>
 
-            <div className="min-w-0 space-y-6">
+            {/* ───────────── Main content ───────────── */}
+            <div className="min-w-0 space-y-5">
               <section className={tintedHeader ? "dashboard-header-surface" : "dashboard-shell-surface"}>
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_max-content] xl:items-start">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
-                    <p className="dashboard-kicker">{workspaceBadge}</p>
-                    <h1 className="mt-2 text-[2rem] font-bold tracking-[-0.05em] text-[#0a1628] md:text-[2.35rem]">
-                      {title}
-                    </h1>
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6b7280]">
-                      {description}
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#6b7280]">
-                      <span className="rounded-lg border border-[#e5e7eb] bg-[#fcfcfb] px-3 py-1.5 font-medium text-[#123055]">
+                    {/* Breadcrumb / kicker row */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#667085]">
+                      <span className="font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                        {workspaceBadge}
+                      </span>
+                      <span className="text-[#d0d5dd]">/</span>
+                      <span className="font-medium text-[#475467]">
                         {activeTenant?.name ?? workspaceT("adminBadge")}
                       </span>
-                      <span>{user.name}</span>
-                      <span className="text-[#c0cad5]">/</span>
-                      <span>{user.email}</span>
-                      {user.roles.slice(0, 2).map((role) => (
+                      {user.roles.slice(0, 1).map((role) => (
                         <span
                           key={role.id}
-                          className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#516578]"
+                          className="status-pill status-pill-neutral"
                         >
                           {role.display_name}
                         </span>
                       ))}
                     </div>
+
+                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2rem]">
+                      {title}
+                    </h1>
+                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#475467]">
+                      {description}
+                    </p>
 
                     {headerStats ? (
                       <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -578,27 +627,15 @@ export async function WorkspaceShell({
                     ) : null}
                   </div>
 
-                  <div className="xl:min-w-max xl:pt-1">
-                    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap xl:justify-end">
-                      {hasPortalWorkspace ? (
-                        <Link
-                          className="btn-ghost whitespace-nowrap border border-[#e5e7eb] bg-white"
-                          href={localePath(locale, "/portal")}
-                        >
-                          {workspaceT("switchToPortal")}
-                        </Link>
-                      ) : null}
-
-                      {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
-                      <LocaleSwitcher currentLocale={locale} path={currentPath} />
-                      <LogoutButton />
-                      {actions}
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+                    {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
+                    <LocaleSwitcher currentLocale={locale} path={currentPath} />
+                    {actions}
                   </div>
                 </div>
               </section>
 
-              <div className="grid gap-6">{children}</div>
+              <div className="grid gap-5">{children}</div>
             </div>
           </div>
         </div>
@@ -609,48 +646,49 @@ export async function WorkspaceShell({
   const navigation = portalNavigation.filter((item) => item.visible);
 
   return (
-    <main className="min-h-screen px-6 py-8 md:px-10 md:py-10">
-      <div className="mx-auto grid max-w-6xl gap-6">
-        <header className="glass-card p-6 md:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <main className="min-h-screen bg-[#faf9f5] px-4 py-5 sm:px-6 md:px-8 md:py-8">
+      <div className="mx-auto grid max-w-6xl gap-5">
+        <header className="dashboard-shell-surface">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
                 <BrandLogo
                   href={localePath(locale, "/")}
-                  className="block w-[11rem] shrink-0"
+                  className="block w-[10rem] shrink-0"
                 />
-                <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
+                <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
                   {workspaceBadge}
                 </span>
               </div>
-              <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-foreground">
+              <h1 className="mt-4 text-[1.85rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2.1rem]">
                 {title}
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">{description}</p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {hasAdminWorkspace ? (
-                  <Link
-                    href={localePath(locale, "/dashboard")}
-                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                  >
+              <p className="mt-2 max-w-2xl text-[13.5px] leading-6 text-[#475467]">
+                {description}
+              </p>
+              {hasAdminWorkspace ? (
+                <div className="mt-4">
+                  <Link href={localePath(locale, "/dashboard")} className="btn-secondary">
                     {workspaceT("switchToAdmin")}
                   </Link>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex flex-col items-start gap-3 lg:items-end">
               {actions ? (
-                <div className="flex flex-wrap items-center justify-start gap-3 self-stretch lg:justify-end lg:self-auto">
+                <div className="flex flex-wrap items-center justify-start gap-2 self-stretch lg:justify-end lg:self-auto">
                   {actions}
                 </div>
               ) : null}
-              <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/75 px-4 py-3 text-sm text-muted">
-                <p className="font-semibold text-foreground">{user.name}</p>
-                <p className="mt-1">{user.email}</p>
+              <div className="rounded-lg border border-[#e5e7eb] bg-[#fafbfc] px-3.5 py-2 text-[12.5px]">
+                <p className="font-semibold text-[#0a1628]">{user.name}</p>
+                <p className="mt-0.5 text-[#667085]">{user.email}</p>
               </div>
-              <LocaleSwitcher currentLocale={locale} path={currentPath} />
-              <LogoutButton />
+              <div className="flex items-center gap-2">
+                <LocaleSwitcher currentLocale={locale} path={currentPath} />
+                <LogoutButton />
+              </div>
             </div>
           </div>
         </header>
@@ -658,19 +696,22 @@ export async function WorkspaceShell({
         {navigation.length > 0 ? (
           <nav
             aria-label={workspaceT("navigationLabel")}
-            className="flex flex-wrap gap-3"
+            className="flex flex-wrap gap-1.5 rounded-xl border border-[#e5e7eb] bg-white p-1.5 shadow-[var(--shadow-xs)]"
           >
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={[
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition",
+                  "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-semibold transition",
                   item.active
-                    ? "border-accent bg-accent text-white"
-                    : "border-line bg-[#faf9f5]/75 text-foreground hover:bg-accentSoft",
+                    ? "bg-[#eff6ff] text-[#036deb]"
+                    : "text-[#475467] hover:bg-[#f9fafb] hover:text-[#0a1628]",
                 ].join(" ")}
               >
+                <span className="inline-flex h-4 w-4">
+                  <SidebarIcon icon={item.icon} />
+                </span>
                 {item.label}
               </Link>
             ))}

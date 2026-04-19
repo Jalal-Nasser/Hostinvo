@@ -105,19 +105,17 @@ export function PortalFlyoutMenu({
 
   return (
     <aside className={joinClasses(portalTheme.flyoutClass, "hidden lg:block")}>
-      <div className="flex h-full flex-col ps-5 pe-5 pt-6 pb-6">
-        <div className="rounded-[16px] bg-[linear-gradient(180deg,rgba(46,125,255,0.22)_0%,rgba(51,86,150,0.08)_54%,rgba(255,255,255,0)_100%)] ps-4 pe-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-          <p className={portalTheme.sectionKickerClass}>
-            {section.label}
-          </p>
-          <h2 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-white">
+      <div className="flex h-full flex-col px-4 pb-6 pt-6">
+        <div className="rounded-xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(180deg,rgba(59,130,246,0.18)_0%,rgba(30,41,59,0.2)_60%,rgba(17,24,41,0)_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <p className={portalTheme.sectionKickerClass}>{section.label}</p>
+          <h2 className="mt-1.5 text-[15px] font-semibold tracking-[-0.02em] text-white">
             {section.title}
           </h2>
-          <p className="mt-2 text-[13px] leading-6 text-[#aab8d4]">{section.description}</p>
+          <p className="mt-1.5 text-[12.5px] leading-5 text-[#a5b4cf]">{section.description}</p>
         </div>
 
-        <div className="mt-5 flex-1 overflow-y-auto">
-          <div className="grid gap-1.5">
+        <div className="mt-4 flex-1 overflow-y-auto">
+          <div className="grid gap-0.5">
             {section.items.map((item) => {
               const active = explicitActiveLabel
                 ? item.label === explicitActiveLabel
@@ -128,20 +126,16 @@ export function PortalFlyoutMenu({
                   key={`${section.key}-${item.label}`}
                   href={item.href}
                   className={joinClasses(
-                    "group flex min-h-12 items-center rounded-[12px] ps-2 pe-2 py-1.5 text-[13px] transition",
+                    "relative flex min-h-10 items-center rounded-lg px-3 py-2 text-[13px] transition",
                     active
-                      ? "bg-[linear-gradient(180deg,rgba(66,128,245,0.14)_0%,rgba(66,128,245,0.06)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                      : "text-[#c6d2e7] hover:bg-[rgba(255,255,255,0.028)] hover:text-white",
+                      ? "bg-[rgba(59,130,246,0.12)] font-semibold text-white"
+                      : "text-[#b8c3da] hover:bg-[rgba(255,255,255,0.04)] hover:text-white",
                   )}
                 >
-                  <span
-                    className={joinClasses(
-                      "w-full rounded-[10px] ps-3 pe-3 py-2.5 transition",
-                      active ? "bg-[rgba(70,126,246,0.06)]" : "group-hover:bg-[rgba(255,255,255,0.018)]",
-                    )}
-                  >
-                    {item.label}
-                  </span>
+                  {active ? (
+                    <span className="absolute start-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-e-full bg-[#60a5fa]" />
+                  ) : null}
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             })}
