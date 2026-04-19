@@ -15,7 +15,13 @@ type MarketingShellProps = {
   children: React.ReactNode;
 };
 
-export async function MarketingShell({ locale, currentPath, title, description, children }: MarketingShellProps) {
+export async function MarketingShell({
+  locale,
+  currentPath,
+  title,
+  description,
+  children,
+}: MarketingShellProps) {
   const content = getLaunchContent(locale);
   const isHome = currentPath === "/";
 
@@ -52,92 +58,140 @@ export async function MarketingShell({ locale, currentPath, title, description, 
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7faff]">
-      <header className="sticky top-0 z-50 border-b border-[rgba(4,141,254,0.1)] bg-[rgba(247,250,255,0.92)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3 lg:px-8">
-          <BrandLogo href={localePath(locale, "/")} priority className="block w-36 shrink-0" />
-          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
+    <div className="marketing-surface min-h-screen flex flex-col">
+      {/* ── Sticky header ── */}
+      <header className="sticky top-0 z-50 border-b border-[rgba(148,163,184,0.1)] bg-[rgba(8,12,24,0.72)] backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3.5 lg:px-8">
+          <BrandLogo
+            href={localePath(locale, "/")}
+            alt="Hostinvo"
+            priority
+            className="block w-[156px] shrink-0 sm:w-[172px] lg:w-[184px]"
+            imageClassName="h-auto w-full object-contain"
+          />
+          <nav
+            className="hidden items-center gap-0.5 lg:flex"
+            aria-label="Main navigation"
+          >
             {headerNav.map((item) => {
               const active = item.href === localePath(locale, currentPath);
               return (
-                <Link key={item.label} href={item.href} className={["rounded-lg px-3.5 py-2 text-sm font-medium transition-colors", active ? "bg-[#e0f0ff] text-[#048dfe]" : "text-[#4a5e7a] hover:bg-[#f0f7ff] hover:text-[#048dfe]"].join(" ")}>
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={[
+                    "marketing-nav-link",
+                    active ? "marketing-nav-link-active" : "",
+                  ].join(" ")}
+                >
                   {item.label}
                 </Link>
               );
             })}
           </nav>
           <div className="flex items-center gap-3">
-            <LocaleSwitcher currentLocale={locale} path={currentPath} />
-            <Link href={localePath(locale, "/auth/login")} className="hidden rounded-lg px-4 py-2 text-sm font-medium text-[#4a5e7a] transition hover:text-[#048dfe] lg:block">{content.nav.login}</Link>
-            <Link href={localePath(locale, "/onboarding")} className="btn-primary text-sm px-5 py-2.5">{content.nav.startOnboarding}</Link>
+            <LocaleSwitcher currentLocale={locale} path={currentPath} variant="dark" />
+            <Link
+              href={localePath(locale, "/auth/login")}
+              className="hidden rounded-lg px-4 py-2 text-sm font-medium text-[#93A5C1] transition-colors hover:text-white lg:block"
+            >
+              {content.nav.login}
+            </Link>
+            <Link
+              href={localePath(locale, "/onboarding")}
+              className="btn-primary text-sm px-5 py-2.5"
+            >
+              {content.nav.startOnboarding}
+            </Link>
           </div>
         </div>
       </header>
 
-      {!isHome && title && (
-        <div className="border-b border-[rgba(4,141,254,0.08)] bg-[#faf9f5]">
-          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      {/* ── Inner page title banner (non-home routes) ── */}
+      {!isHome && title ? (
+        <div className="relative overflow-hidden border-b border-[rgba(148,163,184,0.08)] bg-[#080C1A]">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 0%, #048DFE 0%, transparent 45%), radial-gradient(circle at 80% 100%, #036deb 0%, transparent 50%)",
+            }}
+            aria-hidden
+          />
+          <div className="relative mx-auto max-w-7xl px-6 py-14 lg:px-8">
             <p className="section-label mb-4">{content.badge}</p>
-            <h1 className="text-4xl font-bold tracking-tight text-[#0a1628] md:text-5xl">{title}</h1>
-            {description && <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#4a5e7a]">{description}</p>}
+            <h1 className="text-4xl font-bold tracking-tight text-[#F1F5FB] md:text-5xl">
+              {title}
+            </h1>
+            {description ? (
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#93A5C1]">
+                {description}
+              </p>
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
+
       <main className="flex-1">{children}</main>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[rgba(4,141,254,0.1)] bg-[#0a1628]">
+      <footer className="border-t border-[rgba(148,163,184,0.08)] bg-[#060A14]">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
           <div className="grid gap-14 lg:grid-cols-[2.2fr_1fr_1fr_1fr_1fr]">
             {/* Brand */}
             <div>
-              <div className="flex items-center gap-3 mb-5">
-                <Image src="/icon.png" alt="Hostinvo" width={44} height={44} className="rounded-xl" />
-                <span className="text-xl font-bold text-white tracking-tight">Hostinvo</span>
+              <div className="mb-5 flex items-center gap-3">
+                <Image
+                  src="/icon.png"
+                  alt="Hostinvo"
+                  width={44}
+                  height={44}
+                  className="rounded-xl"
+                />
+                <span className="text-xl font-bold tracking-tight text-white">
+                  Hostinvo
+                </span>
               </div>
-              <p className="max-w-xs text-[15px] leading-7 text-[#8aaac8]">{content.heroDescription}</p>
-              <Link href={localePath(locale, "/onboarding")} className="btn-primary mt-6 inline-flex text-sm px-5 py-2.5">{content.nav.startOnboarding}</Link>
+              <p className="max-w-xs text-[15px] leading-7 text-[#8398B8]">
+                {content.heroDescription}
+              </p>
+              <Link
+                href={localePath(locale, "/onboarding")}
+                className="btn-primary mt-6 inline-flex px-5 py-2.5 text-sm"
+              >
+                {content.nav.startOnboarding}
+              </Link>
             </div>
-            {/* Product */}
-            <div>
-              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.productGroup}</p>
-              <ul className="space-y-3.5">
-                {footerProduct.map((item) => (
-                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
-                ))}
-              </ul>
-            </div>
-            {/* Resources */}
-            <div>
-              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.resourcesGroup}</p>
-              <ul className="space-y-3.5">
-                {footerResources.map((item) => (
-                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
-                ))}
-              </ul>
-            </div>
-            {/* Company */}
-            <div>
-              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.companyGroup}</p>
-              <ul className="space-y-3.5">
-                {footerCompany.map((item) => (
-                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
-                ))}
-              </ul>
-            </div>
-            {/* Legal */}
-            <div>
-              <p className="mb-5 text-[13px] font-bold uppercase tracking-widest text-[#048dfe]">{content.footer.legalGroup}</p>
-              <ul className="space-y-3.5">
-                {footerLegal.map((item) => (
-                  <li key={item.label}><Link href={item.href} className="text-[15px] text-[#8aaac8] transition-colors hover:text-white">{item.label}</Link></li>
-                ))}
-              </ul>
-            </div>
+
+            {[
+              { title: content.footer.productGroup, items: footerProduct },
+              { title: content.footer.resourcesGroup, items: footerResources },
+              { title: content.footer.companyGroup, items: footerCompany },
+              { title: content.footer.legalGroup, items: footerLegal },
+            ].map((group) => (
+              <div key={group.title}>
+                <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7DB8FF]">
+                  {group.title}
+                </p>
+                <ul className="space-y-3">
+                  {group.items.map((item) => (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        className="text-[14.5px] text-[#8398B8] transition-colors hover:text-white"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[rgba(255,255,255,0.07)] pt-8 lg:flex-row">
-            <p className="text-sm text-[#4a5e7a]">{content.footer.copyright}</p>
-            <p className="text-sm text-[#4a5e7a]">{content.footer.techStack}</p>
+
+          <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[rgba(148,163,184,0.08)] pt-8 lg:flex-row">
+            <p className="text-sm text-[#5B6C89]">{content.footer.copyright}</p>
+            <p className="text-sm text-[#5B6C89]">{content.footer.techStack}</p>
           </div>
         </div>
       </footer>
