@@ -90,10 +90,10 @@ export function DomainHero({
           className="mx-auto mt-8 flex max-w-[782px] flex-col gap-3 md:flex-row md:items-center"
           onSubmit={handleSearchSubmit}
         >
-          <div className="flex min-h-[60px] w-full items-center overflow-hidden rounded-[6px] border-[6px] border-white bg-white shadow-[0_8px_18px_rgba(8,20,58,0.22)]">
-            <div className="flex min-w-0 flex-1 items-center ps-4">
+          <div className="flex min-h-[64px] w-full items-center overflow-hidden rounded-[999px] border border-[#dbeafe] bg-white shadow-[0_24px_48px_rgba(15,23,42,0.12)]">
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-4">
               <svg
-                className="h-[22px] w-[22px] shrink-0 text-[#2d6df0]"
+                className="h-[22px] w-[22px] shrink-0 text-[#2563eb]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -106,22 +106,22 @@ export function DomainHero({
                 />
               </svg>
               <input
-                className="h-12 w-full border-0 bg-transparent ps-3 pe-3 text-[16px] !text-[#34425e] caret-[#1a65ff] outline-none placeholder:!text-[#a6b0c0]"
+                className="h-12 min-w-0 flex-1 border-0 bg-transparent text-[16px] font-medium text-[#334155] caret-[#1d4ed8] outline-none placeholder:text-[#94a3b8]"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={placeholder}
                 value={query}
               />
             </div>
-            <div className="flex h-full items-stretch gap-[1px] bg-white pe-[1px]">
+            <div className="flex h-full items-center gap-[1px] rounded-[999px] bg-[#eff6ff] p-[2px]">
               <button
-                className="min-w-[126px] bg-[#dce7ff] px-5 text-[16px] font-semibold text-[#3568d4]"
+                className="min-w-[126px] rounded-[999px] bg-[#eff6ff] px-5 py-3 text-[16px] font-semibold text-[#1d4ed8] transition hover:bg-[#dbeafe]"
                 onClick={handleTransferClick}
                 type="button"
               >
                 {transferLabel}
               </button>
               <button
-                className="min-w-[120px] bg-[linear-gradient(180deg,#4387ff_0%,#3371ea_100%)] px-5 text-[16px] font-semibold text-white"
+                className="min-w-[120px] rounded-[999px] bg-[#2563eb] px-5 py-3 text-[16px] font-semibold text-white transition hover:bg-[#1d4ed8]"
                 type="submit"
               >
                 {searchLabel}

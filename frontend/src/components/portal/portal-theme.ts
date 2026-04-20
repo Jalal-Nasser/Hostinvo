@@ -18,7 +18,7 @@ export const portalThemeVariables = {
 
 export const portalTheme = {
   pageBackgroundClass:
-    "bg-[radial-gradient(140%_120%_at_50%_0%,rgba(95,110,137,0.16)_0%,rgba(60,71,94,0.08)_24%,rgba(53,63,86,0.96)_48%,rgba(49,59,81,1)_100%)]",
+    "bg-[#121f33] bg-[radial-gradient(140%_120%_at_50%_0%,rgba(95,110,137,0.16)_0%,rgba(60,71,94,0.08)_24%,rgba(53,63,86,0.96)_48%,rgba(49,59,81,1)_100%)]",
   railClass:
     "flex h-screen w-[104px] flex-col items-center border-e border-[rgba(255,255,255,0.05)] bg-[linear-gradient(180deg,#59657d_0%,#48546c_100%)] py-5",
   flyoutClass:

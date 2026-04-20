@@ -316,6 +316,12 @@ button {
   /* ══════════════════════════════════════════════════════════
      Portal workspace — dark theme
      ══════════════════════════════════════════════════════════ */
+  .portal-workspace {
+    @apply min-h-screen text-white;
+    background: radial-gradient(140% 120% at 50% 0%, rgba(95, 110, 137, 0.16) 0%, rgba(60, 71, 94, 0.08) 24%, rgba(53, 63, 86, 0.96) 48%, rgba(49, 59, 81, 1) 100%);
+    color: var(--foreground);
+  }
+
   .portal-workspace .glass-card {
     @apply rounded-2xl border backdrop-blur-xl;
     border-color: rgba(148, 163, 184, 0.12);
