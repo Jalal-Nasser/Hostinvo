@@ -15,6 +15,7 @@ type QuickActionsProps = {
   kicker: string;
   title: string;
   helperText: string;
+  providerLabel: string;
   emptyTitle: string;
   emptyDescription: string;
   actions: QuickAction[];
@@ -24,6 +25,7 @@ export function QuickActions({
   kicker,
   title,
   helperText,
+  providerLabel,
   emptyTitle,
   emptyDescription,
   actions,
@@ -37,6 +39,9 @@ export function QuickActions({
         </h2>
         <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-[#cbd6eb]">
           {helperText}
+        </p>
+        <p className="mx-auto mt-3 max-w-2xl text-xs uppercase tracking-[0.25em] text-[#b8c5e2]">
+          {providerLabel}
         </p>
       </div>
       {actions.length > 0 ? (

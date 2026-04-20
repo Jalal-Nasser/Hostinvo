@@ -35,7 +35,7 @@ export function PortalFooter({
   const demoBrandName =
     branding?.portal_name?.trim() ||
     branding?.company_name?.trim() ||
-    "Privet Server";
+    "Hostinvo";
   const demoColumns =
     columns.length > 0
       ? columns
@@ -88,16 +88,14 @@ export function PortalFooter({
 
   return (
     <footer className="-ms-4 -me-4 mt-20 border-t border-[rgba(255,255,255,0.08)] pt-14 md:-ms-6 md:-me-6 lg:-ms-0 lg:-me-0">
-      <div className="mx-auto grid max-w-[980px] gap-10 ps-8 pe-8 lg:grid-cols-[1fr_1fr_0.9fr_0.9fr]">
-        <div>
+      <div className="mx-auto grid max-w-[980px] gap-10 ps-8 pe-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_0.9fr_0.9fr]">
+        <div className="min-w-0">
           <BrandLogo
             href={localePath(locale, "/portal")}
             className="w-[148px]"
             src={branding?.logo_url}
             alt={demoBrandName}
-            fallbackText={!branding?.logo_url ? demoBrandName : undefined}
           />
-          <p className="mt-10 text-[14px] text-[#d7e1f3]">Get in touch with us!</p>
           <div className="mt-5 flex items-center gap-5 text-[#dce7ff]">
             <PortalSocialIcon icon="facebook" />
             <PortalSocialIcon icon="twitter" />
@@ -106,15 +104,15 @@ export function PortalFooter({
         </div>
 
         {demoColumns.map((column) => (
-          <div key={column.key}>
-            <h3 className="text-[17px] font-medium text-white">
+          <div key={column.key} className="min-w-0">
+            <h3 className="text-[17px] font-medium text-white break-words">
               {column.title}
             </h3>
             <div className="mt-6 grid gap-2">
               {column.items.map((item) => (
                 <Link
                   key={`${column.key}-${item.label}`}
-                  className="text-[14px] leading-8 text-[#dde7fa] transition hover:text-white"
+                  className="text-[14px] leading-8 text-[#dde7fa] transition hover:text-white break-words"
                   href={item.href}
                   target={item.openInNewTab ? "_blank" : undefined}
                   rel={item.openInNewTab ? "noreferrer" : undefined}

@@ -36,10 +36,10 @@ export function PortalNewsCard({
   items = [],
   fallbackItems,
 }: PortalNewsCardProps) {
-  const hasPublishedItems = items.length > 0;
-  const visibleItems = hasPublishedItems
+  const visibleItems = items.length > 0
     ? items.slice(0, 2)
     : fallbackItems.slice(0, 2);
+  const showEmptyState = visibleItems.length === 0;
 
   return (
     <section id="news" className="mx-auto mt-16 max-w-[960px]">
@@ -49,21 +49,21 @@ export function PortalNewsCard({
           <h2 className="mt-2 text-[20px] font-normal tracking-[-0.02em] text-white md:text-[22px]">
             {title}
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-[#cbd6eb]">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#cbd6eb]">
             {description}
+          </p>
+          <p className="mt-3 text-xs uppercase tracking-[0.25em] text-[#b8c5e2]">
+            {providerLabel}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-[4px] border border-[rgba(255,255,255,0.08)] px-3 py-2 text-xs font-medium text-[#c9d6ee]">
-            {providerLabel}
-          </span>
           <Link className={portalTheme.secondaryButtonClass} href={viewAllHref}>
             {viewAllLabel}
           </Link>
         </div>
       </div>
 
-      {!hasPublishedItems ? (
+      {showEmptyState ? (
         <div className={[portalTheme.noteClass, "mb-5"].join(" ")}>
           <p className="font-semibold text-white">{emptyTitle}</p>
           <p className="mt-1 text-[#cbd6eb]">{emptyDescription}</p>

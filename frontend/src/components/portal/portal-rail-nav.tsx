@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PortalSection, PortalSectionKey } from "@/components/portal/portal-navigation";
-import { PortalBrandMark, PortalRailIcon } from "@/components/portal/portal-icons";
+import { PortalRailIcon } from "@/components/portal/portal-icons";
 import { portalTheme } from "@/components/portal/portal-theme";
 import { localePath } from "@/lib/auth";
 
@@ -71,9 +71,9 @@ export function PortalRailNav({
             <Image
               src={logoSrc}
               alt={logoAlt}
-              width={40}
-              height={40}
-              className="h-10 w-10 object-contain"
+              width={64}
+              height={64}
+              className="h-16 w-16 object-contain"
               priority
             />
           ) : (
@@ -81,11 +81,18 @@ export function PortalRailNav({
             <img
               src={logoSrc}
               alt={logoAlt}
-              className="h-10 w-10 object-contain"
+              className="h-16 w-16 object-contain"
             />
           )
         ) : (
-          <PortalBrandMark className="h-10 w-10" />
+          <Image
+            src="/icon.png"
+            alt="Hostinvo"
+            width={64}
+            height={64}
+            className="h-16 w-16 object-contain rounded-lg"
+            priority
+          />
         )}
       </Link>
 

@@ -76,9 +76,12 @@ export default async function PortalPage({
   const t = await getTranslations("Portal");
   const portalConfig = await fetchPortalConfigFromCookies(cookieHeader);
   const surface = portalConfig?.surface;
-  const sectionEntries = (surface?.home_sections ?? defaultSectionEntries())
+  const visibleSectionEntries = (surface?.home_sections ?? defaultSectionEntries())
     .filter((entry) => entry.visible)
     .sort((left, right) => left.order - right.order);
+  const sectionEntries = visibleSectionEntries.length > 0
+    ? visibleSectionEntries
+    : defaultSectionEntries();
 
   const contentSources = surface?.content_sources ?? {
     announcements: true,
@@ -142,24 +145,27 @@ export default async function PortalPage({
       icon: "get-support" as const,
     },
   };
-  const quickActions = (surface?.home_cards ?? defaultCardEntries())
+  const visibleHomeCards = (surface?.home_cards ?? defaultCardEntries())
     .filter((entry) => entry.visible)
-    .sort((left, right) => left.order - right.order)
-    .flatMap((entry) => {
-      const config = actionCatalog[entry.key as HomeCardKey];
+    .sort((left, right) => left.order - right.order);
+  const homeCardEntries = visibleHomeCards.length > 0
+    ? visibleHomeCards
+    : defaultCardEntries();
+  const quickActions = homeCardEntries.flatMap((entry) => {
+    const config = actionCatalog[entry.key as HomeCardKey];
 
-      if (!config) {
-        return [];
-      }
+    if (!config) {
+      return [];
+    }
 
-      return [{
-        key: entry.key,
-        label: localizedEntryLabel(entry, params.locale, config.fallbackLabel),
-        description: config.description,
-        href: config.href,
-        icon: config.icon,
-      }];
-    });
+    return [{
+      key: entry.key,
+      label: localizedEntryLabel(entry, params.locale, config.fallbackLabel),
+      description: config.description,
+      href: config.href,
+      icon: config.icon,
+    }];
+  });
   const fallbackAnnouncements = [
     {
       id: "starter-news-portal",
@@ -220,6 +226,7 @@ export default async function PortalPage({
         key="quick_actions"
         kicker={t("quickActionsKicker")}
         helperText={t("quickActionsHelper")}
+        providerLabel={t("providerManagedLabel")}
         title={t("quickActionsTitle")}
         actions={quickActions}
       />,
