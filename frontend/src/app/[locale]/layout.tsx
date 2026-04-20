@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: {
       default: title,
-      template: `%s | ${title}`,
+      template: `${title} - %s`,
     },
     description,
     icons: {

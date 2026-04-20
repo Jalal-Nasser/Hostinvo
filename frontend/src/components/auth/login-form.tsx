@@ -109,6 +109,29 @@ export function LoginForm() {
     authConfig.turnstile.forms["login"] === true;
   const showPasskeyButton = passkeySupported && emailValue.trim() !== "";
 
+  function passkeyErrorMessage(
+    result:
+      | Awaited<ReturnType<typeof beginPasskeyAuthentication>>
+      | Awaited<ReturnType<typeof finishPasskeyAuthentication>>,
+    fallback: string,
+  ): string {
+    const validationMessages = result.errors
+      ? Object.values(result.errors).flat().join(" ")
+      : "";
+    const combinedMessage = `${result.error ?? ""} ${validationMessages}`;
+
+    if (
+      result.status === 422 &&
+      /(no passkey|not registered|not recognized|not authorized|not available|not found|credential|mfa)/i.test(
+        combinedMessage,
+      )
+    ) {
+      return t("passkeyAccountSetupRequired");
+    }
+
+    return result.error ?? fallback;
+  }
+
   function handleSubmit(formData: FormData) {
     setError(null);
     setPasskeyError(null);
@@ -171,7 +194,7 @@ export function LoginForm() {
         emailValue ? { email: emailValue } : undefined,
       );
       if (!options.data) {
-        setPasskeyError(options.error ?? t("passkeyStartError"));
+        setPasskeyError(passkeyErrorMessage(options, t("passkeyStartError")));
         return;
       }
 
@@ -191,14 +214,18 @@ export function LoginForm() {
         });
 
         if (!result.data || result.data.status !== "authenticated") {
-          setPasskeyError(result.error ?? t("passkeyVerifyError"));
+          setPasskeyError(passkeyErrorMessage(result, t("passkeyVerifyError")));
           return;
         }
 
         router.replace(result.data.redirectTo ?? localePath(locale, "/dashboard"));
         router.refresh();
-      } catch {
-        setPasskeyError(t("passkeyVerifyError"));
+      } catch (caught) {
+        setPasskeyError(
+          caught instanceof DOMException && caught.name === "NotAllowedError"
+            ? t("passkeyCancelled")
+            : t("passkeyVerifyError"),
+        );
       }
     });
   }

@@ -15,6 +15,7 @@ use App\Services\Auth\MfaService;
 use App\Services\Auth\PasskeyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PasskeyController extends Controller
 {
@@ -69,6 +70,12 @@ class PasskeyController extends Controller
 
         if (filled($payload['email'] ?? null)) {
             $user = User::query()->where('email', strtolower((string) $payload['email']))->first();
+
+            if (! $user) {
+                throw ValidationException::withMessages([
+                    'passkey' => ['No passkey is registered for this account.'],
+                ]);
+            }
         }
 
         return $this->success(

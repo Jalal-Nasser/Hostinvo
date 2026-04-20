@@ -69,9 +69,9 @@ class PortalSurfaceService
     private function defaultHomeCards(): array
     {
         return [
-            ['key' => 'register_domain', 'visible' => true, 'order' => 10, 'label_en' => null, 'label_ar' => null],
-            ['key' => 'transfer_domain', 'visible' => true, 'order' => 20, 'label_en' => null, 'label_ar' => null],
-            ['key' => 'domain_pricing', 'visible' => true, 'order' => 30, 'label_en' => null, 'label_ar' => null],
+            ['key' => 'buy_domain', 'visible' => true, 'order' => 10, 'label_en' => null, 'label_ar' => null],
+            ['key' => 'hosting', 'visible' => true, 'order' => 20, 'label_en' => null, 'label_ar' => null],
+            ['key' => 'billing', 'visible' => true, 'order' => 30, 'label_en' => null, 'label_ar' => null],
             ['key' => 'support', 'visible' => true, 'order' => 40, 'label_en' => null, 'label_ar' => null],
         ];
     }

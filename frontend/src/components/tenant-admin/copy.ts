@@ -136,9 +136,9 @@ export function tenantAdminCopy(locale: string) {
         announcements: isArabic ? "الإعلانات" : "Announcements",
         knowledgebase: isArabic ? "قاعدة المعرفة" : "Knowledgebase",
         network_status: isArabic ? "حالة الشبكة" : "Network status",
-        register_domain: isArabic ? "تسجيل نطاق" : "Register domain",
-        transfer_domain: isArabic ? "نقل نطاق" : "Transfer domain",
-        domain_pricing: isArabic ? "أسعار النطاقات" : "Domain pricing",
+        buy_domain: isArabic ? "شراء نطاق" : "Buy domain",
+        hosting: isArabic ? "الاستضافة" : "Hosting",
+        billing: isArabic ? "الفوترة" : "Billing",
         support_card: isArabic ? "الدعم" : "Support",
       },
       sourceLabels: {

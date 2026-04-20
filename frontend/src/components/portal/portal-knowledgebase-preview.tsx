@@ -2,47 +2,47 @@ import Link from "next/link";
 
 import { portalTheme } from "@/components/portal/portal-theme";
 
-export type PortalNewsItem = {
+export type PortalKnowledgebasePreviewItem = {
   id: string;
   title: string;
   excerpt: string | null;
-  publishedAt: string | null;
+  href: string;
 };
 
-type PortalNewsCardProps = {
+type PortalKnowledgebasePreviewProps = {
   kicker: string;
   title: string;
   description: string;
   providerLabel: string;
   emptyTitle: string;
   emptyDescription: string;
-  readMoreLabel: string;
+  openLabel: string;
   viewAllLabel: string;
   viewAllHref: string;
-  items?: PortalNewsItem[];
-  fallbackItems: PortalNewsItem[];
+  items: PortalKnowledgebasePreviewItem[];
+  fallbackItems: PortalKnowledgebasePreviewItem[];
 };
 
-export function PortalNewsCard({
+export function PortalKnowledgebasePreview({
   kicker,
   title,
   description,
   providerLabel,
   emptyTitle,
   emptyDescription,
-  readMoreLabel,
+  openLabel,
   viewAllLabel,
   viewAllHref,
-  items = [],
+  items,
   fallbackItems,
-}: PortalNewsCardProps) {
+}: PortalKnowledgebasePreviewProps) {
   const hasPublishedItems = items.length > 0;
   const visibleItems = hasPublishedItems
-    ? items.slice(0, 2)
-    : fallbackItems.slice(0, 2);
+    ? items.slice(0, 3)
+    : fallbackItems.slice(0, 3);
 
   return (
-    <section id="news" className="mx-auto mt-16 max-w-[960px]">
+    <section className="mx-auto mt-16 max-w-[960px]">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className={portalTheme.sectionKickerClass}>{kicker}</p>
@@ -71,35 +71,24 @@ export function PortalNewsCard({
       ) : null}
 
       {visibleItems.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           {visibleItems.map((item) => (
             <article
+              className={[portalTheme.subtleSurfaceClass, "flex min-h-[190px] flex-col p-5"].join(" ")}
               key={item.id}
-              className="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,rgba(102,118,151,0.16)_0%,rgba(89,103,133,0.14)_100%)] px-6 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
             >
-              {item.publishedAt ? (
-                <div className="flex items-center gap-2 text-[13px] text-[#eef3ff]">
-                  <span className="inline-flex h-3 w-3 items-center justify-center text-[#dce6ff]">
-                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6 4h12v14H6zM8 2h2v4H8zm6 0h2v4h-2z" />
-                    </svg>
-                  </span>
-                  <span>{item.publishedAt}</span>
-                </div>
-              ) : null}
-              <h3 className="mt-4 text-[22px] font-normal tracking-[-0.02em] text-white">
+              <h3 className="text-lg font-semibold leading-7 text-white">
                 {item.title}
               </h3>
               {item.excerpt ? (
-                <p className="mt-3 text-[14px] leading-8 text-[#d9e2f5]">
+                <p className="mt-3 flex-1 text-sm leading-7 text-[#cbd6eb]">
                   {item.excerpt}
                 </p>
-              ) : null}
-              <Link
-                className="mt-6 inline-flex min-h-[36px] items-center justify-center rounded-[2px] bg-[#dbe5ff] px-4 text-[13px] font-medium text-[#2e5fc7]"
-                href={viewAllHref}
-              >
-                {readMoreLabel}
+              ) : (
+                <div className="flex-1" />
+              )}
+              <Link className="mt-5 text-sm font-semibold text-[#dbe7ff]" href={item.href}>
+                {openLabel}
               </Link>
             </article>
           ))}

@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
+import { DocumentTitle } from "@/components/shared/document-title";
 import { type AppLocale } from "@/i18n/routing";
 import {
   canAccessAdminWorkspace,
@@ -509,9 +510,14 @@ export async function WorkspaceShell({
 
     const tenantName = activeTenant?.name ?? workspaceT("adminBadge");
     const tenantMeta = activeTenant?.slug ?? user.email;
+    const documentTitleBrand =
+      tenantBranding?.portal_name?.trim() ||
+      tenantBranding?.company_name?.trim() ||
+      "Hostinvo";
 
     return (
       <main className="dashboard-workspace min-h-screen bg-[#faf9f5]">
+        <DocumentTitle brand={documentTitleBrand} title={title} />
         <div className="w-full px-4 py-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
           <div className="grid gap-6 lg:grid-cols-[272px_minmax(0,1fr)]">
             {/* ───────────── Sidebar ───────────── */}

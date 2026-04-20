@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { DocumentTitle } from "@/components/shared/document-title";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -174,10 +175,12 @@ export async function AuthShell({
   const isRtl = locale === "ar";
 
   return (
-    <div
-      dir={isRtl ? "rtl" : "ltr"}
-      className="min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef4fb_100%)] text-[#0a1628]"
-    >
+    <>
+      <DocumentTitle brand="Hostinvo" title={title} />
+      <div
+        dir={isRtl ? "rtl" : "ltr"}
+        className="min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef4fb_100%)] text-[#0a1628]"
+      >
       <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
         <aside className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(4,141,254,0.22),transparent_28rem),linear-gradient(155deg,#00154d_0%,#002d8e_52%,#0054c5_100%)]" />
@@ -316,6 +319,7 @@ export async function AuthShell({
           </div>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

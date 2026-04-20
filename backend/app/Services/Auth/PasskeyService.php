@@ -114,8 +114,15 @@ class PasskeyService
         $allowCredentials = [];
 
         if ($user) {
-            $allowCredentials = $user->webauthnCredentials()
-                ->get()
+            $credentials = $user->webauthnCredentials()->get();
+
+            if ($credentials->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'passkey' => ['No passkey is registered for this account.'],
+                ]);
+            }
+
+            $allowCredentials = $credentials
                 ->map(fn (UserWebauthnCredential $cred): string => $this->base64UrlDecode($cred->credential_id))
                 ->values()
                 ->all();

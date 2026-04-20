@@ -23,7 +23,8 @@ class AuthenticatedUserResource extends JsonResource
             ? Tenant::query()->find($activeTenantId)
             : null;
         $tenant = $activeTenant ?? $this->tenant;
-        $impersonatorId = $request->session()->get('impersonator_id');
+        $session = $request->hasSession() ? $request->session() : null;
+        $impersonatorId = $session?->get('impersonator_id');
         $impersonator = null;
 
         if ($impersonatorId) {
@@ -75,7 +76,7 @@ class AuthenticatedUserResource extends JsonResource
             'impersonation' => [
                 'active' => (bool) $impersonatorId,
                 'impersonator' => $impersonator,
-                'started_at' => $request->session()->get('impersonation_started_at'),
+                'started_at' => $session?->get('impersonation_started_at'),
             ],
         ];
     }

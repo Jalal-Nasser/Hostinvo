@@ -17,6 +17,7 @@ import {
   resolvePortalHeaderCardClass,
 } from "@/components/portal/portal-theme";
 import { PortalTopbar } from "@/components/portal/portal-topbar";
+import { DocumentTitle } from "@/components/shared/document-title";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
@@ -80,6 +81,7 @@ export async function PortalShell({
       className={["portal-workspace min-h-screen text-foreground", portalTheme.pageBackgroundClass].join(" ")}
       style={portalThemeVariables}
     >
+      <DocumentTitle brand={portalBrandName} title={title} />
       <div className="hidden lg:block">
         <div className="fixed inset-y-0 z-30" style={{ insetInlineStart: 0 }}>
           <PortalDesktopNav

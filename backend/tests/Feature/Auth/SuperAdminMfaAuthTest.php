@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserMfaMethod;
 use App\Models\UserRecoveryCode;
+use App\Models\UserWebauthnCredential;
 use App\Services\Auth\PasskeyService;
 use Database\Seeders\Auth\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -211,6 +212,7 @@ class SuperAdminMfaAuthTest extends TestCase
     public function test_passkey_authentication_options_are_returned_in_browser_shape(): void
     {
         $user = $this->createSuperAdmin();
+        $this->addConfirmedPasskey($user);
         $csrf = 'test-csrf-token';
 
         $response = $this
@@ -229,6 +231,23 @@ class SuperAdminMfaAuthTest extends TestCase
             );
 
         $this->assertIsString(data_get($response->json(), 'data.publicKey.challenge'));
+    }
+
+    public function test_passkey_authentication_options_reject_super_admin_without_passkey(): void
+    {
+        $user = $this->createSuperAdmin();
+        $csrf = 'test-csrf-token';
+
+        $response = $this
+            ->withHeaders($this->statefulHeaders($csrf))
+            ->withSession(['_token' => $csrf])
+            ->postJson('/api/v1/auth/passkeys/authenticate/options', [
+                'email' => $user->email,
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('passkey');
     }
 
     public function test_logout_works_without_server_error(): void
@@ -273,6 +292,29 @@ class SuperAdminMfaAuthTest extends TestCase
             'secret' => encrypt($secret),
             'metadata' => ['issuer' => 'Hostinvo'],
             'confirmed_at' => now(),
+            'last_used_at' => now(),
+        ]);
+    }
+
+    private function addConfirmedPasskey(User $user): void
+    {
+        $method = UserMfaMethod::query()->create([
+            'user_id' => $user->getKey(),
+            'type' => UserMfaMethod::TYPE_WEBAUTHN,
+            'label' => 'Office MacBook',
+            'metadata' => ['rp_id' => 'localhost'],
+            'confirmed_at' => now(),
+            'last_used_at' => now(),
+        ]);
+
+        UserWebauthnCredential::query()->create([
+            'user_id' => $user->getKey(),
+            'mfa_method_id' => $method->getKey(),
+            'credential_id' => 'test-credential-id',
+            'public_key' => 'test-public-key',
+            'sign_count' => 0,
+            'aaguid' => null,
+            'transports' => [],
             'last_used_at' => now(),
         ]);
     }
