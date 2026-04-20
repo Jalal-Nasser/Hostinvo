@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -69,7 +70,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verification_required' => 'boolean',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 
