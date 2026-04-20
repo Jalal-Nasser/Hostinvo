@@ -124,6 +124,7 @@ export function tenantHostHeader(): Record<string, string> {
 
 export async function getAuthenticatedUserFromCookies(
   cookieHeader: string,
+  refererPath = "/dashboard",
 ): Promise<AuthenticatedUser | null> {
   if (!cookieHeader.includes(`${sessionCookieName}=`)) {
     return null;
@@ -131,7 +132,7 @@ export async function getAuthenticatedUserFromCookies(
 
   const response = await fetch(`${apiBaseUrl}/auth/me`, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, refererPath),
   });
 
   if (!response.ok) {
@@ -182,8 +183,12 @@ export function canAccessAdminWorkspace(user: AuthenticatedUser | null): boolean
 }
 
 export function canAccessClientPortal(user: AuthenticatedUser | null): boolean {
+  if (!user) {
+    return false;
+  }
+
   if (hasRole(user, "super_admin")) {
-    return hasPermission(user, "client.portal.access") && hasActiveTenantContext(user);
+    return true;
   }
 
   return hasPermission(user, "client.portal.access");

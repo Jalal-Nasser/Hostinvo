@@ -7,6 +7,7 @@ import { portalTheme } from "@/components/portal/portal-theme";
 type PortalCurrencySelectProps = {
   label: string;
   options: string[];
+  className?: string;
 };
 
 const portalCurrencyStorageKey = "portal.currency.v1";
@@ -14,6 +15,7 @@ const portalCurrencyStorageKey = "portal.currency.v1";
 export function PortalCurrencySelect({
   label,
   options,
+  className,
 }: PortalCurrencySelectProps) {
   const normalizedOptions = Array.from(
     new Set(
@@ -70,10 +72,14 @@ export function PortalCurrencySelect({
     setOpen(false);
   }
 
+  function joinClasses(...classes: Array<string | undefined | false>) {
+    return classes.filter(Boolean).join(" ");
+  }
+
   return (
     <div ref={containerRef} className="relative">
       <button
-        className={portalTheme.utilityLinkClass}
+        className={joinClasses(portalTheme.utilityLinkClass, className)}
         onClick={() => {
           if (canChangeCurrency) {
             setOpen((current) => !current);

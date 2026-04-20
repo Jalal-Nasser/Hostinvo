@@ -35,13 +35,11 @@ export function PortalDesktopNav({
   const highlightedKey = hoveredKey ?? activeSectionKey;
   const highlightedSection =
     sections.find((section) => section.key === highlightedKey) ?? sections[0];
-  const flyoutSection = highlightedSection.items.length > 0 ? highlightedSection : null;
+  const flyoutSection =
+    hoveredKey && highlightedSection.items.length > 0 ? highlightedSection : null;
 
   return (
-    <div
-      className="flex h-screen"
-      onMouseLeave={() => setHoveredKey(null)}
-    >
+    <div className="flex h-screen" onMouseLeave={() => setHoveredKey(null)}>
       <PortalRailNav
         activeSectionKey={highlightedKey}
         locale={locale}

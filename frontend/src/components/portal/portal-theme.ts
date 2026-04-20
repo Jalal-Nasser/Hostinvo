@@ -3,72 +3,72 @@ import type { CSSProperties } from "react";
 import type { PortalSectionKey } from "@/components/portal/portal-navigation";
 
 export const portalThemeVariables = {
-  "--background": "#0b1220",
-  "--foreground": "#f4f7ff",
-  "--card": "rgba(22, 30, 48, 0.92)",
-  "--line": "rgba(148, 163, 184, 0.14)",
+  "--background": "#313b51",
+  "--foreground": "#f5f7fe",
+  "--card": "rgba(74, 88, 116, 0.14)",
+  "--line": "rgba(255,255,255,0.08)",
   "--accent": "#3b82f6",
   "--accent-soft": "rgba(59, 130, 246, 0.14)",
-  "--muted": "#94a3b8",
-  "--brand-blue": "#3b82f6",
+  "--muted": "#aeb9d3",
+  "--brand-blue": "#2b79ff",
   "--brand-blue-dark": "#1d4ed8",
-  "--brand-navy": "#0b1a3a",
-  "--brand-accent": "#60a5fa",
+  "--brand-navy": "#1e49bc",
+  "--brand-accent": "#2aa7ff",
 } as CSSProperties;
 
 export const portalTheme = {
   pageBackgroundClass:
-    "bg-[radial-gradient(140%_100%_at_50%_-10%,rgba(59,130,246,0.18)_0%,rgba(14,22,44,0.98)_42%,rgba(8,14,28,1)_100%)]",
+    "bg-[radial-gradient(140%_120%_at_50%_0%,rgba(95,110,137,0.16)_0%,rgba(60,71,94,0.08)_24%,rgba(53,63,86,0.96)_48%,rgba(49,59,81,1)_100%)]",
   railClass:
-    "flex h-screen w-[92px] flex-col items-center border-e border-[rgba(148,163,184,0.1)] bg-[linear-gradient(180deg,rgba(20,28,46,0.98)_0%,rgba(14,21,38,0.99)_100%)] py-5 shadow-[16px_0_40px_rgba(3,7,18,0.36)]",
+    "flex h-screen w-[104px] flex-col items-center border-e border-[rgba(255,255,255,0.05)] bg-[linear-gradient(180deg,#59657d_0%,#48546c_100%)] py-5",
   flyoutClass:
-    "h-screen w-[236px] border-e border-[rgba(148,163,184,0.08)] bg-[linear-gradient(180deg,rgba(22,30,50,0.96)_0%,rgba(14,21,38,0.98)_100%)] backdrop-blur-[24px] shadow-[20px_0_36px_rgba(3,7,18,0.2)]",
+    "h-screen w-[248px] border-e border-[rgba(255,255,255,0.04)] bg-[linear-gradient(180deg,rgba(67,78,101,0.94)_0%,rgba(56,66,88,0.92)_100%)] backdrop-blur-[18px]",
   utilityStripClass:
-    "rounded-xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(90deg,rgba(28,38,60,0.94)_0%,rgba(20,28,46,0.96)_40%,rgba(14,21,38,0.98)_100%)] shadow-[0_8px_20px_rgba(3,7,18,0.24)] backdrop-blur-xl",
+    "border-b border-[rgba(255,255,255,0.06)] bg-[linear-gradient(90deg,#515c74_0%,#465066_46%,#3e475e_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
   heroClass:
-    "rounded-2xl border border-[rgba(125,169,255,0.24)] bg-[linear-gradient(135deg,#1d8bff_0%,#1d4ed8_58%,#0e2d8f_100%)] shadow-[0_24px_48px_rgba(3,7,18,0.4)]",
+    "relative overflow-hidden bg-[linear-gradient(180deg,#1f49bc_0%,#1f49bc_100%)]",
   surfaceClass:
-    "rounded-2xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(180deg,rgba(23,31,50,0.94)_0%,rgba(17,24,41,0.96)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_36px_rgba(3,7,18,0.32)] backdrop-blur-xl",
+    "rounded-[4px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(101,117,149,0.14)_0%,rgba(84,98,128,0.12)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
   subtleSurfaceClass:
-    "rounded-xl border border-[rgba(148,163,184,0.1)] bg-[linear-gradient(180deg,rgba(28,36,58,0.72)_0%,rgba(22,30,50,0.8)_100%)] shadow-[0_10px_22px_rgba(3,7,18,0.2)]",
+    "rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,rgba(111,126,157,0.16)_0%,rgba(92,105,134,0.14)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
   utilityLinkClass:
-    "text-[11px] font-medium tracking-[0.14em] text-[#cdd7ed] transition hover:text-white",
+    "text-[12px] font-semibold text-[#eef4ff] transition hover:text-white",
   footerLinkClass:
-    "text-[13px] leading-7 text-[#a5b4cf] transition hover:text-white",
+    "text-[14px] leading-8 text-[#dde7fa] transition hover:text-white",
   primaryButtonClass:
-    "inline-flex min-h-11 items-center justify-center rounded-lg bg-[linear-gradient(180deg,#4a95ff_0%,#2f7aee_100%)] px-5 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(0,0,0,0.2),0_12px_28px_rgba(47,122,238,0.34)] transition hover:-translate-y-0.5 hover:brightness-105",
+    "inline-flex min-h-11 items-center justify-center rounded-[4px] bg-[linear-gradient(180deg,#4387ff_0%,#3371ea_100%)] px-5 text-sm font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.06)_inset] transition hover:brightness-105",
   secondaryButtonClass:
-    "inline-flex min-h-11 items-center justify-center rounded-lg border border-[rgba(148,163,184,0.22)] bg-[linear-gradient(180deg,rgba(255,255,255,0.07)_0%,rgba(255,255,255,0.03)_100%)] px-5 text-sm font-semibold text-white/95 transition hover:border-[rgba(148,163,184,0.34)] hover:bg-[rgba(255,255,255,0.09)]",
+    "inline-flex min-h-11 items-center justify-center rounded-[4px] border border-[rgba(255,255,255,0.1)] bg-[linear-gradient(180deg,rgba(108,124,155,0.18)_0%,rgba(82,95,123,0.16)_100%)] px-5 text-sm font-semibold text-white transition hover:bg-[rgba(255,255,255,0.08)]",
   inputShellClass:
-    "flex min-h-[52px] items-center rounded-lg border border-[#d7e5ff] bg-white shadow-[0_14px_28px_rgba(3,7,18,0.28)]",
+    "flex min-h-[52px] items-center rounded-[4px] border border-[#d7e5ff] bg-white shadow-[0_8px_18px_rgba(9,20,58,0.2)]",
   panelClass:
-    "rounded-2xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(180deg,rgba(23,31,50,0.95)_0%,rgba(17,24,41,0.97)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_36px_rgba(3,7,18,0.28)]",
+    "rounded-[4px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(101,117,149,0.14)_0%,rgba(84,98,128,0.12)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
   fieldClass:
-    "min-h-12 w-full rounded-lg border border-[rgba(148,163,184,0.18)] bg-[rgba(10,17,32,0.8)] px-3.5 text-sm text-white outline-none transition placeholder:text-[#8393b5] focus:border-[#4a95ff] focus:ring-4 focus:ring-[rgba(74,149,255,0.18)]",
+    "min-h-12 w-full rounded-[4px] border border-[rgba(255,255,255,0.12)] bg-[rgba(28,36,52,0.78)] px-3.5 text-sm text-white outline-none transition placeholder:text-[#a5b1ca] focus:border-[#5b96ff] focus:ring-4 focus:ring-[rgba(91,150,255,0.18)]",
   chipClass:
-    "inline-flex min-h-10 items-center justify-center rounded-lg border border-[rgba(148,163,184,0.14)] bg-[rgba(255,255,255,0.03)] px-3.5 text-sm font-medium text-[#d9e5fb] transition hover:border-[rgba(148,163,184,0.24)] hover:bg-[rgba(255,255,255,0.06)]",
+    "inline-flex min-h-10 items-center justify-center rounded-[4px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-3.5 text-sm font-medium text-[#e6edfb] transition hover:bg-[rgba(255,255,255,0.07)]",
   chipActiveClass:
-    "border-[rgba(103,161,255,0.4)] bg-[linear-gradient(180deg,rgba(60,122,255,0.22)_0%,rgba(60,122,255,0.1)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+    "border-[rgba(97,160,255,0.36)] bg-[linear-gradient(180deg,rgba(73,137,255,0.22)_0%,rgba(73,137,255,0.1)_100%)] text-white",
   noteClass:
-    "rounded-xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(180deg,rgba(28,36,58,0.82)_0%,rgba(22,30,50,0.88)_100%)] px-4 py-3 text-sm leading-7 text-[#b9c7df]",
+    "rounded-[4px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(84,98,128,0.14)_0%,rgba(69,82,107,0.12)_100%)] px-4 py-3 text-sm leading-7 text-[#d1dbef]",
   tableShellClass:
-    "overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.12)] bg-[linear-gradient(180deg,rgba(23,31,50,0.96)_0%,rgba(17,24,41,0.98)_100%)] shadow-[0_16px_32px_rgba(3,7,18,0.28)]",
+    "overflow-hidden rounded-[4px] border border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(101,117,149,0.14)_0%,rgba(84,98,128,0.12)_100%)]",
   sectionKickerClass:
-    "text-[10px] font-semibold uppercase tracking-[0.28em] text-[#8ea4ca]",
+    "text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9fb2d8]",
 } as const;
 
 const portalHeaderCardBaseClass =
-  "rounded-2xl border shadow-[0_22px_44px_rgba(3,7,18,0.32)] backdrop-blur-xl";
+  "rounded-[4px] border shadow-[0_16px_28px_rgba(18,24,38,0.18)]";
 
 const portalHeaderCardVariants: Record<PortalSectionKey, string> = {
   products:
-    "border-[rgba(148,163,184,0.18)] bg-[radial-gradient(circle_at_top_left,rgba(94,116,156,0.24)_0%,transparent_34%),linear-gradient(135deg,rgba(30,40,62,0.96)_0%,rgba(22,30,50,0.98)_60%,rgba(16,23,42,0.99)_100%)]",
+    "border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(91,106,138,0.18)_0%,rgba(66,79,105,0.16)_100%)]",
   domains:
-    "border-[rgba(103,146,232,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(73,137,255,0.3)_0%,transparent_34%),linear-gradient(135deg,rgba(36,60,110,0.94)_0%,rgba(24,40,80,0.96)_48%,rgba(16,23,42,0.99)_100%)]",
+    "border-[rgba(104,157,255,0.2)] bg-[linear-gradient(180deg,rgba(57,122,243,0.24)_0%,rgba(67,80,108,0.18)_100%)]",
   "website-security":
-    "border-[rgba(88,145,188,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(69,145,201,0.28)_0%,transparent_34%),linear-gradient(135deg,rgba(32,56,82,0.96)_0%,rgba(22,38,60,0.98)_56%,rgba(15,24,42,0.99)_100%)]",
+    "border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(91,106,138,0.18)_0%,rgba(66,79,105,0.16)_100%)]",
   support:
-    "border-[rgba(110,126,188,0.22)] bg-[radial-gradient(circle_at_top_left,rgba(96,119,212,0.28)_0%,transparent_34%),linear-gradient(135deg,rgba(38,50,88,0.96)_0%,rgba(26,36,64,0.98)_54%,rgba(16,23,42,0.99)_100%)]",
+    "border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(91,106,138,0.18)_0%,rgba(66,79,105,0.16)_100%)]",
 };
 
 export function resolvePortalHeaderCardClass(sectionKey: PortalSectionKey): string {

@@ -11,9 +11,16 @@ import { clearTenantContext } from "@/lib/tenants";
 type ImpersonationReturnProps = {
   locale: string;
   variant?: "default" | "outline";
+  className?: string;
+  iconOnly?: boolean;
 };
 
-export function ImpersonationReturn({ locale, variant = "outline" }: ImpersonationReturnProps) {
+export function ImpersonationReturn({
+  locale,
+  variant = "outline",
+  className,
+  iconOnly = false,
+}: ImpersonationReturnProps) {
   const t = useTranslations("Tenants");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -27,8 +34,43 @@ export function ImpersonationReturn({ locale, variant = "outline" }: Impersonati
     });
   }
 
+  if (iconOnly) {
+    return (
+      <button
+        aria-label={t("returnToPlatformOwner")}
+        className={className}
+        disabled={isPending}
+        onClick={handleStop}
+        title={t("returnToPlatformOwner")}
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M10 7H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4M14 16l4-4m0 0-4-4m4 4H9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+        </svg>
+      </button>
+    );
+  }
+
   return (
-    <Button disabled={isPending} onClick={handleStop} variant={variant}>
+    <Button
+      aria-label={t("returnToPlatformOwner")}
+      className={className}
+      disabled={isPending}
+      onClick={handleStop}
+      title={t("returnToPlatformOwner")}
+      variant={variant}
+    >
       {t("returnToPlatformOwner")}
     </Button>
   );

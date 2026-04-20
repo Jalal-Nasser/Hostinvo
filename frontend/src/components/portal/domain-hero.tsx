@@ -22,19 +22,13 @@ type DomainHeroProps = {
   isRtl: boolean;
 };
 
-const suggestedExtensions = [".com", ".net", ".org", ".sa"];
-
 export function DomainHero({
-  kicker,
   title,
-  description,
   placeholder,
   transferLabel,
   searchLabel,
-  suggestedExtensionsLabel,
   transferHref,
   registerHref,
-  isRtl,
 }: DomainHeroProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -64,91 +58,77 @@ export function DomainHero({
     <section
       className={[
         portalTheme.heroClass,
-        "relative overflow-hidden ps-6 pe-6 py-10 md:ps-10 md:pe-10 md:py-12",
+        "-ms-4 -me-4 md:-ms-6 md:-me-6 lg:-ms-0 lg:-me-0",
+        "relative min-h-[270px] overflow-hidden ps-6 pe-6 pt-14 pb-12 md:ps-10 md:pe-10 lg:min-h-[302px]",
       ].join(" ")}
     >
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0)_36%,rgba(8,25,82,0.16)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_24%,rgba(16,36,107,0.12)_100%)]" />
+      <div className="absolute start-0 top-0 h-full w-[182px] bg-[linear-gradient(135deg,#356ef2_0%,#356ef2_49%,transparent_49%)]" />
+      <div className="absolute start-[126px] top-0 hidden h-[140px] w-[210px] bg-[linear-gradient(135deg,#1ca0f4_0%,#1ca0f4_62%,transparent_62%)] lg:block" />
+      <div className="absolute end-0 top-0 h-full w-[182px] bg-[linear-gradient(225deg,#356ef2_0%,#356ef2_49%,transparent_49%)]" />
+      <div className="absolute end-[126px] top-0 hidden h-[140px] w-[210px] bg-[linear-gradient(225deg,#1ca0f4_0%,#1ca0f4_62%,transparent_62%)] lg:block" />
+
       <div
         className="absolute hidden lg:block"
-        style={{ insetInlineStart: "2.25rem", top: "1.4rem" }}
+        style={{ insetInlineStart: "10rem", top: "1.7rem" }}
       >
-        <PortalLaptopIllustration className="h-24 w-24 opacity-80" />
+        <PortalLaptopIllustration className="h-[188px] w-[188px] opacity-95" />
       </div>
       <div
         className="absolute hidden lg:block"
-        style={{ insetInlineEnd: "2.25rem", top: "1.6rem" }}
+        style={{ insetInlineEnd: "9rem", top: "1.7rem" }}
       >
-        <PortalSearchIllustration className="h-24 w-24 opacity-80" />
+        <PortalSearchIllustration className="h-[188px] w-[188px] opacity-95" />
       </div>
 
-      <div className="relative ms-auto me-auto max-w-[760px] text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/72">{kicker}</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-white md:text-[2.45rem]">
+      <div className="relative mx-auto max-w-[840px] text-center">
+        <h1 className="text-[2.1rem] font-bold tracking-[-0.03em] text-white md:text-[3rem]">
           {title}
         </h1>
-        <p className="ms-auto me-auto mt-3 max-w-[560px] text-sm leading-7 text-[#dfe8ff]">
-          {description}
-        </p>
 
         <form
-          className="ms-auto me-auto mt-7 flex max-w-[620px] flex-col gap-3 md:flex-row md:items-center"
+          className="mx-auto mt-8 flex max-w-[782px] flex-col gap-3 md:flex-row md:items-center"
           onSubmit={handleSearchSubmit}
         >
-          <div className={[portalTheme.inputShellClass, "min-w-0 flex-1 ps-3 pe-2"].join(" ")}>
-            <svg
-              className="h-[18px] w-[18px] shrink-0 text-[#7591c6]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="m21 21-4.35-4.35M10.75 18a7.25 7.25 0 1 0 0-14.5 7.25 7.25 0 0 0 0 14.5Z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.8"
+          <div className="flex min-h-[60px] w-full items-center overflow-hidden rounded-[6px] border-[6px] border-white bg-white shadow-[0_8px_18px_rgba(8,20,58,0.22)]">
+            <div className="flex min-w-0 flex-1 items-center ps-4">
+              <svg
+                className="h-[22px] w-[22px] shrink-0 text-[#2d6df0]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="m21 21-4.35-4.35M10.75 18a7.25 7.25 0 1 0 0-14.5 7.25 7.25 0 0 0 0 14.5Z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                />
+              </svg>
+              <input
+                className="h-12 w-full border-0 bg-transparent ps-3 pe-3 text-[16px] !text-[#34425e] caret-[#1a65ff] outline-none placeholder:!text-[#a6b0c0]"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={placeholder}
+                value={query}
               />
-            </svg>
-            <input
-              className="h-11 w-full border-0 bg-transparent ps-3 pe-3 text-[15px] !text-[#13254a] caret-[#1a65ff] outline-none placeholder:!text-[#8aa1c7] selection:bg-[#2f87ff] selection:text-white"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={placeholder}
-              value={query}
-            />
-          </div>
-
-          <div
-            className={[
-              "flex items-center gap-2 md:shrink-0",
-              isRtl ? "md:flex-row-reverse" : "",
-            ].join(" ")}
-          >
-            <button className={portalTheme.secondaryButtonClass} onClick={handleTransferClick} type="button">
-              {transferLabel}
-            </button>
-            <button className={portalTheme.primaryButtonClass} type="submit">
-              {searchLabel}
-            </button>
+            </div>
+            <div className="flex h-full items-stretch gap-[1px] bg-white pe-[1px]">
+              <button
+                className="min-w-[126px] bg-[#dce7ff] px-5 text-[16px] font-semibold text-[#3568d4]"
+                onClick={handleTransferClick}
+                type="button"
+              >
+                {transferLabel}
+              </button>
+              <button
+                className="min-w-[120px] bg-[linear-gradient(180deg,#4387ff_0%,#3371ea_100%)] px-5 text-[16px] font-semibold text-white"
+                type="submit"
+              >
+                {searchLabel}
+              </button>
+            </div>
           </div>
         </form>
-
-        <div
-          className={[
-            "mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-white/82",
-            isRtl ? "md:flex-row-reverse" : "",
-          ].join(" ")}
-        >
-          <span className="text-[#dce7ff]/84">{suggestedExtensionsLabel}</span>
-          {suggestedExtensions.map((extension) => (
-            <button
-              key={extension}
-              className="rounded-full border border-white/18 bg-white/8 ps-3 pe-3 py-1 text-sm font-medium text-white/92 transition hover:bg-white/12"
-              onClick={() => setQuery((current) => `${current.replace(/\.[^.]*$/, "").trim() || "example"}${extension}`)}
-              type="button"
-            >
-              {extension}
-            </button>
-          ))}
-        </div>
       </div>
     </section>
   );

@@ -24,11 +24,11 @@ export function PortalLocaleSelect({
   const router = useRouter();
 
   return (
-    <label className="flex items-center gap-2 text-[12px] text-[#94a8cd]">
-      <span>{label}</span>
+    <label className="flex items-center gap-2 text-[12px] text-[#dce5f8]">
+      {label ? <span>{label}</span> : null}
       <select
-        aria-label={label}
-        className="min-h-9 rounded-[10px] border border-[rgba(104,123,158,0.16)] bg-[rgba(255,255,255,0.04)] ps-3 pe-8 text-[12px] font-medium text-[#e0e8f8] outline-none transition hover:border-[rgba(104,123,158,0.24)] focus:border-[rgba(88,145,255,0.38)]"
+        aria-label={label || "Language"}
+        className="min-h-8 rounded-[2px] border-0 bg-transparent ps-0 pe-6 text-[12px] font-medium text-[#dce5f8] outline-none"
         defaultValue={currentLocale}
         onChange={(event) => {
           router.push(localePath(event.target.value, currentPath));

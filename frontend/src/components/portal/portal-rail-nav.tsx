@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { PortalSection, PortalSectionKey } from "@/components/portal/portal-navigation";
-import { PortalRailIcon } from "@/components/portal/portal-icons";
+import { PortalBrandMark, PortalRailIcon } from "@/components/portal/portal-icons";
 import { portalTheme } from "@/components/portal/portal-theme";
 import { localePath } from "@/lib/auth";
 
@@ -19,18 +19,6 @@ type PortalRailNavProps = {
 
 function joinClasses(...classes: Array<string | undefined | false>): string {
   return classes.filter(Boolean).join(" ");
-}
-
-function railLogoInitials(value: string): string {
-  const initials = value
-    .trim()
-    .split(/\s+/)
-    .map((part) => part.charAt(0))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return initials || "CP";
 }
 
 export function PortalRailNav({
@@ -54,23 +42,16 @@ export function PortalRailNav({
               key={section.key}
               href={section.href}
               className={joinClasses(
-                "flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-xl border px-3 py-3 text-center transition",
+                "flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[4px] px-3 py-3 text-center transition",
                 active
-                  ? "border-[rgba(74,149,255,0.32)] bg-[linear-gradient(180deg,rgba(59,130,246,0.18)_0%,rgba(59,130,246,0.06)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "border-[rgba(148,163,184,0.08)] bg-[rgba(255,255,255,0.02)] text-[#a5b4cf] hover:border-[rgba(148,163,184,0.16)] hover:bg-[rgba(255,255,255,0.04)] hover:text-white",
+                  ? "bg-[linear-gradient(180deg,rgba(73,137,255,0.22)_0%,rgba(73,137,255,0.1)_100%)] text-white"
+                  : "text-[#d8e3fb] hover:bg-[rgba(255,255,255,0.06)] hover:text-white",
               )}
             >
-              <span
-                className={joinClasses(
-                  "inline-flex h-10 w-10 items-center justify-center rounded-lg transition",
-                  active
-                    ? "bg-[linear-gradient(180deg,rgba(74,149,255,0.32)_0%,rgba(47,122,238,0.16)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                    : "bg-[rgba(255,255,255,0.04)]",
-                )}
-              >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] bg-[rgba(255,255,255,0.05)]">
                 <PortalRailIcon active={active} icon={section.icon} />
               </span>
-              <span className="text-[11px] font-semibold leading-4 tracking-[0.06em]">{section.label}</span>
+              <span className="text-[12px] font-medium leading-4">{section.label}</span>
             </Link>
           );
         })}
@@ -82,7 +63,7 @@ export function PortalRailNav({
     <aside className={portalTheme.railClass}>
       <Link
         href={localePath(locale, "/portal")}
-        className="inline-flex items-center justify-center rounded-xl border border-[rgba(148,163,184,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+        className="inline-flex items-center justify-center"
         aria-label={logoAlt}
       >
         {logoSrc ? (
@@ -90,8 +71,8 @@ export function PortalRailNav({
             <Image
               src={logoSrc}
               alt={logoAlt}
-              width={44}
-              height={44}
+              width={40}
+              height={40}
               className="h-10 w-10 object-contain"
               priority
             />
@@ -104,13 +85,11 @@ export function PortalRailNav({
             />
           )
         ) : (
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#3b82f6,#1d4ed8)] text-[11px] font-bold uppercase tracking-wide text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-            {railLogoInitials(logoAlt)}
-          </span>
+          <PortalBrandMark className="h-10 w-10" />
         )}
       </Link>
 
-      <nav className="mt-6 flex w-full flex-1 flex-col items-center gap-2 px-2.5">
+      <nav className="mt-7 flex w-full flex-1 flex-col items-center gap-4 px-2">
         {sections.map((section) => {
           const active = section.key === activeSectionKey;
 
@@ -121,26 +100,21 @@ export function PortalRailNav({
               onFocus={() => onSectionFocus?.(section.key)}
               onMouseEnter={() => onSectionHover?.(section.key)}
               className={joinClasses(
-                "group relative flex w-full flex-col items-center justify-center gap-2 rounded-xl px-1.5 py-3 text-center transition",
-                active
-                  ? "bg-[linear-gradient(180deg,rgba(74,149,255,0.22)_0%,rgba(47,122,238,0.1)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "text-[#a5b4cf] hover:bg-[rgba(255,255,255,0.04)] hover:text-white",
+                "group flex w-full flex-col items-center justify-center gap-2 px-1 py-2.5 text-center transition",
+                active ? "text-white" : "text-[#eef4ff] hover:text-white",
               )}
             >
-              {active ? (
-                <span className="absolute start-0 top-1/2 h-10 w-0.5 -translate-y-1/2 rounded-e-full bg-[#60a5fa]" />
-              ) : null}
               <span
                 className={joinClasses(
-                  "inline-flex h-[46px] w-[46px] items-center justify-center rounded-xl transition",
+                  "inline-flex h-[52px] w-[52px] items-center justify-center rounded-[4px] transition",
                   active
-                    ? "bg-[linear-gradient(180deg,rgba(74,149,255,0.28)_0%,rgba(47,122,238,0.12)_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                    : "bg-[rgba(255,255,255,0.04)] text-[#cdd7ed] group-hover:bg-[rgba(255,255,255,0.07)] group-hover:text-white",
+                    ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.03)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    : "bg-transparent group-hover:bg-[rgba(255,255,255,0.05)]",
                 )}
               >
                 <PortalRailIcon active={active} icon={section.icon} />
               </span>
-              <span className="text-[10.5px] font-semibold leading-3 tracking-[0.04em]">{section.label}</span>
+              <span className="text-[12px] font-medium leading-5 tracking-[-0.01em]">{section.label}</span>
             </Link>
           );
         })}

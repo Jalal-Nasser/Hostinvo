@@ -97,7 +97,7 @@ export function PortalActionIcon({
   icon,
   className,
 }: {
-  icon: "buy-domain" | "transfer-domain" | "domain-pricing" | "get-support";
+  icon: "buy-domain" | "order-hosting" | "make-payment" | "get-support";
   className?: string;
 }) {
   const classes = joinClasses("h-8 w-8", className);
@@ -112,52 +112,27 @@ export function PortalActionIcon({
           <circle cx="14" cy="14" r="11" stroke="#dce8ff" strokeWidth="1.7" />
         </svg>
       );
-    case "transfer-domain":
+    case "order-hosting":
       return (
         <svg className={classes} fill="none" viewBox="0 0 28 28">
+          <path d="M7 15.2 14 18.8l7-3.6v4.6L14 23.3 7 19.8v-4.6Z" fill="#2e84ff" />
           <path
-            d="M6.5 10.5h9.7"
-            stroke="#dce8ff"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="m13.3 7.4 3.7 3.1-3.7 3.1"
+            d="m14 4.8-8 4.3 8 4.3 8-4.3-8-4.3Zm0 0v4.3m8-4.3v8.6l-8 4.3-8-4.3V8.9l8 4.3m0 0 8-4.3"
             stroke="#ffffff"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="M21.5 17.5h-9.7"
-            stroke="#49a3ff"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="m14.7 14.4-3.7 3.1 3.7 3.1"
-            stroke="#2e84ff"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
+            strokeWidth="1.6"
           />
         </svg>
       );
-    case "domain-pricing":
+    case "make-payment":
       return (
         <svg className={classes} fill="none" viewBox="0 0 28 28">
           <path d="M14.5 6.3 21 10.1v8.2l-6.5 3.8-6.6-3.8v-8.2l6.6-3.8Z" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
           <path d="m14.5 6.3 6.5 3.8-6.5 3.8-6.6-3.8 6.6-3.8Z" stroke="#dce8ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.4" />
-          <path
-            d="M13.1 11.1h3.4c.9 0 1.6.7 1.6 1.6 0 .7-.5 1.3-1.2 1.5l-2.7.8c-.7.2-1.2.8-1.2 1.5 0 .9.7 1.6 1.6 1.6h3.4"
-            stroke="#2e84ff"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.7"
-          />
-          <path d="M15.1 9.6v2.1M15.1 17.4v1.9" stroke="#49a3ff" strokeLinecap="round" strokeWidth="1.7" />
+          <path d="M18.5 12.7h-8" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+          <path d="M15.7 15.9h-5.2" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+          <path d="M17.3 9.8h2.9" stroke="#2e84ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
         </svg>
       );
     case "get-support":

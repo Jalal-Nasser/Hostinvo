@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { PortalLocaleSelect } from "@/components/portal/portal-locale-select";
-import { portalTheme } from "@/components/portal/portal-theme";
+import { PortalSocialIcon } from "@/components/portal/portal-icons";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { localePath } from "@/lib/auth";
 import type { TenantBrandingRecord } from "@/lib/tenant-admin";
@@ -32,55 +32,89 @@ export function PortalFooter({
   branding,
 }: PortalFooterProps) {
   const currentYear = new Date().getFullYear();
-  const brandName =
+  const demoBrandName =
     branding?.portal_name?.trim() ||
     branding?.company_name?.trim() ||
-    (locale === "ar" ? "بوابة العملاء" : "Client portal");
-  const footerSummary =
-    branding?.portal_tagline?.trim() ||
-    branding?.company_name?.trim() ||
-    null;
-  const emptyState =
-    locale === "ar"
-      ? "لم يتم نشر روابط بوابة مخصصة بعد. ستظهر هنا الروابط والمعلومات التي يضيفها مدير المستأجر."
-      : "No custom portal links have been published yet. Tenant-managed footer links will appear here once the admin adds them.";
+    "Privet Server";
+  const demoColumns =
+    columns.length > 0
+      ? columns
+      : [
+          {
+            key: "products",
+            title: "Products",
+            items: [
+              { label: "Web Hosting Plesk", href: localePath(locale, "/portal/products") },
+              { label: "SSL Certificates", href: localePath(locale, "/portal/products") },
+              { label: "Email Spam Filtering", href: localePath(locale, "/portal/products") },
+              { label: "Site Builder", href: localePath(locale, "/portal/products") },
+              { label: "Weebly Website Builder", href: localePath(locale, "/portal/products") },
+              { label: "Zoho Business Mail", href: localePath(locale, "/portal/products") },
+              { label: "Zoho WorkSpace", href: localePath(locale, "/portal/products") },
+              { label: "Dedicated Cloud Server", href: localePath(locale, "/portal/products") },
+              { label: "Cloud Host", href: localePath(locale, "/portal/products") },
+              { label: "VPS Host", href: localePath(locale, "/portal/products") },
+              { label: "Backend Server", href: localePath(locale, "/portal/products") },
+              { label: "Servers License", href: localePath(locale, "/portal/products") },
+              { label: "Domain Pricing", href: localePath(locale, "/portal/domains/pricing") },
+            ],
+          },
+          {
+            key: "services",
+            title: "Services",
+            items: [
+              { label: "Website Builder", href: localePath(locale, "/portal/website-security") },
+              { label: "Website Security", href: localePath(locale, "/portal/website-security") },
+            ],
+          },
+          {
+            key: "support",
+            title: "Support",
+            items: [
+              { label: "About us", href: localePath(locale, "/portal/account") },
+              { label: "Contact Us", href: localePath(locale, "/portal/tickets/new") },
+              { label: "News", href: localePath(locale, "/portal/news") },
+              { label: "Knowledgebase", href: localePath(locale, "/portal/knowledgebase") },
+              { label: "Privacy Policy", href: localePath(locale, "/portal/account") },
+              { label: "Terms & Conditions", href: localePath(locale, "/portal/account") },
+              { label: "Blog", href: localePath(locale, "/portal/news") },
+            ],
+          },
+        ];
   const copyrightText =
     locale === "ar"
-      ? `حقوق النشر © ${currentYear} ${brandName}. جميع الحقوق محفوظة.`
-      : `Copyright © ${currentYear} ${brandName}. All rights reserved.`;
+      ? `حقوق النشر © ${currentYear} ${demoBrandName}. جميع الحقوق محفوظة.`
+      : `Copyright © ${currentYear} ${demoBrandName}. All Rights Reserved.`;
 
   return (
-    <footer className="mt-12 border-t border-[rgba(104,123,158,0.12)] pt-10">
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr_0.9fr_0.9fr]">
+    <footer className="-ms-4 -me-4 mt-20 border-t border-[rgba(255,255,255,0.08)] pt-14 md:-ms-6 md:-me-6 lg:-ms-0 lg:-me-0">
+      <div className="mx-auto grid max-w-[980px] gap-10 ps-8 pe-8 lg:grid-cols-[1fr_1fr_0.9fr_0.9fr]">
         <div>
           <BrandLogo
             href={localePath(locale, "/portal")}
-            className="w-[138px]"
+            className="w-[148px]"
             src={branding?.logo_url}
-            alt={brandName}
-            fallbackText={!branding?.logo_url ? brandName : undefined}
+            alt={demoBrandName}
+            fallbackText={!branding?.logo_url ? demoBrandName : undefined}
           />
-          {footerSummary ? (
-            <p className="mt-5 text-[13px] leading-7 text-[#aebad4]">{footerSummary}</p>
-          ) : null}
+          <p className="mt-10 text-[14px] text-[#d7e1f3]">Get in touch with us!</p>
+          <div className="mt-5 flex items-center gap-5 text-[#dce7ff]">
+            <PortalSocialIcon icon="facebook" />
+            <PortalSocialIcon icon="twitter" />
+            <PortalSocialIcon icon="linkedin" />
+          </div>
         </div>
 
-        {columns.length === 0 ? (
-          <div className="lg:col-span-3">
-            <div className={portalTheme.noteClass}>{emptyState}</div>
-          </div>
-        ) : null}
-
-        {columns.map((column) => (
+        {demoColumns.map((column) => (
           <div key={column.key}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
+            <h3 className="text-[17px] font-medium text-white">
               {column.title}
             </h3>
-            <div className="mt-4 grid gap-1">
+            <div className="mt-6 grid gap-2">
               {column.items.map((item) => (
                 <Link
                   key={`${column.key}-${item.label}`}
-                  className={portalTheme.footerLinkClass}
+                  className="text-[14px] leading-8 text-[#dde7fa] transition hover:text-white"
                   href={item.href}
                   target={item.openInNewTab ? "_blank" : undefined}
                   rel={item.openInNewTab ? "noreferrer" : undefined}
@@ -93,12 +127,12 @@ export function PortalFooter({
         ))}
       </div>
 
-      <div className="mt-10 flex flex-col gap-3 border-t border-[rgba(104,123,158,0.12)] pt-5 text-[12px] text-[#94a8cd] md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto mt-16 flex max-w-[980px] flex-col gap-3 border-t border-[rgba(255,255,255,0.08)] ps-8 pe-8 pt-6 text-[12px] text-[#dde5f7] md:flex-row md:items-center md:justify-between">
         <p>{copyrightText}</p>
         <PortalLocaleSelect
           currentLocale={locale}
           currentPath={currentPath}
-          label={t("footerLanguage")}
+          label=""
         />
       </div>
     </footer>

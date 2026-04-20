@@ -19,8 +19,6 @@ import {
 import { PortalTopbar } from "@/components/portal/portal-topbar";
 import { type AppLocale } from "@/i18n/routing";
 import {
-  canAccessClientPortal,
-  defaultWorkspacePath,
   getAuthenticatedUserFromCookies,
   localePath,
 } from "@/lib/auth";
@@ -46,14 +44,10 @@ export async function PortalShell({
   showPageIntro = true,
 }: PortalShellProps) {
   const cookieHeader = cookies().toString();
-  const user = await getAuthenticatedUserFromCookies(cookieHeader);
+  const user = await getAuthenticatedUserFromCookies(cookieHeader, "/portal");
 
   if (!user) {
     redirect(localePath(locale, "/auth/login"));
-  }
-
-  if (!canAccessClientPortal(user)) {
-    redirect(defaultWorkspacePath(locale, user));
   }
 
   const t = await getTranslations("Portal");
@@ -72,8 +66,7 @@ export async function PortalShell({
     icon: "products" as const,
     items: [],
   };
-  const hasActiveDesktopFlyout = activeSection.items.length > 0;
-  const footerColumns = portalConfig?.surface.content_sources.footer_links === false
+  const footerColumns = portalConfig?.surface?.content_sources?.footer_links === false
     ? []
     : buildPortalFooterColumns(locale, t, portalConfig?.footer_links ?? []);
   const railLogoSrc = branding?.favicon_url || branding?.logo_url || null;
@@ -100,16 +93,11 @@ export async function PortalShell({
         </div>
       </div>
 
-      <div
-        className={[
-          "relative min-h-screen",
-          hasActiveDesktopFlyout ? "lg:ps-[328px]" : "lg:ps-[116px]",
-        ].join(" ")}
-      >
-        <div className="ms-auto me-auto flex min-h-screen w-full max-w-[1360px] flex-col ps-4 pe-4 pt-4 pb-8 md:ps-6 md:pe-6 md:pt-5 lg:ps-8 lg:pe-8 xl:ps-10 xl:pe-10">
-          <PortalTopbar locale={locale} t={t} user={user} branding={branding} />
+      <div className="relative flex min-h-screen flex-col lg:ps-[104px]">
+        <PortalTopbar locale={locale} t={t} user={user} branding={branding} />
 
-          <div className="mb-5 space-y-4 lg:hidden">
+        <div className="ms-auto me-auto flex min-h-0 w-full flex-1 flex-col ps-4 pe-4 pt-0 pb-8 md:ps-6 md:pe-6 lg:ps-0 lg:pe-0">
+          <div className="mb-5 space-y-4 px-0 pt-4 lg:hidden">
             <PortalRailNav
               activeSectionKey={activeSectionKey}
               locale={locale}
@@ -136,7 +124,7 @@ export async function PortalShell({
             <section
               className={[
                 resolvePortalHeaderCardClass(activeSection.key),
-                "mb-6 px-6 py-6 md:px-7 md:py-7",
+                "mx-4 mb-6 mt-5 px-6 py-6 md:mx-6 md:px-7 md:py-7 lg:mx-6",
               ].join(" ")}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -147,7 +135,7 @@ export async function PortalShell({
                   <h1 className="mt-2 text-[1.75rem] font-semibold tracking-[-0.028em] text-white md:text-[2rem]">
                     {title}
                   </h1>
-                  <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#a5b4cf]">
+                  <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#c1cce3]">
                     {description}
                   </p>
                 </div>
@@ -159,7 +147,7 @@ export async function PortalShell({
             </section>
           ) : null}
 
-          <div className="flex-1 space-y-8">{children}</div>
+          <div className="flex-1">{children}</div>
 
           <PortalFooter
             columns={footerColumns}

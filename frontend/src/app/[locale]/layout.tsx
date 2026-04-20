@@ -79,7 +79,7 @@ export default async function LocaleLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale as AppLocale} messages={messages}>
           {children}
         </NextIntlClientProvider>
       </body>

@@ -17,7 +17,7 @@ export default async function PortalAccountPage({
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Portal");
-  const user = await getAuthenticatedUserFromCookies(cookies().toString());
+  const user = await getAuthenticatedUserFromCookies(cookies().toString(), "/portal/account");
 
   return (
     <PortalShell

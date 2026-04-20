@@ -1,7 +1,3 @@
-import Link from "next/link";
-
-import { portalTheme } from "@/components/portal/portal-theme";
-
 type PortalNewsItem = {
   id: string;
   title: string;
@@ -10,80 +6,58 @@ type PortalNewsItem = {
 };
 
 type PortalNewsCardProps = {
-  kicker: string;
   title: string;
-  description: string;
-  emptyTitle: string;
-  emptyDescription: string;
   items?: PortalNewsItem[];
-  viewAllHref?: string;
-  viewAllLabel?: string;
 };
 
 export function PortalNewsCard({
-  kicker,
   title,
-  description,
-  emptyTitle,
-  emptyDescription,
   items = [],
-  viewAllHref,
-  viewAllLabel,
 }: PortalNewsCardProps) {
+  const featuredItem = items[0] ?? {
+    id: "demo-news",
+    title: "Platform Updates Completed",
+    excerpt:
+      "Dear valued clients, Over the past few days, our client portal was temporarily unavailable due to an unexpected backend issue that required in-depth maintenance and reconfiguration. This downtime affected access to billing, service management, and support ticket functions. We're happy to confirm that everything is now fully restored — the platform is stable again and all core services are operating normally.",
+    publishedAt: "Oct 12th",
+  };
+
   return (
-    <section id="news">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <p className={portalTheme.sectionKickerClass}>{kicker}</p>
-          <h2 className="mt-1.5 text-[1.35rem] font-semibold tracking-[-0.02em] text-white md:text-[1.5rem]">
-            {title}
-          </h2>
-        </div>
-        {viewAllHref && viewAllLabel ? (
-          <Link className={portalTheme.secondaryButtonClass} href={viewAllHref}>
-            {viewAllLabel}
-          </Link>
-        ) : null}
+    <section id="news" className="mx-auto mt-16 max-w-[960px]">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="text-[20px] font-normal tracking-[-0.02em] text-white md:text-[22px]">
+          {title}
+        </h2>
+        <span className="inline-flex h-5 w-5 items-center justify-center text-[#dbe6fb]">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 4h12a2 2 0 0 1 2 2v13l-4-2.8L12 19l-4-2.8L4 19V6a2 2 0 0 1 2-2Z" />
+          </svg>
+        </span>
       </div>
 
-      <article className={[portalTheme.surfaceClass, "px-6 py-5 md:px-7 md:py-6"].join(" ")}>
-        <p className="max-w-2xl text-[13px] leading-6 text-[#a5b4cf]">{description}</p>
-        {items.length === 0 ? (
-          <div className="mt-4 rounded-xl border border-[rgba(148,163,184,0.1)] bg-[rgba(255,255,255,0.02)] px-5 py-5">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(74,149,255,0.14)] text-[#93c5fd]">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 11h2v6h-2zm0-4h2v2h-2zm1-5a10 10 0 100 20 10 10 0 000-20z" />
-                </svg>
-              </span>
-              <div>
-                <h3 className="text-[15px] font-semibold text-white">{emptyTitle}</h3>
-                <p className="mt-1.5 max-w-3xl text-[13px] leading-6 text-[#a5b4cf]">
-                  {emptyDescription}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-4 divide-y divide-[rgba(148,163,184,0.08)] rounded-xl border border-[rgba(148,163,184,0.1)] bg-[rgba(255,255,255,0.015)]">
-            {items.map((item) => (
-              <article key={item.id} className="px-5 py-4 transition hover:bg-[rgba(255,255,255,0.025)]">
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#8ea4ca]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#60a5fa]" />
-                  {item.publishedAt ? item.publishedAt : null}
-                </div>
-                <h3 className="mt-2 text-[15px] font-semibold tracking-[-0.01em] text-white">
-                  {item.title}
-                </h3>
-                {item.excerpt ? (
-                  <p className="mt-1.5 max-w-3xl text-[13px] leading-6 text-[#a5b4cf]">
-                    {item.excerpt}
-                  </p>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        )}
+      <article className="rounded-[4px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,rgba(102,118,151,0.16)_0%,rgba(89,103,133,0.14)_100%)] px-6 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div className="flex items-center gap-2 text-[13px] text-[#eef3ff]">
+          <span className="inline-flex h-3 w-3 items-center justify-center text-[#dce6ff]">
+            <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 4h12v14H6zM8 2h2v4H8zm6 0h2v4h-2z" />
+            </svg>
+          </span>
+          <span>{featuredItem.publishedAt}</span>
+        </div>
+        <h3 className="mt-4 text-[24px] font-normal tracking-[-0.02em] text-white">
+          {featuredItem.title}
+        </h3>
+        {featuredItem.excerpt ? (
+          <p className="mt-3 max-w-[900px] text-[14px] leading-8 text-[#d9e2f5]">
+            {featuredItem.excerpt}
+          </p>
+        ) : null}
+        <button
+          className="mt-6 inline-flex min-h-[36px] items-center justify-center rounded-[2px] bg-[#dbe5ff] px-4 text-[13px] font-medium text-[#2e5fc7]"
+          type="button"
+        >
+          Read More
+        </button>
       </article>
     </section>
   );
