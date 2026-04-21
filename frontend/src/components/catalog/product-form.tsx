@@ -10,6 +10,7 @@ import {
   configurableOptionTypes,
   productStatuses,
   productTypes,
+  provisioningModules,
   type ConfigurableOptionChoiceRecord,
   type ConfigurableOptionRecord,
   type ConfigurableOptionType,
@@ -17,13 +18,16 @@ import {
   type ProductRecord,
   type ProductStatus,
   type ProductType,
+  type ProvisioningModule,
   type VisibilityOption,
   visibilityOptions,
 } from "@/lib/catalog";
+import { type ServerRecord } from "@/lib/provisioning";
 
 type ProductFormProps = {
   mode: "create" | "edit";
   groups: ProductGroupRecord[];
+  servers?: ServerRecord[];
   initialProduct?: ProductRecord;
 };
 
@@ -96,7 +100,7 @@ function choiceTypesRequireList(optionType: ConfigurableOptionType): boolean {
   return optionType === "select" || optionType === "radio";
 }
 
-export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) {
+export function ProductForm({ mode, groups, servers = [], initialProduct }: ProductFormProps) {
   const t = useTranslations("Catalog");
   const locale = useLocale();
   const router = useRouter();
@@ -104,7 +108,14 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [groupId, setGroupId] = useState(initialProduct?.product_group_id ?? "");
+  const [serverId, setServerId] = useState(initialProduct?.server_id?.toString() ?? "");
   const [type, setType] = useState<ProductType>(initialProduct?.type ?? "hosting");
+  const [provisioningModule, setProvisioningModule] = useState<ProvisioningModule | "">(
+    initialProduct?.provisioning_module ?? "",
+  );
+  const [provisioningPackage, setProvisioningPackage] = useState(
+    initialProduct?.provisioning_package ?? "",
+  );
   const [name, setName] = useState(initialProduct?.name ?? "");
   const [slug, setSlug] = useState(initialProduct?.slug ?? "");
   const [sku, setSku] = useState(initialProduct?.sku ?? "");
@@ -154,6 +165,13 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
     hidden: t("visibilityHidden"),
   };
 
+  const moduleLabels: Record<ProvisioningModule, string> = {
+    cpanel: t("moduleCpanel"),
+    plesk: t("modulePlesk"),
+    directadmin: t("moduleDirectadmin"),
+    custom: t("moduleCustom"),
+  };
+
   const optionTypeLabels: Record<ConfigurableOptionType, string> = {
     select: t("optionTypeSelect"),
     radio: t("optionTypeRadio"),
@@ -186,7 +204,10 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
   function normalizePayload() {
     return {
       product_group_id: groupId || null,
+      server_id: serverId ? Number(serverId) : null,
       type,
+      provisioning_module: provisioningModule || null,
+      provisioning_package: nullable(provisioningPackage),
       name: name.trim(),
       slug: nullable(slug),
       sku: nullable(sku),
@@ -312,6 +333,56 @@ export function ProductForm({ mode, groups, initialProduct }: ProductFormProps) 
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("linkedServerLabel")}</span>
+            <select
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => {
+                const nextServerId = event.target.value;
+                const server = servers.find((item) => item.id.toString() === nextServerId);
+
+                setServerId(nextServerId);
+
+                if (server && !provisioningModule) {
+                  setProvisioningModule(server.panel_type as ProvisioningModule);
+                }
+              }}
+              value={serverId}
+            >
+              <option value="">{t("noServerOption")}</option>
+              {servers.map((server) => (
+                <option key={server.id} value={server.id}>
+                  {server.name} ({server.hostname})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("provisioningModuleLabel")}</span>
+            <select
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setProvisioningModule(event.target.value as ProvisioningModule | "")}
+              value={provisioningModule}
+            >
+              <option value="">{t("noModuleOption")}</option>
+              {provisioningModules.map((value) => (
+                <option key={value} value={value}>
+                  {moduleLabels[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("provisioningPackageLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setProvisioningPackage(event.target.value)}
+              value={provisioningPackage}
+            />
           </label>
 
           <label className="grid gap-2 text-sm font-medium text-foreground">

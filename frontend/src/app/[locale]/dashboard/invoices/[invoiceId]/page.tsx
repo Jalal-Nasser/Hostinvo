@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ManualInvoicePaymentForm } from "@/components/billing/manual-invoice-payment-form";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchInvoiceFromCookies, formatMinorCurrency } from "@/lib/billing";
@@ -170,6 +171,8 @@ export default async function InvoiceDetailsPage({
           ))}
         </div>
       </section>
+
+      <ManualInvoicePaymentForm invoice={invoice} />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="glass-card p-6 md:p-8">

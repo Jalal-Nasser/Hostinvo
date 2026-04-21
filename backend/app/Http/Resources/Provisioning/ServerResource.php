@@ -23,6 +23,7 @@ class ServerResource extends JsonResource
             'max_accounts' => $this->max_accounts,
             'current_accounts' => $this->current_accounts,
             'username' => $this->username,
+            'ip_address' => $this->ip_address,
             'has_credentials' => filled($this->credentials),
             'last_tested_at' => optional($this->last_tested_at)?->toIso8601String(),
             'notes' => $this->notes,

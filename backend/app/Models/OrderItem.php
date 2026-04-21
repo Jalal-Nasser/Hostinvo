@@ -21,6 +21,7 @@ class OrderItem extends Model
         'product_name',
         'product_type',
         'billing_cycle',
+        'domain',
         'quantity',
         'unit_price_minor',
         'setup_fee_minor',

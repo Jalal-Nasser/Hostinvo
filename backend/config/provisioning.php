@@ -26,5 +26,7 @@ return [
     'drivers' => [
         'cpanel' => \App\Provisioning\Drivers\Cpanel\CpanelDriver::class,
         'plesk' => \App\Provisioning\Drivers\Plesk\PleskDriver::class,
+        'directadmin' => \App\Provisioning\Drivers\Generic\GenericConnectionDriver::class,
+        'custom' => \App\Provisioning\Drivers\Generic\GenericConnectionDriver::class,
     ],
 ];

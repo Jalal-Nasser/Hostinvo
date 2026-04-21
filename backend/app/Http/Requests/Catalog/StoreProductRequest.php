@@ -34,9 +34,18 @@ class StoreProductRequest extends FormRequest
                     fn ($query) => $query->where('tenant_id', $tenantId)
                 ),
             ],
+            'server_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('servers', 'id')->where(
+                    fn ($query) => $query->where('tenant_id', $tenantId)
+                ),
+            ],
             'type' => ['required', Rule::in([
                 Product::TYPE_HOSTING,
             ])],
+            'provisioning_module' => ['nullable', Rule::in(Product::provisioningModules())],
+            'provisioning_package' => ['nullable', 'string', 'max:191'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'nullable',

@@ -28,7 +28,6 @@ export function PortalFooter({
   locale,
   currentPath,
   columns,
-  t,
   branding,
 }: PortalFooterProps) {
   const currentYear = new Date().getFullYear();

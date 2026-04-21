@@ -11,6 +11,16 @@ class ServerSelector
 {
     public function pickServer(string $productId): Server
     {
+        $product = \App\Models\Product::query()
+            ->with('server')
+            ->find($productId);
+
+        if ($product?->server) {
+            $this->assertActiveServer($product->server);
+
+            return $product->server;
+        }
+
         $server = Server::query()
             ->where('status', Server::STATUS_ACTIVE)
             ->where(function ($builder): void {
@@ -49,6 +59,16 @@ class ServerSelector
             }
         }
 
+        $product = \App\Models\Product::query()
+            ->with('server')
+            ->find($service->product_id);
+
+        if ($product?->server) {
+            $this->assertActiveServer($product->server);
+
+            return $product->server;
+        }
+
         $package = $this->resolvePackageForService($service);
 
         if (! $package?->server) {
@@ -76,6 +96,19 @@ class ServerSelector
 
         if (! $service->product_id) {
             return null;
+        }
+
+        $product = \App\Models\Product::query()
+            ->with('server')
+            ->find($service->product_id);
+
+        if ($product?->server) {
+            return ServerPackage::query()
+                ->with('server')
+                ->where('server_id', $product->server_id)
+                ->where('product_id', $service->product_id)
+                ->orderByDesc('is_default')
+                ->first();
         }
 
         return ServerPackage::query()

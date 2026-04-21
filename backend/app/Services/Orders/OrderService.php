@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Billing\InvoiceService;
 use App\Services\Notifications\NotificationDispatchService;
 use App\Services\Notifications\NotificationEventCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -25,6 +26,7 @@ class OrderService
         private readonly ClientRepositoryInterface $clients,
         private readonly ProductRepositoryInterface $products,
         private readonly NotificationDispatchService $notifications,
+        private readonly InvoiceService $invoices,
     ) {
     }
 
@@ -63,6 +65,7 @@ class OrderService
             $order = $this->orders->create($this->extractOrderAttributes($summary));
             $this->orders->syncItems($order, $summary['items']);
             $resolvedOrder = $this->getForDisplay($order);
+            $this->invoices->createFromOrder($resolvedOrder, $actor);
             $this->dispatchOrderPlacedNotification($resolvedOrder);
 
             return $resolvedOrder;
@@ -97,6 +100,7 @@ class OrderService
                 'user_id' => $order->user_id ?? $actor->id,
             ]);
             $resolvedOrder = $this->getForDisplay($order);
+            $this->invoices->createFromOrder($resolvedOrder, $actor);
             $this->dispatchOrderPlacedNotification($resolvedOrder);
 
             return $resolvedOrder;
@@ -254,6 +258,7 @@ class OrderService
             'product_name' => $product->name,
             'product_type' => $product->type,
             'billing_cycle' => $payload['billing_cycle'],
+            'domain' => $payload['domain'] ?? null,
             'quantity' => $quantity,
             'unit_price_minor' => $unitPriceMinor,
             'setup_fee_minor' => $setupFeeMinor,

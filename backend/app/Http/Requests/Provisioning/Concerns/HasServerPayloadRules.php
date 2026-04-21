@@ -32,6 +32,7 @@ trait HasServerPayloadRules
             'panel_type' => ['required', 'string', Rule::in(Server::panelTypes())],
             'api_endpoint' => ['required', 'string', 'max:255'],
             'api_port' => ['nullable', 'integer', 'between:1,65535'],
+            'ip_address' => ['nullable', 'ip'],
             'status' => ['required', 'string', Rule::in(Server::statuses())],
             'verify_ssl' => ['nullable', 'boolean'],
             'max_accounts' => ['nullable', 'integer', 'min:0'],

@@ -24,6 +24,7 @@ export type OrderItemSelectionPayload = {
 export type OrderItemPayload = {
   product_id: string;
   billing_cycle: BillingCycle;
+  domain?: string | null;
   quantity: number;
   configurable_options?: OrderItemSelectionPayload[];
 };
@@ -45,6 +46,7 @@ export type OrderItemRecord = {
   product_name: string;
   product_type: string;
   billing_cycle: BillingCycle;
+  domain: string | null;
   quantity: number;
   unit_price_minor: number;
   setup_fee_minor: number;

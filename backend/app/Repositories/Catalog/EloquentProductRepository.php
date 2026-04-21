@@ -19,7 +19,7 @@ class EloquentProductRepository implements ProductRepositoryInterface
         $perPage = $this->resolvePerPage($filters);
 
         return Product::query()
-            ->with(['group', 'pricing'])
+            ->with(['group', 'server', 'pricing'])
             ->withCount(['pricing', 'configurableOptions'])
             ->when(
                 filled($filters['search'] ?? null),
@@ -48,6 +48,14 @@ class EloquentProductRepository implements ProductRepositoryInterface
                 filled($filters['product_group_id'] ?? null),
                 fn (Builder $query) => $query->where('product_group_id', $filters['product_group_id'])
             )
+            ->when(
+                filled($filters['server_id'] ?? null),
+                fn (Builder $query) => $query->where('server_id', $filters['server_id'])
+            )
+            ->when(
+                filled($filters['provisioning_module'] ?? null),
+                fn (Builder $query) => $query->where('provisioning_module', $filters['provisioning_module'])
+            )
             ->orderBy('display_order')
             ->orderBy('name')
             ->paginate($perPage)
@@ -64,6 +72,7 @@ class EloquentProductRepository implements ProductRepositoryInterface
         return Product::query()
             ->with([
                 'group',
+                'server',
                 'pricing' => fn ($query) => $query->orderBy('billing_cycle'),
                 'configurableOptions' => fn ($query) => $query
                     ->with(['choices' => fn ($choiceQuery) => $choiceQuery->orderBy('display_order')])

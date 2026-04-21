@@ -4,6 +4,7 @@ export const productGroupStatuses = ["active", "inactive"] as const;
 export const productStatuses = ["draft", "active", "inactive", "archived"] as const;
 export const visibilityOptions = ["public", "private", "hidden"] as const;
 export const productTypes = ["hosting"] as const;
+export const provisioningModules = ["cpanel", "plesk", "directadmin", "custom"] as const;
 export const configurableOptionTypes = ["select", "radio", "quantity", "yes_no"] as const;
 export const billingCycles = [
   "monthly",
@@ -18,6 +19,7 @@ export type ProductGroupStatus = (typeof productGroupStatuses)[number];
 export type ProductStatus = (typeof productStatuses)[number];
 export type VisibilityOption = (typeof visibilityOptions)[number];
 export type ProductType = (typeof productTypes)[number];
+export type ProvisioningModule = (typeof provisioningModules)[number];
 export type ConfigurableOptionType = (typeof configurableOptionTypes)[number];
 export type BillingCycle = (typeof billingCycles)[number];
 
@@ -70,7 +72,10 @@ export type ProductRecord = {
   id: string;
   tenant_id: string;
   product_group_id: string | null;
+  server_id: number | null;
   type: ProductType;
+  provisioning_module: ProvisioningModule | null;
+  provisioning_package: string | null;
   name: string;
   slug: string;
   sku: string | null;
@@ -89,6 +94,13 @@ export type ProductRecord = {
     id: string;
     name: string;
     slug: string;
+  } | null;
+  server?: {
+    id: number;
+    name: string;
+    hostname: string;
+    panel_type: ProvisioningModule;
+    status: string;
   } | null;
   pricing_count?: number;
   configurable_options_count?: number;
@@ -109,7 +121,10 @@ export type ProductGroupFormPayload = {
 
 export type ProductFormPayload = {
   product_group_id?: string | null;
+  server_id?: number | null;
   type: ProductType;
+  provisioning_module?: ProvisioningModule | null;
+  provisioning_package?: string | null;
   name: string;
   slug?: string | null;
   sku?: string | null;

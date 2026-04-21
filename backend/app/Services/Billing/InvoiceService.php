@@ -64,6 +64,49 @@ class InvoiceService
         });
     }
 
+    public function createFromOrder(Order $order, User $actor): Invoice
+    {
+        $existing = Invoice::query()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('order_id', $order->id)
+            ->whereNotIn('status', [Invoice::STATUS_CANCELLED, Invoice::STATUS_REFUNDED])
+            ->oldest('created_at')
+            ->first();
+
+        if ($existing) {
+            return $this->getForDisplay($existing);
+        }
+
+        return DB::transaction(function () use ($order, $actor): Invoice {
+            $order = $this->orders->findByIdForDisplay($order->id) ?? $order;
+            $firstItem = $order->items->first();
+            $summary = $this->buildInvoiceSummary([
+                'client_id' => $order->client_id,
+                'order_id' => $order->id,
+                'currency' => $order->currency,
+                'issue_date' => now()->toDateString(),
+                'due_date' => now()->toDateString(),
+                'status' => Invoice::STATUS_UNPAID,
+                'recurring_cycle' => $firstItem?->billing_cycle,
+                'discount_type' => null,
+                'discount_value' => 0,
+                'credit_applied_minor' => 0,
+                'tax_rate_bps' => 0,
+                'metadata' => [
+                    'source' => 'order_checkout',
+                    'order_reference_number' => $order->reference_number,
+                ],
+            ], $actor);
+
+            $invoice = $this->invoices->create($this->extractInvoiceAttributes($summary));
+            $this->invoices->syncItems($invoice, $summary['items']);
+            $resolvedInvoice = $this->getForDisplay($invoice);
+            $this->dispatchInvoiceCreatedNotification($resolvedInvoice);
+
+            return $resolvedInvoice;
+        });
+    }
+
     public function update(Invoice $invoice, array $payload, User $actor): Invoice
     {
         return DB::transaction(function () use ($invoice, $payload, $actor): Invoice {
@@ -239,7 +282,7 @@ class InvoiceService
                 'item_type' => InvoiceItem::TYPE_ORDER,
                 'description' => sprintf('%s (%s)', $item->product_name, $item->billing_cycle),
                 'related_type' => 'order_item',
-                'related_id' => $item->id,
+                'related_id' => null,
                 'billing_cycle' => $item->billing_cycle,
                 'billing_period_starts_at' => null,
                 'billing_period_ends_at' => null,
@@ -297,7 +340,7 @@ class InvoiceService
                 ? sprintf('%s (%s)', $orderItem->product_name, $orderItem->billing_cycle)
                 : 'Invoice item'),
             'related_type' => $payload['related_type'] ?? ($orderItem ? 'order_item' : null),
-            'related_id' => $payload['related_id'] ?? $orderItem?->id,
+            'related_id' => $payload['related_id'] ?? null,
             'billing_cycle' => $payload['billing_cycle'] ?? $orderItem?->billing_cycle,
             'billing_period_starts_at' => $payload['billing_period_starts_at'] ?? null,
             'billing_period_ends_at' => $payload['billing_period_ends_at'] ?? null,

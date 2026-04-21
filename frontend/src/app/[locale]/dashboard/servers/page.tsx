@@ -37,12 +37,20 @@ export default async function ServersPage({
   return (
     <DashboardShell
       actions={
-        <Link
-          href={localePath(params.locale, "/dashboard/provisioning")}
-          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-        >
-          {t("jobsTitle")}
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={localePath(params.locale, "/dashboard/servers/new")}
+            className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+          >
+            {t("newServerButton")}
+          </Link>
+          <Link
+            href={localePath(params.locale, "/dashboard/provisioning")}
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          >
+            {t("jobsTitle")}
+          </Link>
+        </div>
       }
       currentPath="/dashboard/servers"
       description={t("serversDescription")}
@@ -85,6 +93,8 @@ export default async function ServersPage({
               <option value="">{t("allPanelTypes")}</option>
               <option value="cpanel">{t("panelTypeCpanel")}</option>
               <option value="plesk">{t("panelTypePlesk")}</option>
+              <option value="directadmin">{t("panelTypeDirectadmin")}</option>
+              <option value="custom">{t("panelTypeCustom")}</option>
             </select>
           </label>
 
@@ -123,7 +133,13 @@ export default async function ServersPage({
                       {t(`serverStatus${server.status.charAt(0).toUpperCase()}${server.status.slice(1)}`)}
                     </span>
                     <span className="rounded-full border border-line bg-[#fffdf8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-                      {server.panel_type === "cpanel" ? t("panelTypeCpanel") : t("panelTypePlesk")}
+                      {server.panel_type === "cpanel"
+                        ? t("panelTypeCpanel")
+                        : server.panel_type === "plesk"
+                          ? t("panelTypePlesk")
+                          : server.panel_type === "directadmin"
+                            ? t("panelTypeDirectadmin")
+                            : t("panelTypeCustom")}
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-muted">{server.hostname}</p>

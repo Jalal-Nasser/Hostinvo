@@ -36,12 +36,20 @@ export default async function ServicesPage({
   return (
     <DashboardShell
       actions={
-        <Link
-          href={localePath(params.locale, "/dashboard/provisioning")}
-          className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-        >
-          {t("jobsTitle")}
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={localePath(params.locale, "/dashboard/services/new")}
+            className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+          >
+            {t("newServiceButton")}
+          </Link>
+          <Link
+            href={localePath(params.locale, "/dashboard/provisioning")}
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          >
+            {t("jobsTitle")}
+          </Link>
+        </div>
       }
       currentPath="/dashboard/services"
       description={t("servicesDescription")}

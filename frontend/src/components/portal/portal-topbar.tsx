@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { PortalCartLink } from "@/components/portal/portal-cart-link";
@@ -45,44 +44,6 @@ function CartIcon() {
       />
       <circle cx="10" cy="18" r="1.2" fill="currentColor" stroke="none" />
       <circle cx="17" cy="18" r="1.2" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M16 18a4 4 0 0 0-8 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function ChevronDown() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-3 w-3"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="m6 9 6 6 6-6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
     </svg>
   );
 }

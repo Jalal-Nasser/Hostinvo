@@ -73,9 +73,6 @@ function WarningIcon({ className }: { className?: string }) {
 const primaryBtn =
   "inline-flex w-full items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#048DFE_0%,#036DEB_52%,#0054C5_100%)] px-5 py-3.5 text-base font-semibold text-white shadow-[0_18px_38px_rgba(4,109,235,0.26)] transition hover:translate-y-[-1px] hover:shadow-[0_22px_46px_rgba(4,109,235,0.34)] disabled:cursor-not-allowed disabled:opacity-60";
 
-const secondaryLink =
-  "inline-flex w-full items-center justify-center rounded-[1rem] border border-[#cfe0f4] bg-white px-5 py-3.5 text-base font-semibold text-[#036deb] transition hover:bg-[#f0f7ff]";
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function VerifyEmailView({ status, email }: Props) {

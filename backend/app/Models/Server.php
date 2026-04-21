@@ -20,6 +20,8 @@ class Server extends Model
 
     public const PANEL_CPANEL = 'cpanel';
     public const PANEL_PLESK = 'plesk';
+    public const PANEL_DIRECTADMIN = 'directadmin';
+    public const PANEL_CUSTOM = 'custom';
 
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
@@ -116,6 +118,8 @@ class Server extends Model
         return [
             self::PANEL_CPANEL,
             self::PANEL_PLESK,
+            self::PANEL_DIRECTADMIN,
+            self::PANEL_CUSTOM,
         ];
     }
 

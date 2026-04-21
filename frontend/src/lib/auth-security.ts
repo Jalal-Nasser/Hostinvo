@@ -1,6 +1,5 @@
 import {
   apiBaseUrl,
-  backendOrigin,
   defaultWorkspacePath,
   ensureCsrfCookie,
   type AuthenticatedUser,

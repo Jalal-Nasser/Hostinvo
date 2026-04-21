@@ -37,6 +37,7 @@ trait HasOrderPayloadRules
                 Rule::exists('products', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'items.*.billing_cycle' => ['required', Rule::in(ProductPricing::billingCycles())],
+            'items.*.domain' => ['nullable', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:1000'],
             'items.*.configurable_options' => ['nullable', 'array'],
             'items.*.configurable_options.*.configurable_option_id' => [

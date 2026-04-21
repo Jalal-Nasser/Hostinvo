@@ -40,6 +40,8 @@ class IndexProductRequest extends FormRequest
                 Product::TYPE_HOSTING,
             ])],
             'product_group_id' => ['nullable', 'integer'],
+            'server_id' => ['nullable', 'integer'],
+            'provisioning_module' => ['nullable', Rule::in(Product::provisioningModules())],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

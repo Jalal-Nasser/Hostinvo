@@ -63,6 +63,12 @@ export default async function ServerDetailsPage({
           </Link>
           <Link
             className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            href={localePath(params.locale, `/dashboard/servers/${server.id}/edit`)}
+          >
+            {t("editServerButton")}
+          </Link>
+          <Link
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/provisioning")}
           >
             {t("jobsTitle")}
@@ -84,7 +90,13 @@ export default async function ServerDetailsPage({
             <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("panelTypeLabel")}</p>
               <p className="mt-2 text-sm font-semibold text-foreground">
-                {server.panel_type === "cpanel" ? t("panelTypeCpanel") : t("panelTypePlesk")}
+                {server.panel_type === "cpanel"
+                  ? t("panelTypeCpanel")
+                  : server.panel_type === "plesk"
+                    ? t("panelTypePlesk")
+                    : server.panel_type === "directadmin"
+                      ? t("panelTypeDirectadmin")
+                      : t("panelTypeCustom")}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">

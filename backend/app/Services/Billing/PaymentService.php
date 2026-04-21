@@ -19,6 +19,7 @@ use App\Payments\DataTransferObjects\GatewayConfiguration;
 use App\Payments\DataTransferObjects\GatewayWebhookPayload;
 use App\Payments\Exceptions\PaymentGatewayException;
 use App\Payments\PaymentGatewayManager;
+use App\Services\Orders\OrderFulfillmentService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ class PaymentService
         private readonly TenantRepositoryInterface $tenants,
         private readonly PaymentGatewayManager $gateways,
         private readonly NotificationDispatchService $notifications,
+        private readonly OrderFulfillmentService $orderFulfillment,
     ) {
     }
 
@@ -94,7 +96,11 @@ class PaymentService
             $transaction->save();
 
             if ($status === Payment::STATUS_COMPLETED) {
-                $this->applyCompletedPaymentToInvoice($invoice->fresh(), $payment->fresh());
+                $updatedInvoice = $this->applyCompletedPaymentToInvoice($invoice->fresh(), $payment->fresh());
+
+                if ($updatedInvoice->status === Invoice::STATUS_PAID) {
+                    $this->orderFulfillment->fulfillPaidInvoice($updatedInvoice, $actor);
+                }
             }
 
             $resolvedPayment = $payment->load(['client', 'invoice', 'transactions']);
@@ -432,7 +438,14 @@ class PaymentService
             if ($payload->isCompleted()) {
                 $invoice = $payment->invoice()->firstOrFail();
                 $this->guardCompletedPaymentAmount($invoice, $payment->type, $payment->amount_minor);
-                $this->applyCompletedPaymentToInvoice($invoice, $payment->fresh());
+                $updatedInvoice = $this->applyCompletedPaymentToInvoice($invoice, $payment->fresh());
+
+                if ($updatedInvoice->status === Invoice::STATUS_PAID) {
+                    $this->orderFulfillment->fulfillPaidInvoice(
+                        $updatedInvoice,
+                        User::query()->find($payment->user_id),
+                    );
+                }
             }
 
             $resolvedPayment = $payment->fresh(['client', 'invoice', 'transactions']);
@@ -578,7 +591,7 @@ class PaymentService
         }
     }
 
-    private function applyCompletedPaymentToInvoice(Invoice $invoice, Payment $payment): void
+    private function applyCompletedPaymentToInvoice(Invoice $invoice, Payment $payment): Invoice
     {
         $amountPaidMinor = $invoice->amount_paid_minor;
         $refundedAmountMinor = $invoice->refunded_amount_minor;
@@ -609,6 +622,8 @@ class PaymentService
             'paid_at' => $amountPaidMinor > 0 ? ($invoice->paid_at ?? $payment->paid_at ?? now()) : null,
             'refunded_at' => $refundedAmountMinor > 0 ? ($invoice->refunded_at ?? $payment->paid_at ?? now()) : null,
         ]);
+
+        return $invoice->fresh(['order.items.product.server']);
     }
 
     private function dispatchPaymentReceiptNotification(Payment $payment): void

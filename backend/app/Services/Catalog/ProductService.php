@@ -3,7 +3,9 @@
 namespace App\Services\Catalog;
 
 use App\Contracts\Repositories\Catalog\ProductRepositoryInterface;
+use App\Contracts\Repositories\Provisioning\ServerRepositoryInterface;
 use App\Models\Product;
+use App\Models\ServerPackage;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
@@ -15,6 +17,7 @@ class ProductService
 {
     public function __construct(
         private readonly ProductRepositoryInterface $products,
+        private readonly ServerRepositoryInterface $servers,
     ) {
     }
 
@@ -40,6 +43,8 @@ class ProductService
                 );
             }
 
+            $this->syncDefaultServerPackage($product, $payload);
+
             return $this->getForDisplay($product);
         });
     }
@@ -55,6 +60,8 @@ class ProductService
                     $this->normalizeConfigurableOptions($payload['configurable_options'] ?? [])
                 );
             }
+
+            $this->syncDefaultServerPackage($product->refresh(), $payload);
 
             return $this->getForDisplay($product);
         });
@@ -88,10 +95,27 @@ class ProductService
             ? Str::slug((string) $payload['slug'])
             : Str::slug((string) $payload['name']);
 
+        $server = null;
+        $serverId = $payload['server_id'] ?? null;
+
+        if (filled($serverId)) {
+            $server = $this->servers->findById((string) $serverId);
+
+            if (! $server || $server->tenant_id !== $tenantId) {
+                throw ValidationException::withMessages([
+                    'server_id' => ['The selected server is invalid for the current tenant.'],
+                ]);
+            }
+        }
+
+        $provisioningModule = $payload['provisioning_module'] ?? $product?->provisioning_module ?? $server?->panel_type;
+
         return array_merge(
             Arr::only($payload, [
                 'product_group_id',
+                'server_id',
                 'type',
+                'provisioning_package',
                 'name',
                 'sku',
                 'summary',
@@ -103,8 +127,36 @@ class ProductService
             ]),
             [
                 'tenant_id' => $tenantId,
+                'provisioning_module' => $provisioningModule,
                 'slug' => $slug,
             ]
+        );
+    }
+
+    private function syncDefaultServerPackage(Product $product, array $payload): void
+    {
+        $serverId = $payload['server_id'] ?? $product->server_id;
+        $packageName = trim((string) ($payload['provisioning_package'] ?? $product->provisioning_package ?? ''));
+
+        if (blank($serverId) || $packageName === '') {
+            return;
+        }
+
+        ServerPackage::query()->updateOrCreate(
+            [
+                'tenant_id' => $product->tenant_id,
+                'server_id' => $serverId,
+                'product_id' => $product->id,
+            ],
+            [
+                'panel_package_name' => $packageName,
+                'display_name' => $product->name,
+                'is_default' => true,
+                'metadata' => [
+                    'source' => 'product_assignment',
+                    'provisioning_module' => $product->provisioning_module,
+                ],
+            ],
         );
     }
 

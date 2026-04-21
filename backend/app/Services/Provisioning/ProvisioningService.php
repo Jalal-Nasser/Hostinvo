@@ -13,6 +13,7 @@ use App\Models\ProvisioningJob;
 use App\Models\ProvisioningLog;
 use App\Models\Server;
 use App\Models\Service;
+use App\Models\OrderItem;
 use App\Models\User;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
 use App\Provisioning\Data\ProvisioningContext;
@@ -462,7 +463,7 @@ class ProvisioningService
             ]);
         }
 
-        $orderId = $payload['order_id'] ?? null;
+        $orderId = $payload['order_id'] ?? $service?->order_id;
 
         if ($orderId) {
             $order = $this->orders->findById($orderId);
@@ -470,6 +471,21 @@ class ProvisioningService
             if (! $order || $order->tenant_id !== $tenantId || $order->client_id !== $client->id) {
                 throw ValidationException::withMessages([
                     'order_id' => ['The selected order is invalid for the current tenant.'],
+                ]);
+            }
+        }
+
+        $orderItemId = $payload['order_item_id'] ?? $service?->order_item_id;
+
+        if ($orderItemId) {
+            $orderItem = OrderItem::query()->find($orderItemId);
+
+            if (! $orderItem
+                || $orderItem->tenant_id !== $tenantId
+                || $orderItem->product_id !== $product->id
+                || ($orderId && $orderItem->order_id !== $orderId)) {
+                throw ValidationException::withMessages([
+                    'order_item_id' => ['The selected order item is invalid for the current tenant.'],
                 ]);
             }
         }
@@ -498,6 +514,20 @@ class ProvisioningService
             }
         }
 
+        if (! $server && $service?->server_id) {
+            $server = $this->servers->findById((string) $service->server_id);
+        }
+
+        if (! $server && $product->server_id) {
+            $server = $this->servers->findById((string) $product->server_id);
+
+            if (! $server || $server->tenant_id !== $tenantId) {
+                throw ValidationException::withMessages([
+                    'server_id' => ['The product linked server is invalid for the current tenant.'],
+                ]);
+            }
+        }
+
         $serverPackageId = $payload['server_package_id'] ?? null;
 
         if ($serverPackageId) {
@@ -518,6 +548,7 @@ class ProvisioningService
             'client_id' => $client->id,
             'product_id' => $product->id,
             'order_id' => $orderId,
+            'order_item_id' => $orderItemId,
             'user_id' => $ownerId,
             'server_id' => $server?->id,
             'server_package_id' => $payload['server_package_id'] ?? $service?->server_package_id,
@@ -530,8 +561,13 @@ class ProvisioningService
             'status' => $service?->status ?? Service::STATUS_PENDING,
             'provisioning_state' => $service?->provisioning_state ?? Service::PROVISIONING_IDLE,
             'billing_cycle' => $payload['billing_cycle'] ?? $service?->billing_cycle,
+            'price' => $payload['price'] ?? $service?->price ?? 0,
+            'currency' => $payload['currency'] ?? $service?->currency ?? config('hostinvo.default_currency', 'USD'),
             'domain' => $payload['domain'] ?? $service?->domain,
             'username' => $payload['username'] ?? $service?->username,
+            'registration_date' => $payload['registration_date'] ?? optional($service?->registration_date)?->toDateString(),
+            'next_due_date' => $payload['next_due_date'] ?? optional($service?->next_due_date)?->toDateString(),
+            'termination_date' => $payload['termination_date'] ?? optional($service?->termination_date)?->toDateString(),
             'external_reference' => $service?->external_reference,
             'last_operation' => $service?->last_operation,
             'activated_at' => optional($service?->activated_at)?->toIso8601String(),
@@ -797,7 +833,12 @@ class ProvisioningService
 
     private function resolvePanelPackageName(ProvisioningContext $context): string
     {
-        return trim((string) ($context->payload['panel_package_name'] ?? $context->serverPackage?->panel_package_name ?? ''));
+        return trim((string) (
+            $context->payload['panel_package_name']
+            ?? $context->serverPackage?->panel_package_name
+            ?? $context->service->product?->provisioning_package
+            ?? ''
+        ));
     }
 
     private function resolveDriverAccountIdentifier(ProvisioningContext $context): string

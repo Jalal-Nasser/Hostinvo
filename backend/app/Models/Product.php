@@ -19,6 +19,11 @@ class Product extends Model
 
     public const TYPE_HOSTING = 'hosting';
 
+    public const MODULE_CPANEL = 'cpanel';
+    public const MODULE_PLESK = 'plesk';
+    public const MODULE_DIRECTADMIN = 'directadmin';
+    public const MODULE_CUSTOM = 'custom';
+
     public const STATUS_DRAFT = 'draft';
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
@@ -35,7 +40,10 @@ class Product extends Model
     protected $fillable = [
         'tenant_id',
         'product_group_id',
+        'server_id',
         'type',
+        'provisioning_module',
+        'provisioning_package',
         'name',
         'slug',
         'sku',
@@ -58,6 +66,11 @@ class Product extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(ProductGroup::class, 'product_group_id');
+    }
+
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(Server::class);
     }
 
     public function pricing(): HasMany
@@ -83,5 +96,15 @@ class Product extends Model
     public function serverPackages(): HasMany
     {
         return $this->hasMany(ServerPackage::class)->orderBy('panel_package_name');
+    }
+
+    public static function provisioningModules(): array
+    {
+        return [
+            self::MODULE_CPANEL,
+            self::MODULE_PLESK,
+            self::MODULE_DIRECTADMIN,
+            self::MODULE_CUSTOM,
+        ];
     }
 }

@@ -15,6 +15,7 @@ class ServiceResource extends JsonResource
             'client_id' => $this->client_id,
             'product_id' => $this->product_id,
             'order_id' => $this->order_id,
+            'order_item_id' => $this->order_item_id,
             'user_id' => $this->user_id,
             'server_id' => $this->server_id,
             'server_package_id' => $this->server_package_id,

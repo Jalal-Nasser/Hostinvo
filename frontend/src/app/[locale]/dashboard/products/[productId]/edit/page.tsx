@@ -8,6 +8,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchProductFromCookies, fetchProductGroupsFromCookies } from "@/lib/catalog";
+import { fetchServersFromCookies } from "@/lib/provisioning";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,10 @@ export default async function EditProductPage({
 
   const t = await getTranslations("Catalog");
   const cookieHeader = cookies().toString();
-  const [product, groups] = await Promise.all([
+  const [product, groups, servers] = await Promise.all([
     fetchProductFromCookies(cookieHeader, params.productId),
     fetchProductGroupsFromCookies(cookieHeader, { per_page: "100" }),
+    fetchServersFromCookies(cookieHeader, { per_page: "100" }),
   ]);
 
   if (!product) {
@@ -52,7 +54,12 @@ export default async function EditProductPage({
       locale={params.locale as AppLocale}
       title={t("editProductTitle")}
     >
-      <ProductForm groups={groups?.data ?? []} initialProduct={product} mode="edit" />
+      <ProductForm
+        groups={groups?.data ?? []}
+        initialProduct={product}
+        mode="edit"
+        servers={servers?.data ?? []}
+      />
     </DashboardShell>
   );
 }

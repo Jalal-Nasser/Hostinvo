@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { PortalLogoutButton } from "@/components/portal/portal-logout-button";
 import { localePath } from "@/lib/auth";
 
 type PortalAccountMenuProps = {

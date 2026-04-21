@@ -7,6 +7,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchProductGroupsFromCookies } from "@/lib/catalog";
+import { fetchServersFromCookies } from "@/lib/provisioning";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,11 @@ export default async function NewProductPage({
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Catalog");
-  const groups = await fetchProductGroupsFromCookies(cookies().toString(), { per_page: "100" });
+  const cookieHeader = cookies().toString();
+  const [groups, servers] = await Promise.all([
+    fetchProductGroupsFromCookies(cookieHeader, { per_page: "100" }),
+    fetchServersFromCookies(cookieHeader, { per_page: "100" }),
+  ]);
 
   return (
     <DashboardShell
@@ -35,7 +40,7 @@ export default async function NewProductPage({
       locale={params.locale as AppLocale}
       title={t("createProductTitle")}
     >
-      <ProductForm groups={groups?.data ?? []} mode="create" />
+      <ProductForm groups={groups?.data ?? []} mode="create" servers={servers?.data ?? []} />
     </DashboardShell>
   );
 }

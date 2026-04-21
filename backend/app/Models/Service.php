@@ -42,13 +42,19 @@ class Service extends Model
         'client_id',
         'product_id',
         'order_id',
+        'order_item_id',
         'server_id',
         'server_package_id',
         'reference_number',
         'service_type',
         'billing_cycle',
+        'price',
+        'currency',
         'domain',
         'username',
+        'registration_date',
+        'next_due_date',
+        'termination_date',
         'notes',
         'metadata',
     ];
@@ -118,6 +124,11 @@ class Service extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderItem(): BelongsTo
+    {
+        return $this->belongsTo(OrderItem::class);
     }
 
     public function owner(): BelongsTo

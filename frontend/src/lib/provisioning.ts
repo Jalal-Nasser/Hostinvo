@@ -20,7 +20,7 @@ export const provisioningStates = [
 ] as const;
 
 export const serverStatuses = ["active", "inactive", "maintenance"] as const;
-export const serverPanelTypes = ["cpanel", "plesk"] as const;
+export const serverPanelTypes = ["cpanel", "plesk", "directadmin", "custom"] as const;
 export const provisioningOperations = [
   "create_account",
   "suspend_account",
@@ -111,6 +111,7 @@ export type ServerRecord = {
   max_accounts: number | null;
   current_accounts: number;
   username: string | null;
+  ip_address: string | null;
   has_credentials: boolean;
   last_tested_at: string | null;
   notes: string | null;
@@ -164,6 +165,7 @@ export type ServiceRecord = {
   client_id: string;
   product_id: string;
   order_id: string | null;
+  order_item_id: number | null;
   user_id: string | null;
   server_id: string | null;
   server_package_id: string | null;

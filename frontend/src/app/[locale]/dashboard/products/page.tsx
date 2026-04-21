@@ -152,7 +152,12 @@ export default async function ProductsPage({
                   </div>
                   <p className="mt-3 text-sm text-muted">{product.summary ?? product.slug}</p>
                   <p className="mt-2 text-sm text-muted">
-                    {product.group?.name ?? t("ungroupedOption")} · {t("typeHosting")}
+                    {product.group?.name ?? t("ungroupedOption")} / {t("typeHosting")}
+                  </p>
+                  <p className="mt-2 text-sm text-muted">
+                    {product.server
+                      ? `${t("linkedServerLabel")}: ${product.server.name}`
+                      : t("noServerOption")}
                   </p>
                 </div>
 
