@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { PortalCartLink } from "@/components/portal/portal-cart-link";
+import { PortalAccountMenu } from "@/components/portal/portal-account-menu";
 import { PortalCurrencySelect } from "@/components/portal/portal-currency-select";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import type { AuthenticatedUser } from "@/lib/auth";
@@ -93,12 +94,12 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
   const hasTenantContextReturn =
     user.roles.some((role) => role.name === "super_admin") && Boolean(activeTenant);
   const actionClass =
-    "inline-flex min-h-[36px] items-center gap-1.5 px-3 text-[12px] font-semibold text-[#f3f7ff] transition hover:text-white";
+    "inline-flex items-center gap-2 text-[12px] font-semibold text-[#eef5ff] transition hover:text-white";
 
   return (
-    <div className="w-full border-b border-[rgba(255,255,255,0.06)] bg-[linear-gradient(90deg,#515c74_0%,#465066_46%,#3e475e_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="flex min-h-[38px] w-full items-center ps-3 pe-3 md:ps-5 md:pe-5 lg:ps-6 lg:pe-6">
-        <div className="ms-auto flex items-center text-[#f3f7ff]">
+    <div className="w-full border-b border-[rgba(255,255,255,0.08)] bg-[linear-gradient(90deg,#2a3046_0%,#303b56_40%,#22314f_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+      <div className="mx-auto flex min-h-[56px] w-full max-w-7xl items-center px-4 md:px-6 lg:px-8">
+        <div className="ms-auto flex items-center gap-4 text-[#eef5ff]">
           {hasTenantContextReturn ? (
             <>
               <ImpersonationReturn
@@ -112,7 +113,7 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
           ) : null}
 
           <PortalCartLink
-            className={joinClasses(actionClass, "px-3")}
+            className={joinClasses(actionClass, "px-2")}
             href={localePath(locale, "/portal/cart")}
             label={locale === "ar" ? "عرض السلة" : "View Cart"}
             prefix={
@@ -122,29 +123,28 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
             }
           />
 
-          <span className="h-3 w-px bg-[rgba(255,255,255,0.12)]" />
+          <span className="h-6 w-px rounded-full bg-[rgba(255,255,255,0.12)]" />
 
-          <div className={joinClasses(actionClass, "px-3")}>
+          <div className={joinClasses(actionClass, "px-2")}>            
             <PortalCurrencySelect
-              className="text-[12px] font-semibold text-[#f3f7ff] hover:text-white"
-              label={locale === "ar" ? "العملة" : "Currency"}
-              options={[defaultCurrency]}
+              className="text-[12px] font-semibold text-[#eef5ff] hover:text-white"
+              label={locale === "ar" ? "العملة" : "USD"}
+              options={
+                defaultCurrency
+                  ? [defaultCurrency, ...["USD", "SAR", "EUR"].filter((c) => c !== defaultCurrency)]
+                  : ["USD", "SAR", "EUR"]
+              }
+              showChevron
             />
-            <ChevronDown />
           </div>
 
-          <span className="h-3 w-px bg-[rgba(255,255,255,0.12)]" />
+          <span className="h-6 w-px rounded-full bg-[rgba(255,255,255,0.12)]" />
 
-          <Link
-            className={joinClasses(actionClass, "px-3")}
-            href={localePath(locale, "/portal/account")}
-          >
-            <TopbarIcon>
-              <UserIcon />
-            </TopbarIcon>
-            <span>{locale === "ar" ? "حسابي" : "My Account"}</span>
-            <ChevronDown />
-          </Link>
+          <PortalAccountMenu
+            locale={locale}
+            label={locale === "ar" ? "حسابي" : "My Account"}
+            buttonClass={joinClasses(actionClass, "px-2")}
+          />
         </div>
       </div>
     </div>

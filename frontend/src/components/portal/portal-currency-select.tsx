@@ -8,6 +8,7 @@ type PortalCurrencySelectProps = {
   label: string;
   options: string[];
   className?: string;
+  showChevron?: boolean;
 };
 
 const portalCurrencyStorageKey = "portal.currency.v1";
@@ -16,6 +17,7 @@ export function PortalCurrencySelect({
   label,
   options,
   className,
+  showChevron = false,
 }: PortalCurrencySelectProps) {
   const normalizedOptions = Array.from(
     new Set(
@@ -79,7 +81,11 @@ export function PortalCurrencySelect({
   return (
     <div ref={containerRef} className="relative">
       <button
-        className={joinClasses(portalTheme.utilityLinkClass, className)}
+        className={joinClasses(
+          "inline-flex items-center gap-1",
+          portalTheme.utilityLinkClass,
+          className,
+        )}
         onClick={() => {
           if (canChangeCurrency) {
             setOpen((current) => !current);
@@ -87,14 +93,30 @@ export function PortalCurrencySelect({
         }}
         type="button"
         aria-label={label}
+        aria-expanded={canChangeCurrency ? open : undefined}
         aria-haspopup={canChangeCurrency ? "menu" : undefined}
-        disabled={!canChangeCurrency}
       >
-        {selectedCurrency || label}
+        <span>{selectedCurrency || label}</span>
+        {showChevron ? (
+          <svg
+            aria-hidden="true"
+            className={joinClasses("h-3 w-3 transition", open ? "rotate-180" : "")}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="m6 9 6 6 6-6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+            />
+          </svg>
+        ) : null}
       </button>
 
       {open ? (
-        <div className="absolute top-full z-40 mt-2 min-w-[112px] rounded-[12px] border border-[rgba(104,123,158,0.18)] bg-[linear-gradient(180deg,rgba(41,50,68,0.98)_0%,rgba(31,38,52,0.98)_100%)] p-2 shadow-[0_18px_32px_rgba(5,10,22,0.28)] backdrop-blur-xl">
+        <div className="absolute end-0 top-full z-50 mt-2 min-w-[112px] rounded-[12px] border border-[rgba(104,123,158,0.18)] bg-[linear-gradient(180deg,rgba(41,50,68,0.98)_0%,rgba(31,38,52,0.98)_100%)] p-2 shadow-[0_18px_32px_rgba(5,10,22,0.28)] backdrop-blur-xl">
           {normalizedOptions.map((option) => (
             <button
               key={option}
