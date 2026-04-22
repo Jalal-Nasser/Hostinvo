@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\LicensingController;
 use App\Http\Controllers\Api\V1\PlanCatalogController;
 use App\Http\Controllers\Api\V1\WebhookController;
+use App\Http\Controllers\Api\V1\Admin\DemoTenantContextController;
 use App\Http\Controllers\Api\V1\Admin\TenantContextController;
 use App\Http\Controllers\Api\V1\Platform\PlatformNotificationTemplateController;
 use App\Http\Controllers\Api\V1\Platform\PlatformTurnstileController;
@@ -26,6 +27,7 @@ Route::middleware(['api'])
             ->name('admin.')
             ->middleware(['auth:sanctum'])
             ->group(function (): void {
+                Route::post('demo-tenant/switch', [DemoTenantContextController::class, 'store'])->name('demo-tenant.switch');
                 Route::post('tenants/{tenant}/switch', [TenantContextController::class, 'switchTenant'])->name('tenants.switch');
                 Route::post('tenant-context/clear', [TenantContextController::class, 'clear'])->name('tenant-context.clear');
             });

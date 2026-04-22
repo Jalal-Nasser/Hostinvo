@@ -170,6 +170,18 @@ export async function clearTenantContext(): Promise<
   return submitAdminJson<{ cleared: boolean }>("tenant-context/clear", "POST", {});
 }
 
+export async function startDemoTenantContext(): Promise<
+  MutationResult<{
+    tenant: Pick<TenantRecord, "id" | "name" | "slug" | "status">;
+    owner: Pick<TenantOwnerRecord, "name" | "email">;
+  }>
+> {
+  return submitAdminJson<{
+    tenant: Pick<TenantRecord, "id" | "name" | "slug" | "status">;
+    owner: Pick<TenantOwnerRecord, "name" | "email">;
+  }>("demo-tenant/switch", "POST", {});
+}
+
 export async function impersonateTenantAdmin(
   tenantId: string,
 ): Promise<MutationResult<{ redirect: string }>> {

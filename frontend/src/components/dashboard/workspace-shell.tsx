@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { DemoTenantDashboardButton } from "@/components/platform-owner/demo-tenant-dashboard-button";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { DocumentTitle } from "@/components/shared/document-title";
 import { type AppLocale } from "@/i18n/routing";
@@ -565,7 +566,19 @@ export async function WorkspaceShell({
                 ))}
               </nav>
 
-              {/* Switch to portal + user footer */}
+              {/* Workspace switches + user footer */}
+              {hasRole(user, "super_admin") ? (
+                <div className="mx-2 mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
+                    {workspaceT("demoTenantDashboardBadge")}
+                  </p>
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#1f4064]">
+                    {workspaceT("demoTenantDashboardDescription")}
+                  </p>
+                  <DemoTenantDashboardButton locale={locale} />
+                </div>
+              ) : null}
+
               {hasPortalWorkspace ? (
                 <div className="mx-2 mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
@@ -597,6 +610,26 @@ export async function WorkspaceShell({
 
             {/* ───────────── Main content ───────────── */}
             <div className="min-w-0 space-y-5">
+              {hasTenantContextReturn && activeTenant ? (
+                <section className="rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3 shadow-[var(--shadow-xs)]">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                        {workspaceT("tenantContextLabel")}
+                      </p>
+                      <p className="mt-1 truncate text-[13.5px] font-semibold text-[#0a1628]">
+                        {workspaceT("viewingTenantDashboard", { tenant: activeTenant.name })}
+                      </p>
+                    </div>
+                    <ImpersonationReturn
+                      className="shrink-0"
+                      locale={locale}
+                      variant="default"
+                    />
+                  </div>
+                </section>
+              ) : null}
+
               <section className={tintedHeader ? "dashboard-header-surface" : "dashboard-shell-surface"}>
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">

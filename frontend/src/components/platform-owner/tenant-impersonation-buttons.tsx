@@ -7,9 +7,7 @@ import { useState, useTransition } from "react";
 import { StatusBanner } from "@/components/tenant-admin/status-banner";
 import { Button } from "@/components/ui/button";
 import { localePath } from "@/lib/auth";
-import {
-  switchTenantContext,
-} from "@/lib/tenants";
+import { switchTenantContext } from "@/lib/tenants";
 
 type TenantImpersonationButtonsProps = {
   tenantId: string;
@@ -41,9 +39,7 @@ export function TenantImpersonationButtons({
       }
 
       const targetPath =
-        mode === "admin"
-          ? localePath(locale, "/dashboard")
-          : localePath(locale, "/portal");
+        mode === "admin" ? localePath(locale, "/dashboard") : localePath(locale, "/portal");
 
       setMessage(
         mode === "admin"
@@ -63,7 +59,7 @@ export function TenantImpersonationButtons({
           onClick={() => runImpersonation("admin")}
           size={compact ? "sm" : "default"}
         >
-          {t("impersonateAdminButton")}
+          {t("openTenantDashboardButton")}
         </Button>
         <Button
           disabled={isPending}

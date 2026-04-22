@@ -19,15 +19,20 @@ class SuperAdminSeeder extends Seeder
             ->where('email', env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.dev'))
             ->first() ?? new User();
 
-        $user->forceFill([
+        $attributes = [
             'tenant_id' => null,
             'email' => env('SUPER_ADMIN_EMAIL', 'admin@hostinvo.dev'),
             'name' => env('SUPER_ADMIN_NAME', 'Hostinvo Super Admin'),
             'locale' => env('APP_LOCALE', 'en'),
             'is_active' => true,
             'email_verified_at' => now(),
-            'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', 'ChangeMe123!')),
-        ])->save();
+        ];
+
+        if (! $user->exists || filter_var(env('SUPER_ADMIN_RESET_PASSWORD', false), FILTER_VALIDATE_BOOL)) {
+            $attributes['password'] = Hash::make(env('SUPER_ADMIN_PASSWORD', 'ChangeMe123!'));
+        }
+
+        $user->forceFill($attributes)->save();
 
         $user->roles()->sync([
             Role::query()->where('name', Role::SUPER_ADMIN)->value('id'),
