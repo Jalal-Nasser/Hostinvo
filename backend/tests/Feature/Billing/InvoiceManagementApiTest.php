@@ -4,6 +4,7 @@ namespace Tests\Feature\Billing;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\License;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Role;
@@ -30,6 +31,21 @@ class InvoiceManagementApiTest extends TestCase
             'default_currency' => 'USD',
             'timezone' => 'UTC',
             'status' => 'active',
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-BILLING-001',
+            'owner_email' => 'owner@billing.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 500,
+            'max_services' => 500,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addYear(),
         ]);
 
         $user = User::factory()->create([
@@ -112,10 +128,10 @@ class InvoiceManagementApiTest extends TestCase
         $payload = [
             'client_id' => $client->id,
             'order_id' => $order->id,
-            'issue_date' => '2026-03-08',
-            'due_date' => '2026-03-15',
+            'issue_date' => now()->toDateString(),
+            'due_date' => now()->addWeek()->toDateString(),
             'recurring_cycle' => 'monthly',
-            'next_invoice_date' => '2026-04-15',
+            'next_invoice_date' => now()->addMonthNoOverflow()->toDateString(),
             'discount_type' => Invoice::DISCOUNT_FIXED,
             'discount_value' => 100,
             'credit_applied_minor' => 50,

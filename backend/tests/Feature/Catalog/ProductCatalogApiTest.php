@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Models\License;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\TenantUser;
@@ -26,6 +27,21 @@ class ProductCatalogApiTest extends TestCase
             'default_currency' => 'USD',
             'timezone' => 'UTC',
             'status' => 'active',
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-CATALOG-001',
+            'owner_email' => 'owner@catalog.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 500,
+            'max_services' => 500,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addYear(),
         ]);
 
         $user = User::factory()->create([
