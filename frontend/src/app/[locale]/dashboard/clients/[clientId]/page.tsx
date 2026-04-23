@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
+import { formatMinorCurrency } from "@/lib/billing";
 import { fetchClientFromCookies } from "@/lib/clients";
 
 export const dynamic = "force-dynamic";
@@ -114,8 +115,74 @@ export default async function ClientDetailsPage({
                 {client.addresses_count ?? client.addresses?.length ?? 0}
               </p>
             </div>
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("servicesCountLabel")}</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                {client.services_count ?? client.services?.length ?? 0}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("invoicesCountLabel")}</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                {client.invoices_count ?? client.invoices?.length ?? 0}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("portalAccessTitle")}</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                {client.owner ? t("portalAccessEnabledLabel") : t("portalAccessDisabledLabel")}
+              </p>
+            </div>
           </div>
         </aside>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <article className="glass-card p-6 md:p-8">
+          <h2 className="text-2xl font-semibold text-foreground">{t("servicesSection")}</h2>
+          {client.services && client.services.length > 0 ? (
+            <div className="mt-6 grid gap-4">
+              {client.services.map((service) => (
+                <div key={service.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-foreground">{service.reference_number}</p>
+                    <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
+                      {service.status}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm text-muted">{service.product?.name ?? t("notAvailable")}</p>
+                  <p className="mt-2 text-sm text-muted">{service.domain ?? t("notAvailable")}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-6 text-sm text-muted">{t("noServices")}</p>
+          )}
+        </article>
+
+        <article className="glass-card p-6 md:p-8">
+          <h2 className="text-2xl font-semibold text-foreground">{t("invoicesSection")}</h2>
+          {client.invoices && client.invoices.length > 0 ? (
+            <div className="mt-6 grid gap-4">
+              {client.invoices.map((invoice) => (
+                <div key={invoice.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-foreground">{invoice.reference_number}</p>
+                    <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
+                      {invoice.status}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm text-muted">
+                    {formatMinorCurrency(invoice.total_minor, invoice.currency, params.locale)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted">{invoice.due_date ?? t("notAvailable")}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-6 text-sm text-muted">{t("noInvoices")}</p>
+          )}
+        </article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">

@@ -66,6 +66,10 @@ export function tenantAdminCopy(locale: string) {
       contentDescription: isArabic
         ? "أدر الأخبار، قاعدة المعرفة، الحوادث، كتل المحتوى وروابط التذييل."
         : "Manage announcements, knowledgebase, incidents, content blocks, and footer links.",
+      paymentGatewaysTitle: isArabic ? "بوابات الدفع" : "Payment gateways",
+      paymentGatewaysDescription: isArabic
+        ? "اضبط Stripe وPayPal وتعليمات الدفع اليدوي لمساحة العمل الحالية."
+        : "Configure Stripe, PayPal, and manual payment instructions for the current workspace.",
       openModule: isArabic ? "فتح الوحدة" : "Open module",
       platformTitle: isArabic ? "إعدادات منصة SaaS" : "SaaS platform settings",
       platformDescription: isArabic

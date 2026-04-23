@@ -64,8 +64,15 @@ class EloquentClientRepository implements ClientRepositoryInterface
                     ->with('user')
                     ->latest()
                     ->limit(25),
+                'services' => fn ($query) => $query
+                    ->with(['product'])
+                    ->latest()
+                    ->limit(10),
+                'invoices' => fn ($query) => $query
+                    ->latest('issue_date')
+                    ->limit(10),
             ])
-            ->withCount(['contacts', 'addresses'])
+            ->withCount(['contacts', 'addresses', 'services', 'invoices'])
             ->find($id);
     }
 

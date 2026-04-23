@@ -10,6 +10,7 @@ use App\Models\ProvisioningJob;
 use App\Models\Server;
 use App\Models\ServerPackage;
 use App\Models\Service;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Provisioning\ProvisioningLogger;
 use App\Services\Provisioning\ProvisioningService;
@@ -94,8 +95,33 @@ class OrderFulfillmentService
                 ],
             ], $actor);
 
+            $this->upsertSubscription($service, $item, $order);
             $this->queueProvisioningWhenAvailable($service, $actor);
         }
+    }
+
+    private function upsertSubscription(Service $service, OrderItem $item, Order $order): void
+    {
+        Subscription::query()->updateOrCreate(
+            [
+                'tenant_id' => $service->tenant_id,
+                'service_id' => $service->id,
+            ],
+            [
+                'client_id' => $service->client_id,
+                'product_id' => $service->product_id,
+                'billing_cycle' => $service->billing_cycle,
+                'price' => (int) $service->price,
+                'currency' => $service->currency,
+                'status' => 'active',
+                'next_billing_date' => $service->next_due_date ?? $this->nextDueDate($item->billing_cycle),
+                'last_billed_at' => null,
+                'grace_period_days' => 3,
+                'auto_renew' => true,
+                'cancellation_reason' => null,
+                'cancelled_at' => null,
+            ],
+        );
     }
 
     private function queueProvisioningWhenAvailable(Service $service, User $actor): void

@@ -13,6 +13,8 @@ class NotificationEventCatalog
     public const EVENT_INVOICE_CREATED = 'invoice_created';
     public const EVENT_PAYMENT_REMINDER = 'payment_reminder';
     public const EVENT_PAYMENT_RECEIPT = 'payment_receipt';
+    public const EVENT_CLIENT_ACCOUNT_CREATED = 'client_account_created';
+    public const EVENT_SERVICE_ACTIVATED = 'service_activated';
     public const EVENT_TRIAL_EXPIRY_REMINDER = 'trial_expiry_reminder';
     public const EVENT_TENANT_SUSPENDED = 'tenant_suspended';
     public const EVENT_TENANT_REACTIVATED = 'tenant_reactivated';
@@ -29,6 +31,8 @@ class NotificationEventCatalog
             self::EVENT_INVOICE_CREATED => ['scope' => self::SCOPE_TENANT],
             self::EVENT_PAYMENT_REMINDER => ['scope' => self::SCOPE_TENANT],
             self::EVENT_PAYMENT_RECEIPT => ['scope' => self::SCOPE_TENANT],
+            self::EVENT_CLIENT_ACCOUNT_CREATED => ['scope' => self::SCOPE_TENANT],
+            self::EVENT_SERVICE_ACTIVATED => ['scope' => self::SCOPE_TENANT],
         ];
     }
 

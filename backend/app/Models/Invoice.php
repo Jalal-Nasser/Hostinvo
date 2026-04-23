@@ -35,6 +35,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'client_id',
+        'subscription_id',
         'order_id',
         'user_id',
         'reference_number',
@@ -124,6 +125,11 @@ class Invoice extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
     }
 
     public function owner(): BelongsTo

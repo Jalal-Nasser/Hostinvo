@@ -128,6 +128,34 @@ class LicenseEnforcementMiddlewareTest extends TestCase
             ->assertOk();
     }
 
+    public function test_local_docker_host_aliases_are_treated_as_local_for_domain_binding(): void
+    {
+        [$tenant, $user] = $this->createTenantAdminContext('licensed-middleware-local-host');
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-LOCAL-HOST-001',
+            'owner_email' => 'local-host@example.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'domain' => 'localhost',
+            'max_clients' => 500,
+            'max_services' => 20,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addMonth(),
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/admin/settings/branding', [
+            'HOST' => 'nginx',
+            'HTTP_ORIGIN' => 'http://localhost:3000',
+            'HTTP_REFERER' => 'http://localhost:3000/en/dashboard/settings/branding',
+        ])->assertOk();
+    }
+
     /**
      * @return array{0: Tenant, 1: User}
      */

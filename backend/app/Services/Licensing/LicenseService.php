@@ -17,6 +17,20 @@ use Illuminate\Validation\ValidationException;
 
 class LicenseService
 {
+    /**
+     * Internal service hostnames frequently used in local Docker networking.
+     *
+     * @var array<int, string>
+     */
+    private const INTERNAL_SERVICE_DOMAINS = [
+        'nginx',
+        'backend',
+        'app',
+        'api',
+        'web',
+        'php',
+    ];
+
     public function __construct(
         private readonly LicenseVerifierInterface $verifier,
         private readonly CurrentTenant $currentTenant,
@@ -546,7 +560,15 @@ class LicenseService
             return null;
         }
 
-        return $this->normalizeDomain($boundDomain) === $this->normalizeDomain($domain)
+        $normalizedBoundDomain = $this->normalizeDomain($boundDomain);
+        $normalizedDomain = $this->normalizeDomain($domain);
+
+        if ($normalizedBoundDomain === $normalizedDomain) {
+            return null;
+        }
+
+        return $this->isLocalDevelopmentDomain($normalizedBoundDomain)
+            && $this->isLocalDevelopmentDomain($normalizedDomain)
             ? null
             : 'domain_mismatch';
     }
@@ -698,6 +720,41 @@ class LicenseService
         }
 
         return preg_replace('/:\d+$/', '', $trimmed) ?? $trimmed;
+    }
+
+    private function extractDomainFromHeader(?string $headerValue): ?string
+    {
+        if (! is_string($headerValue) || trim($headerValue) === '') {
+            return null;
+        }
+
+        $firstValue = trim(strtok($headerValue, ',') ?: '');
+
+        if ($firstValue === '') {
+            return null;
+        }
+
+        $host = parse_url($firstValue, PHP_URL_HOST);
+
+        if (is_string($host) && $host !== '') {
+            return $host;
+        }
+
+        return preg_replace('/:\d+$/', '', $firstValue) ?: null;
+    }
+
+    private function isInternalServiceDomain(string $domain): bool
+    {
+        return in_array($this->normalizeDomain($domain), self::INTERNAL_SERVICE_DOMAINS, true);
+    }
+
+    private function isLocalDevelopmentDomain(string $domain): bool
+    {
+        $normalized = $this->normalizeDomain($domain);
+
+        return in_array($normalized, ['localhost', '127.0.0.1', '::1'], true)
+            || $this->isInternalServiceDomain($normalized)
+            || str_ends_with($normalized, '.localhost');
     }
 
     private function normalizeFingerprint(string $instanceFingerprint): string
@@ -944,12 +1001,29 @@ class LicenseService
 
     private function resolveCurrentDomain(?string $domain = null): string
     {
-        $candidate = $domain
-            ?: request()?->getHost()
-            ?: parse_url((string) config('app.url'), PHP_URL_HOST)
-            ?: 'localhost';
+        if (filled($domain)) {
+            return $this->normalizeDomain((string) $domain);
+        }
 
-        return $this->normalizeDomain((string) $candidate);
+        $request = request();
+        $candidates = collect([
+            $this->extractDomainFromHeader($request?->header('X-Forwarded-Host')),
+            $this->extractDomainFromHeader($request?->header('X-Original-Host')),
+            $this->extractDomainFromHeader($request?->header('Origin')),
+            $this->extractDomainFromHeader($request?->header('Referer')),
+            $request?->getHost(),
+            parse_url((string) config('app.url'), PHP_URL_HOST),
+            'localhost',
+        ])->filter(fn (mixed $value): bool => is_string($value) && trim($value) !== '')
+            ->map(fn (string $value): string => $this->normalizeDomain($value))
+            ->unique()
+            ->values();
+
+        $preferredDomain = $candidates->first(
+            fn (string $candidate): bool => ! $this->isInternalServiceDomain($candidate)
+        );
+
+        return (string) ($preferredDomain ?: $candidates->first() ?: 'localhost');
     }
 
     private function hasFreshVerificationCache(License $license): bool

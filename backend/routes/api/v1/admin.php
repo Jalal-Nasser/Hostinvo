@@ -35,6 +35,7 @@ use App\Http\Controllers\Api\V1\Admin\TenantBrandingController;
 use App\Http\Controllers\Api\V1\Admin\TenantImpersonationController;
 use App\Http\Controllers\Api\V1\Admin\TenantMfaPolicyController;
 use App\Http\Controllers\Api\V1\Admin\TenantNotificationTemplateController;
+use App\Http\Controllers\Api\V1\Admin\TenantPaymentGatewayController;
 use App\Http\Controllers\Api\V1\Admin\TenantTurnstileController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\TicketDepartmentController;
@@ -42,7 +43,8 @@ use App\Http\Controllers\Api\V1\Admin\TicketReplyController;
 use App\Http\Controllers\Api\V1\Admin\TicketStatusController;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('announcements', AnnouncementController::class);
+Route::apiResource('announcements', AnnouncementController::class)
+    ->middleware('tenant.context');
 Route::apiResource('clients', ClientController::class);
 Route::get('domains/{domain}/contacts', [DomainContactController::class, 'index'])->name('domains.contacts.index');
 Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update'])->name('domains.contacts.update');
@@ -64,21 +66,31 @@ Route::post('orders/place', [OrderCheckoutController::class, 'place'])->name('or
 Route::post('orders/{order}/place', [OrderController::class, 'place'])->name('orders.place-existing');
 Route::apiResource('orders', OrderController::class);
 Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
-Route::apiResource('knowledgebase-categories', KnowledgeBaseCategoryController::class)->parameters([
-    'knowledgebase-categories' => 'knowledgebaseCategory',
-]);
-Route::apiResource('knowledgebase-articles', KnowledgeBaseArticleController::class)->parameters([
-    'knowledgebase-articles' => 'knowledgebaseArticle',
-]);
-Route::apiResource('network-incidents', NetworkIncidentController::class)->parameters([
-    'network-incidents' => 'networkIncident',
-]);
-Route::apiResource('portal-content-blocks', PortalContentBlockController::class)->parameters([
-    'portal-content-blocks' => 'portalContentBlock',
-]);
-Route::apiResource('portal-footer-links', PortalFooterLinkController::class)->parameters([
-    'portal-footer-links' => 'portalFooterLink',
-]);
+Route::apiResource('knowledgebase-categories', KnowledgeBaseCategoryController::class)
+    ->middleware('tenant.context')
+    ->parameters([
+        'knowledgebase-categories' => 'knowledgebaseCategory',
+    ]);
+Route::apiResource('knowledgebase-articles', KnowledgeBaseArticleController::class)
+    ->middleware('tenant.context')
+    ->parameters([
+        'knowledgebase-articles' => 'knowledgebaseArticle',
+    ]);
+Route::apiResource('network-incidents', NetworkIncidentController::class)
+    ->middleware('tenant.context')
+    ->parameters([
+        'network-incidents' => 'networkIncident',
+    ]);
+Route::apiResource('portal-content-blocks', PortalContentBlockController::class)
+    ->middleware('tenant.context')
+    ->parameters([
+        'portal-content-blocks' => 'portalContentBlock',
+    ]);
+Route::apiResource('portal-footer-links', PortalFooterLinkController::class)
+    ->middleware('tenant.context')
+    ->parameters([
+        'portal-footer-links' => 'portalFooterLink',
+    ]);
 Route::apiResource('provisioning-jobs', ProvisioningJobController::class)->only(['index', 'show']);
 Route::post('provisioning-jobs/{provisioningJob}/retry', [ProvisioningJobRetryController::class, 'store'])->name('provisioning-jobs.retry');
 Route::apiResource('product-groups', ProductGroupController::class);
@@ -97,16 +109,30 @@ Route::post('tenants/{tenant}/suspend', [TenantController::class, 'suspend'])->n
 Route::post('tenants/{tenant}/impersonate-admin', [TenantImpersonationController::class, 'impersonateAdmin'])->name('tenants.impersonate.admin');
 Route::post('tenants/{tenant}/impersonate-portal', [TenantImpersonationController::class, 'impersonatePortal'])->name('tenants.impersonate.portal');
 Route::post('impersonation/stop', [TenantImpersonationController::class, 'stop'])->name('impersonation.stop');
-Route::get('settings/branding', [TenantBrandingController::class, 'show'])->name('settings.branding.show');
-Route::post('settings/branding', [TenantBrandingController::class, 'update'])->name('settings.branding.update');
+Route::get('settings/branding', [TenantBrandingController::class, 'show'])
+    ->middleware('tenant.context')
+    ->name('settings.branding.show');
+Route::post('settings/branding', [TenantBrandingController::class, 'update'])
+    ->middleware('tenant.context')
+    ->name('settings.branding.update');
 Route::get('settings/security/turnstile', [TenantTurnstileController::class, 'show'])->name('settings.security.turnstile.show');
 Route::put('settings/security/turnstile', [TenantTurnstileController::class, 'update'])->name('settings.security.turnstile.update');
 Route::get('settings/security/mfa-policy', [TenantMfaPolicyController::class, 'show'])->name('settings.security.mfa-policy.show');
 Route::put('settings/security/mfa-policy', [TenantMfaPolicyController::class, 'update'])->name('settings.security.mfa-policy.update');
+Route::get('settings/payments/gateways', [TenantPaymentGatewayController::class, 'show'])
+    ->middleware('tenant.context')
+    ->name('settings.payments.gateways.show');
+Route::put('settings/payments/gateways', [TenantPaymentGatewayController::class, 'update'])
+    ->middleware('tenant.context')
+    ->name('settings.payments.gateways.update');
 Route::get('settings/notifications/templates', [TenantNotificationTemplateController::class, 'index'])->name('settings.notifications.templates.index');
 Route::put('settings/notifications/templates/{event}/{locale}', [TenantNotificationTemplateController::class, 'update'])->name('settings.notifications.templates.update');
-Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])->name('settings.portal-surface.show');
-Route::put('settings/portal-surface', [PortalSurfaceController::class, 'update'])->name('settings.portal-surface.update');
+Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])
+    ->middleware('tenant.context')
+    ->name('settings.portal-surface.show');
+Route::put('settings/portal-surface', [PortalSurfaceController::class, 'update'])
+    ->middleware('tenant.context')
+    ->name('settings.portal-surface.update');
 Route::get('support/overview', SupportOverviewController::class)->name('support.overview.show');
 Route::get('ticket-statuses', [TicketStatusController::class, 'index'])->name('ticket-statuses.index');
 Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])

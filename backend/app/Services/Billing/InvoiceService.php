@@ -245,6 +245,7 @@ class InvoiceService
         return [
             'tenant_id' => $tenantId,
             'client_id' => $client->id,
+            'subscription_id' => $payload['subscription_id'] ?? ($invoice->subscription_id ?? null),
             'order_id' => $order?->id,
             'user_id' => $invoice?->user_id ?? $actor->id,
             'reference_number' => $invoice?->reference_number ?? $this->generateReferenceNumber(),
@@ -418,6 +419,7 @@ class InvoiceService
         return Arr::only($summary, [
             'tenant_id',
             'client_id',
+            'subscription_id',
             'order_id',
             'user_id',
             'reference_number',

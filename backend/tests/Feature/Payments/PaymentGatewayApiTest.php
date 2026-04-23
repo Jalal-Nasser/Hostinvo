@@ -4,6 +4,7 @@ namespace Tests\Feature\Payments;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\License;
 use App\Models\Payment;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -62,7 +63,7 @@ class PaymentGatewayApiTest extends TestCase
 
         $this->assertDatabaseMissing('tenant_settings', [
             'tenant_id' => $tenant->id,
-            'setting_value' => 'sk_test_hostinvo_secret',
+            'value' => 'sk_test_hostinvo_secret',
         ]);
 
         $event = [
@@ -258,6 +259,21 @@ class PaymentGatewayApiTest extends TestCase
             'role_id' => $role->id,
             'is_primary' => true,
             'joined_at' => now(),
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-GATEWAY-PAYMENTS-001',
+            'owner_email' => 'owner@gateway-tenant.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 100,
+            'max_services' => 100,
+            'activation_limit' => 1,
+            'issued_at' => now(),
+            'expires_at' => now()->addMonth(),
         ]);
 
         $client = Client::query()->forceCreate([

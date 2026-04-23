@@ -5,6 +5,7 @@ namespace App\Http\Requests\Clients;
 use App\Http\Requests\Concerns\SanitizesInputContent;
 use App\Models\Client;
 use App\Models\ClientAddress;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -76,6 +77,15 @@ class StoreClientRequest extends FormRequest
             'preferred_locale' => ['required', Rule::in($locales)],
             'currency' => ['required', 'string', 'size:3'],
             'notes' => ['nullable', 'string'],
+            'portal_access' => ['nullable', 'array'],
+            'portal_access.enabled' => ['required_with:portal_access', 'boolean'],
+            'portal_access.password' => [
+                Rule::requiredIf(fn () => (bool) $this->boolean('portal_access.enabled')),
+                'nullable',
+                'string',
+                'min:8',
+            ],
+            'portal_access.send_verification_email' => ['nullable', 'boolean'],
             'contacts' => ['nullable', 'array'],
             'contacts.*.id' => ['nullable', 'uuid'],
             'contacts.*.first_name' => ['required', 'string', 'max:255'],

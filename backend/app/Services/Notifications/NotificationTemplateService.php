@@ -238,6 +238,34 @@ class NotificationTemplateService
                     'is_enabled' => true,
                 ],
             ],
+            NotificationEventCatalog::EVENT_CLIENT_ACCOUNT_CREATED => [
+                'en' => [
+                    'subject' => 'Your client portal account is ready',
+                    'body_html' => '<p>Hello {{client.name}},</p><p>Your client portal account for {{tenant.name}} is ready.</p><p><a href="{{links.login_url}}" target="_blank" rel="noopener">Open client portal</a></p><p>{{links.login_url}}</p>',
+                    'body_text' => 'Hello {{client.name}}, your client portal account for {{tenant.name}} is ready. Open the client portal here: {{links.login_url}}',
+                    'is_enabled' => true,
+                ],
+                'ar' => [
+                    'subject' => 'تم إنشاء حساب بوابة العميل',
+                    'body_html' => '<p>مرحباً {{client.name}}،</p><p>أصبح حساب بوابة العميل الخاص بك لدى {{tenant.name}} جاهزاً.</p><p><a href="{{links.login_url}}">فتح بوابة العميل</a></p>',
+                    'body_text' => 'مرحباً {{client.name}}، أصبح حساب بوابة العميل لدى {{tenant.name}} جاهزاً. افتح البوابة من {{links.login_url}}',
+                    'is_enabled' => true,
+                ],
+            ],
+            NotificationEventCatalog::EVENT_SERVICE_ACTIVATED => [
+                'en' => [
+                    'subject' => 'Service {{service.reference_number}} is active',
+                    'body_html' => '<p>Hello {{client.name}},</p><p>Your service {{service.reference_number}} is now active.</p><p>Domain: {{service.domain}}</p>',
+                    'body_text' => 'Hello {{client.name}}, your service {{service.reference_number}} is now active. Domain: {{service.domain}}',
+                    'is_enabled' => true,
+                ],
+                'ar' => [
+                    'subject' => 'تم تفعيل الخدمة {{service.reference_number}}',
+                    'body_html' => '<p>مرحباً {{client.name}}،</p><p>تم تفعيل الخدمة {{service.reference_number}}.</p><p>النطاق: {{service.domain}}</p>',
+                    'body_text' => 'مرحباً {{client.name}}، تم تفعيل الخدمة {{service.reference_number}}. النطاق: {{service.domain}}',
+                    'is_enabled' => true,
+                ],
+            ],
             NotificationEventCatalog::EVENT_TRIAL_EXPIRY_REMINDER => [
                 'en' => [
                     'subject' => 'Your trial expires soon',

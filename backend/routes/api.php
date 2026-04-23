@@ -39,7 +39,7 @@ Route::middleware(['api'])
 
         Route::prefix('client')
             ->name('client.')
-            ->middleware(['auth:sanctum', 'resolve.tenant', 'license.valid'])
+            ->middleware(['auth:sanctum', 'resolve.tenant', 'tenant.context', 'license.valid'])
             ->group(base_path('routes/api/v1/client.php'));
 
         Route::prefix('webhooks')

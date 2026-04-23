@@ -1,5 +1,8 @@
 import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
 
+import type { InvoiceRecord } from "@/lib/billing";
+import type { ServiceRecord } from "@/lib/provisioning";
+
 export const clientStatuses = ["active", "inactive", "lead"] as const;
 export const clientTypes = ["company", "individual"] as const;
 export const addressTypes = ["billing", "mailing", "service"] as const;
@@ -52,9 +55,14 @@ export type ClientRecord = {
     id: string;
     name: string;
     email: string;
+    email_verified_at?: string | null;
   } | null;
+  services_count?: number;
+  invoices_count?: number;
   contacts?: ClientContact[];
   addresses?: ClientAddress[];
+  services?: ServiceRecord[];
+  invoices?: InvoiceRecord[];
   activity_logs?: Array<{
     id: string;
     action: string;
@@ -83,6 +91,11 @@ export type ClientFormPayload = {
   preferred_locale: string;
   currency: string;
   notes?: string | null;
+  portal_access?: {
+    enabled: boolean;
+    password?: string | null;
+    send_verification_email?: boolean;
+  };
   contacts?: ClientContact[];
   addresses?: ClientAddress[];
 };

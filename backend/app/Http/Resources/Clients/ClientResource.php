@@ -4,6 +4,8 @@ namespace App\Http\Resources\Clients;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\Billing\InvoiceResource;
+use App\Http\Resources\Provisioning\ServiceResource;
 
 class ClientResource extends JsonResource
 {
@@ -30,14 +32,19 @@ class ClientResource extends JsonResource
             'notes' => $this->notes,
             'contacts_count' => $this->whenCounted('contacts'),
             'addresses_count' => $this->whenCounted('addresses'),
+            'services_count' => $this->whenCounted('services'),
+            'invoices_count' => $this->whenCounted('invoices'),
             'owner' => $this->whenLoaded('owner', fn () => $this->owner ? [
                 'id' => $this->owner->id,
                 'name' => $this->owner->name,
                 'email' => $this->owner->email,
+                'email_verified_at' => $this->owner->email_verified_at,
             ] : null),
             'contacts' => ClientContactResource::collection($this->whenLoaded('contacts')),
             'addresses' => ClientAddressResource::collection($this->whenLoaded('addresses')),
             'activity_logs' => ClientActivityLogResource::collection($this->whenLoaded('activityLogs')),
+            'services' => ServiceResource::collection($this->whenLoaded('services')),
+            'invoices' => InvoiceResource::collection($this->whenLoaded('invoices')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

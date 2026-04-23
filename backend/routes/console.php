@@ -2,6 +2,7 @@
 
 use App\Jobs\Automation\PurgeWebhookLogs;
 use App\Jobs\Domains\CheckDomainExpiry;
+use App\Services\Billing\BillingAutomationService;
 use App\Services\Monitoring\MonitoringAlertService;
 use App\Services\Notifications\NotificationReminderService;
 use Illuminate\Foundation\Inspiring;
@@ -26,6 +27,9 @@ Artisan::command('inspire', function () {
 // Phase 14 — Domain Management
 // Checks for domains expiring in 60, 30, 14, or 7 days and sends reminders.
 Schedule::job(new CheckDomainExpiry, 'default')->dailyAt('01:00');
+Schedule::call(function (): void {
+    app(BillingAutomationService::class)->run();
+})->dailyAt('00:30')->name('billing.automation');
 Schedule::job(new PurgeWebhookLogs, 'low')->dailyAt('04:30');
 Schedule::call(function (): void {
     $reminders = app(NotificationReminderService::class);

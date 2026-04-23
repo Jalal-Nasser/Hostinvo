@@ -23,6 +23,8 @@ use App\Provisioning\ProvisioningDriverManager;
 use App\Provisioning\ProvisioningJobDispatcher;
 use App\Provisioning\ProvisioningLogger;
 use App\Provisioning\ServerSelector;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +46,7 @@ class ProvisioningService
         private readonly ProvisioningLogger $logger,
         private readonly ProvisioningJobDispatcher $dispatcher,
         private readonly ServerSelector $serverSelector,
+        private readonly NotificationDispatchService $notifications,
     ) {}
 
     public function paginateServices(array $filters): LengthAwarePaginator
@@ -268,6 +271,9 @@ class ProvisioningService
             return;
         }
 
+        $shouldNotifyActivation = $job->operation === ProvisioningJob::OPERATION_CREATE_ACCOUNT
+            && $service->status !== Service::STATUS_ACTIVE;
+
         DB::transaction(function () use ($job, $service, $server, $serverPackage, $result): void {
             $this->jobs->update($job, [
                 'status' => ProvisioningJob::STATUS_COMPLETED,
@@ -301,6 +307,10 @@ class ProvisioningService
                 $result->responsePayload,
             );
         });
+
+        if ($shouldNotifyActivation) {
+            $this->dispatchServiceActivatedNotification($service->fresh(['client', 'product', 'tenant']));
+        }
     }
 
     public function processCreateAccountForService(string $serviceId, int $attempts = 1): void
@@ -1232,5 +1242,38 @@ class ProvisioningService
     private function generateReferenceNumber(): string
     {
         return 'SVC-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
+    }
+
+    private function dispatchServiceActivatedNotification(?Service $service): void
+    {
+        if (! $service || $service->status !== Service::STATUS_ACTIVE) {
+            return;
+        }
+
+        $client = $service->client;
+        $tenant = $service->tenant;
+
+        if (! $client || ! $tenant || ! filled($client->email)) {
+            return;
+        }
+
+        $this->notifications->send(
+            email: $client->email,
+            event: NotificationEventCatalog::EVENT_SERVICE_ACTIVATED,
+            context: [
+                'client' => [
+                    'name' => $client->display_name,
+                    'email' => $client->email,
+                ],
+                'service' => [
+                    'reference_number' => $service->reference_number,
+                    'domain' => $service->domain,
+                    'status' => $service->status,
+                    'product_name' => $service->product?->name,
+                ],
+            ],
+            tenant: $tenant,
+            locale: $client->preferred_locale ?: $tenant->default_locale,
+        );
     }
 }

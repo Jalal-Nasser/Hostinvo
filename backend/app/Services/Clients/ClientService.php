@@ -4,11 +4,18 @@ namespace App\Services\Clients;
 
 use App\Contracts\Repositories\Clients\ClientRepositoryInterface;
 use App\Models\Client;
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Models\TenantUser;
 use App\Models\User;
+use App\Services\Auth\EmailVerificationService;
+use App\Services\Notifications\NotificationDispatchService;
+use App\Services\Notifications\NotificationEventCatalog;
 use App\Services\Licensing\LicenseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +24,8 @@ class ClientService
     public function __construct(
         private readonly ClientRepositoryInterface $clients,
         private readonly LicenseService $licenseService,
+        private readonly EmailVerificationService $emailVerification,
+        private readonly NotificationDispatchService $notifications,
     ) {
     }
 
@@ -48,6 +57,8 @@ class ClientService
                 $this->clients->syncAddresses($client, $this->normalizeAddresses($payload['addresses'] ?? []));
             }
 
+            $this->syncPortalAccess($client, $payload, $actor);
+
             $this->clients->logActivity($client, [
                 'user_id' => $actor->id,
                 'action' => 'client.created',
@@ -77,6 +88,8 @@ class ClientService
             if (array_key_exists('addresses', $payload)) {
                 $this->clients->syncAddresses($client, $this->normalizeAddresses($payload['addresses'] ?? []));
             }
+
+            $this->syncPortalAccess($client, $payload, $actor);
 
             $this->clients->logActivity($client, [
                 'user_id' => $actor->id,
@@ -204,8 +217,125 @@ class ClientService
         return [
             'contacts_count' => count($payload['contacts'] ?? []),
             'addresses_count' => count($payload['addresses'] ?? []),
+            'portal_access_enabled' => (bool) ($payload['portal_access']['enabled'] ?? false),
             'status' => $payload['status'] ?? null,
             'preferred_locale' => $payload['preferred_locale'] ?? null,
         ];
+    }
+
+    private function syncPortalAccess(Client $client, array $payload, User $actor): void
+    {
+        if (! array_key_exists('portal_access', $payload)) {
+            return;
+        }
+
+        $portalAccess = (array) $payload['portal_access'];
+        $enabled = (bool) ($portalAccess['enabled'] ?? false);
+
+        if (! $enabled) {
+            return;
+        }
+
+        $existingUser = $client->owner;
+        $password = (string) ($portalAccess['password'] ?? '');
+        $locale = (string) ($client->preferred_locale ?: $actor->locale ?: config('app.locale', 'en'));
+        $name = $this->portalUserName($client);
+
+        $user = $existingUser ?? new User();
+        $isNewUser = ! $user->exists;
+
+        $attributes = [
+            'name' => $name,
+            'email' => Str::lower($client->email),
+            'locale' => $locale,
+        ];
+
+        if ($isNewUser) {
+            $attributes['tenant_id'] = $client->tenant_id;
+            $attributes['is_active'] = true;
+            $attributes['email_verification_required'] = true;
+        }
+
+        if ($password !== '') {
+            $attributes['password'] = Hash::make($password);
+        } elseif ($isNewUser) {
+            throw ValidationException::withMessages([
+                'portal_access.password' => ['A password is required when enabling portal access for a new client user.'],
+            ]);
+        }
+
+        $user->forceFill($attributes)->save();
+
+        if ($isNewUser) {
+            $role = Role::query()->where('name', Role::CLIENT_USER)->firstOrFail();
+            $user->roles()->syncWithoutDetaching([$role->id]);
+
+            $tenantUser = TenantUser::query()
+                ->where('tenant_id', $client->tenant_id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (! $tenantUser) {
+                TenantUser::query()->forceCreate([
+                    'tenant_id' => $client->tenant_id,
+                    'user_id' => $user->id,
+                    'role_id' => $role->id,
+                    'is_primary' => true,
+                    'joined_at' => now(),
+                ]);
+            } elseif (! $tenantUser->role_id) {
+                $tenantUser->forceFill([
+                    'role_id' => $role->id,
+                ])->save();
+            }
+        }
+
+        if ($client->user_id !== $user->id) {
+            $client->forceFill(['user_id' => $user->id])->save();
+        }
+
+        $shouldSendVerification = (bool) ($portalAccess['send_verification_email'] ?? $isNewUser);
+
+        if ($shouldSendVerification) {
+            $this->emailVerification->send($user, $locale);
+        }
+
+        if ($isNewUser) {
+            $tenant = Tenant::query()->withoutGlobalScopes()->find($client->tenant_id);
+
+            if ($tenant) {
+                $loginUrl = sprintf(
+                    '%s/%s/auth/login',
+                    rtrim((string) config('app.frontend_url'), '/'),
+                    $locale,
+                );
+
+                $this->notifications->send(
+                    email: $user->email,
+                    event: NotificationEventCatalog::EVENT_CLIENT_ACCOUNT_CREATED,
+                    context: [
+                        'client' => [
+                            'name' => $client->display_name,
+                            'email' => $client->email,
+                        ],
+                        'tenant' => [
+                            'name' => $tenant->name,
+                        ],
+                        'links' => [
+                            'login_url' => $loginUrl,
+                        ],
+                    ],
+                    tenant: $tenant,
+                    locale: $locale,
+                );
+            }
+        }
+    }
+
+    private function portalUserName(Client $client): string
+    {
+        $name = trim((string) ($client->display_name ?: 'Client User'));
+
+        return $name !== '' ? $name : 'Client User';
     }
 }

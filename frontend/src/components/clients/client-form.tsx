@@ -127,6 +127,9 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
   );
   const [currency, setCurrency] = useState(initialClient?.currency ?? "USD");
   const [notes, setNotes] = useState(initialClient?.notes ?? "");
+  const [portalAccessEnabled, setPortalAccessEnabled] = useState(Boolean(initialClient?.owner));
+  const [portalPassword, setPortalPassword] = useState("");
+  const [sendVerificationEmail, setSendVerificationEmail] = useState(!initialClient?.owner);
   const [contacts, setContacts] = useState<ContactFormState[]>(
     initialClient?.contacts?.map((contact) => ({
       id: contact.id,
@@ -182,6 +185,11 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
       preferred_locale: preferredLocale,
       currency: currency.trim().toUpperCase(),
       notes: nullable(notes),
+      portal_access: {
+        enabled: portalAccessEnabled,
+        password: portalPassword.trim() === "" ? null : portalPassword,
+        send_verification_email: sendVerificationEmail,
+      },
       contacts: contacts.map((contact) => ({
         id: contact.id,
         first_name: contact.first_name.trim(),
@@ -421,6 +429,49 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
               value={notes}
             />
           </label>
+
+          <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5 md:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{t("portalAccessTitle")}</p>
+                <p className="mt-2 text-sm text-muted">{t("portalAccessDescription")}</p>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <input
+                  checked={portalAccessEnabled}
+                  className="h-4 w-4 rounded border-line accent-accent"
+                  onChange={(event) => setPortalAccessEnabled(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>{t("portalAccessEnabledLabel")}</span>
+              </label>
+            </div>
+
+            {portalAccessEnabled ? (
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <label className="grid gap-2 text-sm font-medium text-foreground">
+                  <span>{t("portalPasswordLabel")}</span>
+                  <input
+                    className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent"
+                    onChange={(event) => setPortalPassword(event.target.value)}
+                    type="password"
+                    value={portalPassword}
+                  />
+                </label>
+
+                <label className="flex items-center gap-2 self-end text-sm font-medium text-foreground">
+                  <input
+                    checked={sendVerificationEmail}
+                    className="h-4 w-4 rounded border-line accent-accent"
+                    onChange={(event) => setSendVerificationEmail(event.target.checked)}
+                    type="checkbox"
+                  />
+                  <span>{t("portalSendVerificationLabel")}</span>
+                </label>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 

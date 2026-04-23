@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuthorizeMetricsAccess;
+use App\Http\Middleware\EnsureTenantContext;
 use App\Http\Middleware\CaptureRequestMetrics;
 use App\Http\Middleware\EnsureValidLicense;
 use App\Http\Middleware\ResolveTenant;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => EnsureUserHasPermission::class,
             'license.valid' => EnsureValidLicense::class,
             'resolve.tenant' => ResolveTenant::class,
+            'tenant.context' => EnsureTenantContext::class,
             'role' => EnsureUserHasRole::class,
         ]);
     })

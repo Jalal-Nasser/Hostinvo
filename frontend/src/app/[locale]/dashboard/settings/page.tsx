@@ -47,6 +47,12 @@ export default async function SettingsPage({
       description: copy.settings.contentDescription,
       href: localePath(params.locale, "/dashboard/content"),
     },
+    {
+      key: "payments",
+      title: copy.settings.paymentGatewaysTitle,
+      description: copy.settings.paymentGatewaysDescription,
+      href: localePath(params.locale, "/dashboard/settings/payments"),
+    },
   ];
 
   if (isPlatformOwner) {
