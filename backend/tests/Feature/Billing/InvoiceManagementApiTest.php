@@ -161,7 +161,7 @@ class InvoiceManagementApiTest extends TestCase
             ->assertJsonPath('data.status', Invoice::STATUS_OVERDUE);
 
         $this->postJson("/api/v1/admin/invoices/{$invoiceId}/payments", [
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => 935,
             'reference' => 'PAY-INV-001',
         ])
@@ -179,7 +179,7 @@ class InvoiceManagementApiTest extends TestCase
 
         $this->postJson("/api/v1/admin/invoices/{$invoiceId}/payments", [
             'type' => 'refund',
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => 935,
             'reference' => 'REF-INV-001',
         ])

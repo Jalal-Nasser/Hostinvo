@@ -108,7 +108,7 @@ class BillingCycleTest extends IntegrationTestCase
             ->assertJsonPath('data.next_invoice_date', $initialNextBillingDate->toDateString());
 
         $this->postJson("/api/v1/admin/invoices/{$invoiceId}/payments", [
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => $invoiceTotalMinor,
             'reference' => 'BILL-CYCLE-PAY-001',
         ])->assertCreated()

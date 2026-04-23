@@ -56,7 +56,7 @@ export default async function PortalInvoiceDetailsPage({
     notFound();
   }
 
-  const showDisabledPayAction =
+  const showPayAction =
     invoice.balance_due_minor > 0 &&
     ["unpaid", "overdue"].includes(invoice.status);
 
@@ -64,15 +64,13 @@ export default async function PortalInvoiceDetailsPage({
     <PortalShell
       actions={
         <div className="flex flex-wrap gap-3">
-          {showDisabledPayAction ? (
-            <span
-              className={[
-                portalTheme.primaryButtonClass,
-                "cursor-not-allowed opacity-60",
-              ].join(" ")}
+          {showPayAction ? (
+            <Link
+              className={portalTheme.primaryButtonClass}
+              href={localePath(params.locale, `/portal/invoices/${invoice.id}/pay`)}
             >
               {billingT("payInvoiceButton")}
-            </span>
+            </Link>
           ) : null}
           <Link
             className={portalTheme.secondaryButtonClass}
@@ -93,12 +91,6 @@ export default async function PortalInvoiceDetailsPage({
       locale={params.locale as AppLocale}
       title={invoice.reference_number}
     >
-      {showDisabledPayAction ? (
-        <div className={portalTheme.noteClass}>
-          {portalT("portalInvoicePaymentUnavailableNotice")}
-        </div>
-      ) : null}
-
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <article className={[portalTheme.surfaceClass, "p-6 md:p-7"].join(" ")}>
           <div className="grid gap-4 md:grid-cols-2">

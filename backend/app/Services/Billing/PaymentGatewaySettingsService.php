@@ -14,6 +14,9 @@ class PaymentGatewaySettingsService
 
     public function forTenant(Tenant $tenant): array
     {
+        $offlineEnabled = $this->settings->get($tenant, 'payments.offline.enabled');
+        $offlineInstructions = $this->settings->get($tenant, 'payments.offline.instructions');
+
         return [
             'stripe' => [
                 'enabled' => (bool) $this->settings->get($tenant, 'payments.stripe.enabled', false),
@@ -28,9 +31,9 @@ class PaymentGatewaySettingsService
                 'webhook_id' => (string) ($this->settings->get($tenant, 'payments.paypal.webhook_id', '') ?? ''),
                 'mode' => (string) ($this->settings->get($tenant, 'payments.paypal.mode', 'sandbox') ?? 'sandbox'),
             ],
-            'manual' => [
-                'enabled' => (bool) $this->settings->get($tenant, 'payments.manual.enabled', true),
-                'instructions' => (string) ($this->settings->get($tenant, 'payments.manual.instructions', '') ?? ''),
+            'offline' => [
+                'enabled' => (bool) ($offlineEnabled ?? $this->settings->get($tenant, 'payments.manual.enabled', true)),
+                'instructions' => (string) (($offlineInstructions ?? $this->settings->get($tenant, 'payments.manual.instructions', '')) ?? ''),
             ],
         ];
     }
@@ -48,8 +51,8 @@ class PaymentGatewaySettingsService
         $this->settings->put($tenant, 'payments.paypal.webhook_id', (string) ($payload['paypal']['webhook_id'] ?? ''), true);
         $this->settings->put($tenant, 'payments.paypal.mode', (string) ($payload['paypal']['mode'] ?? 'sandbox'));
 
-        $this->settings->put($tenant, 'payments.manual.enabled', (bool) $payload['manual']['enabled']);
-        $this->settings->put($tenant, 'payments.manual.instructions', (string) ($payload['manual']['instructions'] ?? ''));
+        $this->settings->put($tenant, 'payments.offline.enabled', (bool) $payload['offline']['enabled']);
+        $this->settings->put($tenant, 'payments.offline.instructions', (string) ($payload['offline']['instructions'] ?? ''));
 
         return $this->forTenant($tenant);
     }

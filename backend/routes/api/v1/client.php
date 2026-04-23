@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Client\DomainContactController;
 use App\Http\Controllers\Api\V1\Client\DomainController;
 use App\Http\Controllers\Api\V1\Client\DomainRenewalController;
+use App\Http\Controllers\Api\V1\Client\InvoiceGatewayController;
 use App\Http\Controllers\Api\V1\Client\InvoiceController;
 use App\Http\Controllers\Api\V1\Client\PortalAnnouncementController;
 use App\Http\Controllers\Api\V1\Client\PortalConfigController;
@@ -27,6 +28,9 @@ Route::apiResource('tickets', TicketController::class)
     ->only(['index', 'show', 'store'])
     ->middlewareFor('store', 'throttle:ticket-create');
 Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show']);
+Route::get('invoices/{invoice}/gateway-options', [InvoiceGatewayController::class, 'index'])->name('invoices.gateway-options.index');
+Route::post('invoices/{invoice}/gateway-checkouts', [InvoiceGatewayController::class, 'store'])->name('invoices.gateway-checkouts.store');
+Route::post('invoices/{invoice}/gateway-checkouts/paypal/capture', [InvoiceGatewayController::class, 'capturePayPal'])->name('invoices.gateway-checkouts.paypal.capture');
 Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
 Route::get('portal/config', PortalConfigController::class)->name('portal.config.show');
 Route::get('portal/announcements', [PortalAnnouncementController::class, 'index'])->name('portal.announcements.index');

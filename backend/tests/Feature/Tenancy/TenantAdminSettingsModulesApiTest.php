@@ -57,7 +57,7 @@ class TenantAdminSettingsModulesApiTest extends TestCase
                 'data' => [
                     'stripe',
                     'paypal',
-                    'manual',
+                    'offline',
                 ],
             ]);
 
@@ -75,14 +75,14 @@ class TenantAdminSettingsModulesApiTest extends TestCase
                 'webhook_id' => 'paypal-webhook-settings',
                 'mode' => 'sandbox',
             ],
-            'manual' => [
+            'offline' => [
                 'enabled' => true,
                 'instructions' => 'Send transfer confirmation to billing@tenant.test.',
             ],
         ])->assertOk()
             ->assertJsonPath('data.stripe.enabled', true)
             ->assertJsonPath('data.paypal.enabled', true)
-            ->assertJsonPath('data.manual.instructions', 'Send transfer confirmation to billing@tenant.test.');
+            ->assertJsonPath('data.offline.instructions', 'Send transfer confirmation to billing@tenant.test.');
 
         $this->assertDatabaseHas('tenants', [
             'id' => $tenant->id,
@@ -103,7 +103,7 @@ class TenantAdminSettingsModulesApiTest extends TestCase
 
         $this->assertDatabaseHas('tenant_settings', [
             'tenant_id' => $tenant->id,
-            'key' => 'payments.manual.instructions',
+            'key' => 'payments.offline.instructions',
         ]);
     }
 

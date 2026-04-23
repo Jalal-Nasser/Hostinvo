@@ -86,7 +86,7 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
 
           <span className="h-6 w-px rounded-full bg-[rgba(255,255,255,0.12)]" />
 
-          <div className={joinClasses(actionClass, "px-2")}>            
+          <div className={joinClasses(actionClass, "px-2")}>
             <PortalCurrencySelect
               className="text-[12px] font-semibold text-[#eef5ff] hover:text-white"
               label={locale === "ar" ? "العملة" : "USD"}

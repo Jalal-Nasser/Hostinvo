@@ -27,9 +27,9 @@ class UpdatePaymentGatewaySettingsRequest extends FormRequest
             'paypal.client_secret' => ['nullable', 'string', 'max:255'],
             'paypal.webhook_id' => ['nullable', 'string', 'max:255'],
             'paypal.mode' => ['required', Rule::in(['sandbox', 'live'])],
-            'manual' => ['required', 'array'],
-            'manual.enabled' => ['required', 'boolean'],
-            'manual.instructions' => ['nullable', 'string', 'max:5000'],
+            'offline' => ['required', 'array'],
+            'offline.enabled' => ['required', 'boolean'],
+            'offline.instructions' => ['nullable', 'string', 'max:5000'],
         ];
     }
 }

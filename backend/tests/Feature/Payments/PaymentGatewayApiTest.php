@@ -234,6 +234,69 @@ class PaymentGatewayApiTest extends TestCase
             ->assertJsonPath('data.balance_due_minor', 0);
     }
 
+    public function test_portal_user_can_load_paypal_gateway_options_and_complete_checkout(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$tenant, $user, $invoice, $client] = $this->createBillingContext();
+        $this->configurePayPal($tenant);
+        $portalUser = $this->createPortalUser($tenant, $client);
+
+        Http::fake([
+            'https://api-m.sandbox.paypal.com/v1/oauth2/token' => Http::response([
+                'access_token' => 'paypal-access-token',
+            ], 200),
+            'https://api-m.sandbox.paypal.com/v2/checkout/orders' => Http::response([
+                'id' => 'PAYPAL-ORDER-CLIENT-123',
+                'links' => [
+                    ['rel' => 'approve', 'href' => 'https://paypal.test/checkout/PAYPAL-ORDER-CLIENT-123'],
+                ],
+            ], 201),
+            'https://api-m.sandbox.paypal.com/v2/checkout/orders/PAYPAL-ORDER-CLIENT-123/capture' => Http::response([
+                'status' => 'COMPLETED',
+                'purchase_units' => [[
+                    'payments' => [
+                        'captures' => [[
+                            'id' => 'PAYPAL-CAPTURE-CLIENT-123',
+                            'amount' => [
+                                'value' => '15.00',
+                                'currency_code' => 'USD',
+                            ],
+                        ]],
+                    ],
+                ]],
+            ], 201),
+        ]);
+
+        Sanctum::actingAs($portalUser);
+
+        $this->getJson("/api/v1/client/invoices/{$invoice->id}/gateway-options")
+            ->assertOk()
+            ->assertJsonPath('data.0.code', 'paypal')
+            ->assertJsonPath('data.0.checkout.kind', 'paypal_js_sdk')
+            ->assertJsonPath('data.0.checkout.client_id', 'paypal-client-id');
+
+        $this->postJson("/api/v1/client/invoices/{$invoice->id}/gateway-checkouts", [
+            'gateway' => 'paypal',
+            'success_url' => 'http://localhost:3000/en/portal/invoices/'.$invoice->id.'/pay?gateway=paypal&status=approved',
+            'cancel_url' => 'http://localhost:3000/en/portal/invoices/'.$invoice->id.'/pay?gateway=paypal&status=cancelled',
+        ])->assertCreated()
+            ->assertJsonPath('data.gateway', 'paypal')
+            ->assertJsonPath('data.external_reference', 'PAYPAL-ORDER-CLIENT-123');
+
+        $this->postJson("/api/v1/client/invoices/{$invoice->id}/gateway-checkouts/paypal/capture", [
+            'order_id' => 'PAYPAL-ORDER-CLIENT-123',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.status', Payment::STATUS_COMPLETED)
+            ->assertJsonPath('data.payment_method', 'paypal');
+
+        $this->getJson("/api/v1/client/invoices/{$invoice->id}")
+            ->assertOk()
+            ->assertJsonPath('data.status', Invoice::STATUS_PAID)
+            ->assertJsonPath('data.balance_due_minor', 0);
+    }
+
     private function createBillingContext(): array
     {
         $tenant = Tenant::query()->create([
@@ -326,7 +389,32 @@ class PaymentGatewayApiTest extends TestCase
             'metadata' => null,
         ]);
 
-        return [$tenant, $user, $invoice];
+        return [$tenant, $user, $invoice, $client];
+    }
+
+    private function createPortalUser(Tenant $tenant, Client $client): User
+    {
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'gateway-portal@example.test',
+        ]);
+
+        $role = Role::query()->where('name', Role::CLIENT_USER)->firstOrFail();
+        $user->roles()->attach($role);
+
+        TenantUser::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'role_id' => $role->id,
+            'is_primary' => false,
+            'joined_at' => now(),
+        ]);
+
+        $client->forceFill([
+            'user_id' => $user->id,
+        ])->save();
+
+        return $user;
     }
 
     private function configureStripe(Tenant $tenant): void

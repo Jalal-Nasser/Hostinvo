@@ -27,6 +27,10 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
+    private const OFFLINE_PAYMENT_METHOD = 'offline';
+
+    private const LEGACY_MANUAL_PAYMENT_METHOD = 'manual';
+
     public function __construct(
         private readonly PaymentRepositoryInterface $payments,
         private readonly InvoiceRepositoryInterface $invoices,
@@ -46,7 +50,10 @@ class PaymentService
     {
         $this->guardActorCanAccessInvoice($invoice, $actor);
 
-        return DB::transaction(function () use ($invoice, $payload, $actor): Payment {
+        $paymentMethod = $this->normalizePaymentMethod((string) $payload['payment_method']);
+        $gateway = $this->normalizePaymentMethod((string) ($payload['gateway'] ?? $paymentMethod));
+
+        return DB::transaction(function () use ($invoice, $payload, $actor, $paymentMethod, $gateway): Payment {
             if ($invoice->status === Invoice::STATUS_CANCELLED) {
                 throw ValidationException::withMessages([
                     'invoice' => ['Payments cannot be recorded against a cancelled invoice.'],
@@ -68,7 +75,7 @@ class PaymentService
                 'user_id' => $actor->id,
                 'type' => $type,
                 'status' => $status,
-                'payment_method' => $payload['payment_method'],
+                'payment_method' => $paymentMethod,
                 'currency' => $payload['currency'] ?? $invoice->currency,
                 'amount_minor' => $amountMinor,
                 'reference' => $payload['reference'] ?? null,
@@ -85,7 +92,7 @@ class PaymentService
                 'client_id' => $invoice->client_id,
                 'type' => $type,
                 'status' => $status,
-                'gateway' => $payload['gateway'] ?? 'manual',
+                'gateway' => $gateway,
                 'external_reference' => $payload['external_reference'] ?? ($payload['reference'] ?? null),
                 'currency' => $payment->currency,
                 'amount_minor' => $payment->amount_minor,
@@ -126,7 +133,7 @@ class PaymentService
         }
 
         return array_map(
-            fn (GatewayConfiguration $configuration) => $configuration->toArray(),
+            fn (GatewayConfiguration $configuration) => $this->gatewayOptionPayload($configuration, $invoice),
             $this->gateways->availableForTenant($this->tenantForInvoice($invoice, $actor))
         );
     }
@@ -364,6 +371,16 @@ class PaymentService
         if ($actor->tenant_id !== $invoice->tenant_id) {
             throw ValidationException::withMessages([
                 'invoice' => ['The selected invoice is invalid for the current tenant.'],
+            ]);
+        }
+
+        if (
+            ! $actor->hasPermissionTo('payments.manage')
+            && $actor->hasPermissionTo('client.portal.access')
+            && ! $this->portalOwnsInvoice($actor, $invoice)
+        ) {
+            throw ValidationException::withMessages([
+                'invoice' => ['The selected invoice is invalid for this portal account.'],
             ]);
         }
     }
@@ -667,5 +684,39 @@ class PaymentService
             tenant: $tenant,
             locale: $client->preferred_locale ?: $tenant->default_locale,
         );
+    }
+
+    private function normalizePaymentMethod(string $value): string
+    {
+        return $value === self::LEGACY_MANUAL_PAYMENT_METHOD
+            ? self::OFFLINE_PAYMENT_METHOD
+            : $value;
+    }
+
+    private function gatewayOptionPayload(GatewayConfiguration $configuration, Invoice $invoice): array
+    {
+        $payload = $configuration->toArray();
+
+        if ($configuration->code === 'paypal') {
+            $payload['checkout'] = [
+                'kind' => 'paypal_js_sdk',
+                'client_id' => $configuration->credential('client_id'),
+                'mode' => $configuration->option('mode', 'sandbox'),
+                'currency' => strtoupper($invoice->currency),
+                'intent' => 'capture',
+                'components' => ['buttons', 'card-fields', 'funding-eligibility'],
+            ];
+        }
+
+        return $payload;
+    }
+
+    private function portalOwnsInvoice(User $actor, Invoice $invoice): bool
+    {
+        if ($invoice->relationLoaded('client')) {
+            return $invoice->client?->user_id === $actor->id;
+        }
+
+        return $invoice->client()->where('user_id', $actor->id)->exists();
     }
 }

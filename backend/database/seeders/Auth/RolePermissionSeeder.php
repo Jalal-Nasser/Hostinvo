@@ -26,7 +26,7 @@ class RolePermissionSeeder extends Seeder
             'invoices.view' => ['Invoices View', 'View tenant invoices and billing records.'],
             'invoices.manage' => ['Invoices Manage', 'Create, update, and archive tenant invoices and invoice items.'],
             'payments.view' => ['Payments View', 'View tenant payment history and transaction records.'],
-            'payments.manage' => ['Payments Manage', 'Record manual payments and refunds for tenant invoices.'],
+            'payments.manage' => ['Payments Manage', 'Record offline payments and refunds for tenant invoices.'],
             'domains.view' => ['Domains View', 'View tenant domain records, contacts, renewals, and registrar activity.'],
             'domains.manage' => ['Domains Manage', 'Create, update, and archive tenant domain records and related contacts.'],
             'services.view' => ['Services View', 'View tenant hosting services and lifecycle state.'],

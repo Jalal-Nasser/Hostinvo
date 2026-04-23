@@ -92,7 +92,7 @@ class InvoiceTenantIsolationTest extends TestCase
             ->assertForbidden();
 
         $this->postJson("/api/v1/admin/invoices/{$invoice->id}/payments", [
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => 100,
         ])->assertNotFound();
     }

@@ -47,6 +47,14 @@ export type GatewayOptionRecord = {
   description: string;
   enabled: boolean;
   usable: boolean;
+  checkout?: {
+    kind: "paypal_js_sdk";
+    client_id: string | null;
+    mode: "sandbox" | "live";
+    currency: string;
+    intent: "capture";
+    components: string[];
+  } | null;
 };
 
 export type PaymentRecord = {
@@ -293,10 +301,11 @@ export async function fetchPaymentsFromCookies(
 export async function fetchInvoiceGatewayOptionsFromCookies(
   cookieHeader: string,
   invoiceId: string,
+  mode: InvoiceApiMode = "admin",
 ): Promise<GatewayOptionRecord[] | null> {
-  const response = await fetch(`${apiBaseUrl}/admin/invoices/${invoiceId}/gateway-options`, {
+  const response = await fetch(`${endpoint(mode)}/invoices/${invoiceId}/gateway-options`, {
     cache: "no-store",
-    headers: statefulApiHeaders(cookieHeader),
+    headers: statefulApiHeaders(cookieHeader, mode === "client" ? "/portal" : "/dashboard"),
   });
 
   if (!response.ok) {

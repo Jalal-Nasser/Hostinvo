@@ -71,7 +71,8 @@ export function ManualInvoicePaymentForm({ invoice }: ManualInvoicePaymentFormPr
               ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
             },
             body: JSON.stringify({
-              payment_method: "manual",
+              gateway: "offline",
+              payment_method: "offline",
               amount_minor: decimalToMinor(amount),
               reference: reference.trim() || null,
               notes: notes.trim() || null,

@@ -10,7 +10,13 @@ class CreateGatewayCheckoutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', Payment::class);
+        $user = $this->user();
+
+        return $user !== null
+            && (
+                $user->can('create', Payment::class)
+                || $user->hasPermissionTo('client.portal.access')
+            );
     }
 
     public function rules(): array

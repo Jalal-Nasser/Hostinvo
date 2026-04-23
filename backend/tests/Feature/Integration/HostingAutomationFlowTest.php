@@ -169,7 +169,7 @@ class HostingAutomationFlowTest extends TestCase
         $this->postJson("/api/v1/admin/invoices/{$invoice->id}/payments", [
             'type' => 'payment',
             'status' => 'completed',
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => $invoice->total_minor,
             'currency' => 'USD',
             'reference' => 'manual-automation-001',

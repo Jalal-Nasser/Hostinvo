@@ -26,7 +26,7 @@ export type TenantPaymentGatewaySettingsRecord = {
     webhook_id: string;
     mode: "sandbox" | "live";
   };
-  manual: {
+  offline: {
     enabled: boolean;
     instructions: string;
   };

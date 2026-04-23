@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { InvoicePaymentFlow } from "@/components/billing/invoice-payment-flow";
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { PortalShell } from "@/components/dashboard/portal-shell";
 import { type AppLocale } from "@/i18n/routing";
 import {
   fetchInvoiceFromCookies,
@@ -12,7 +12,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function InvoicePaymentPage({
+export default async function PortalInvoicePaymentPage({
   params,
 }: Readonly<{
   params: { locale: string; invoiceId: string };
@@ -22,8 +22,8 @@ export default async function InvoicePaymentPage({
   const cookieHeader = cookies().toString();
   const [t, invoice, gateways] = await Promise.all([
     getTranslations("Billing"),
-    fetchInvoiceFromCookies(cookieHeader, params.invoiceId),
-    fetchInvoiceGatewayOptionsFromCookies(cookieHeader, params.invoiceId),
+    fetchInvoiceFromCookies(cookieHeader, params.invoiceId, "client"),
+    fetchInvoiceGatewayOptionsFromCookies(cookieHeader, params.invoiceId, "client"),
   ]);
 
   if (!invoice) {
@@ -31,13 +31,13 @@ export default async function InvoicePaymentPage({
   }
 
   return (
-    <DashboardShell
-      currentPath={`/dashboard/invoices/${invoice.id}/pay`}
+    <PortalShell
+      currentPath={`/portal/invoices/${invoice.id}/pay`}
       description={t("payInvoicePageDescription")}
       locale={params.locale as AppLocale}
       title={t("payInvoicePageTitle")}
     >
-      <InvoicePaymentFlow invoice={invoice} gateways={gateways ?? []} mode="admin" />
-    </DashboardShell>
+      <InvoicePaymentFlow invoice={invoice} gateways={gateways ?? []} mode="client" />
+    </PortalShell>
   );
 }

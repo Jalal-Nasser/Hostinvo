@@ -29,7 +29,7 @@ export default async function PaymentSettingsPage({
     title: isArabic ? "بوابات الدفع" : "Payment gateways",
     description: isArabic
       ? "إدارة Stripe وPayPal والدفع اليدوي لمساحة العمل الحالية."
-      : "Manage Stripe, PayPal, and manual payment settings for the current workspace.",
+      : "Manage Stripe, PayPal, and offline payment settings for the current workspace.",
     backToSettings: isArabic ? "العودة إلى الإعدادات" : "Back to settings",
     tenantOnlyMessage: isArabic
       ? "هذه الصفحة متاحة فقط داخل مساحة عمل مستأجر فعالة."

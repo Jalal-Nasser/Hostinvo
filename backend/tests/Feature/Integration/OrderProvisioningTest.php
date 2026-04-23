@@ -206,7 +206,7 @@ class OrderProvisioningTest extends IntegrationTestCase
             ->assertJsonPath('data.status', Invoice::STATUS_UNPAID);
 
         $this->postJson("/api/v1/admin/invoices/{$invoiceId}/payments", [
-            'payment_method' => 'manual',
+            'payment_method' => 'offline',
             'amount_minor' => $invoiceTotalMinor,
             'reference' => 'INT-ORDER-PAY-001',
         ])->assertCreated()

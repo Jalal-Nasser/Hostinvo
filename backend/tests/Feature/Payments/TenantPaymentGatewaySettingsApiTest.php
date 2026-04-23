@@ -77,19 +77,19 @@ class TenantPaymentGatewaySettingsApiTest extends TestCase
                 'webhook_id' => 'paypal-webhook-id',
                 'mode' => 'sandbox',
             ],
-            'manual' => [
+            'offline' => [
                 'enabled' => true,
                 'instructions' => 'Send the transfer receipt to billing@example.test.',
             ],
         ])->assertOk()
             ->assertJsonPath('data.stripe.enabled', true)
             ->assertJsonPath('data.paypal.mode', 'sandbox')
-            ->assertJsonPath('data.manual.enabled', true);
+            ->assertJsonPath('data.offline.enabled', true);
 
         $this->getJson('/api/v1/admin/settings/payments/gateways')
             ->assertOk()
             ->assertJsonPath('data.stripe.publishable_key', 'pk_test_hostinvo')
-            ->assertJsonPath('data.manual.instructions', 'Send the transfer receipt to billing@example.test.');
+            ->assertJsonPath('data.offline.instructions', 'Send the transfer receipt to billing@example.test.');
 
         $secretSetting = TenantSetting::query()
             ->where('tenant_id', $tenant->id)

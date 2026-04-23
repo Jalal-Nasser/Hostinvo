@@ -32,7 +32,7 @@ export function PaymentGatewaySettingsPanel({
     serviceUnavailable: isArabic ? "الخدمة غير متاحة حالياً." : "Service unavailable.",
     stripe: isArabic ? "Stripe" : "Stripe",
     paypal: isArabic ? "PayPal" : "PayPal",
-    manual: isArabic ? "Manual" : "Manual",
+    offline: isArabic ? "Offline payment" : "Offline payment",
     enabled: isArabic ? "مفعل" : "Enabled",
     publishableKey: isArabic ? "Publishable key" : "Publishable key",
     secretKey: isArabic ? "Secret key" : "Secret key",
@@ -43,7 +43,7 @@ export function PaymentGatewaySettingsPanel({
     mode: isArabic ? "Mode" : "Mode",
     sandbox: isArabic ? "Sandbox" : "Sandbox",
     live: isArabic ? "Live" : "Live",
-    instructions: isArabic ? "Manual payment instructions" : "Manual payment instructions",
+    instructions: isArabic ? "Offline payment instructions" : "Offline payment instructions",
   };
 
   const inputClass =
@@ -228,15 +228,15 @@ export function PaymentGatewaySettingsPanel({
 
           <div className="grid gap-4 border-t border-line pt-6">
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-semibold text-foreground">{copy.manual}</h2>
+              <h2 className="text-xl font-semibold text-foreground">{copy.offline}</h2>
               <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <input
-                  checked={settings.manual.enabled}
+                  checked={settings.offline.enabled}
                   className={checkboxClass}
                   onChange={(event) =>
                     setSettings((current) => ({
                       ...current,
-                      manual: { ...current.manual, enabled: event.target.checked },
+                      offline: { ...current.offline, enabled: event.target.checked },
                     }))
                   }
                   type="checkbox"
@@ -251,10 +251,10 @@ export function PaymentGatewaySettingsPanel({
                 onChange={(event) =>
                   setSettings((current) => ({
                     ...current,
-                    manual: { ...current.manual, instructions: event.target.value },
+                    offline: { ...current.offline, instructions: event.target.value },
                   }))
                 }
-                value={settings.manual.instructions}
+                value={settings.offline.instructions}
               />
             </label>
           </div>

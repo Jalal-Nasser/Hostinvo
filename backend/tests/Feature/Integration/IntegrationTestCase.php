@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Integration;
 
+use App\Models\License;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\TenantUser;
@@ -25,7 +26,7 @@ abstract class IntegrationTestCase extends TestCase
 
     protected function createTenant(string $slug, array $overrides = []): Tenant
     {
-        return Tenant::query()->create(array_merge([
+        $tenant = Tenant::query()->create(array_merge([
             'name' => (string) Str::of($slug)->replace('-', ' ')->title(),
             'slug' => $slug,
             'default_locale' => 'en',
@@ -33,6 +34,24 @@ abstract class IntegrationTestCase extends TestCase
             'timezone' => 'UTC',
             'status' => 'active',
         ], $overrides));
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-'.strtoupper((string) Str::of($slug)->replace('-', '')->limit(18, '')) . '-TEST',
+            'owner_email' => "{$slug}@example.test",
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'domain' => 'localhost',
+            'max_clients' => 500,
+            'max_services' => 500,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addMonth(),
+        ]);
+
+        return $tenant;
     }
 
     protected function createTenantAdmin(Tenant $tenant, string $email, array $overrides = []): User
