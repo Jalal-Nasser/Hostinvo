@@ -1,4 +1,9 @@
-import { hasAnyPermission, type AuthenticatedUser } from "@/lib/auth";
+import {
+  apiBaseUrl,
+  hasAnyPermission,
+  statefulApiHeaders,
+  type AuthenticatedUser,
+} from "@/lib/auth";
 import { fetchInvoicesFromCookies, type InvoiceRecord } from "@/lib/billing";
 import { fetchClientsFromCookies, type ClientRecord } from "@/lib/clients";
 import {
@@ -48,6 +53,44 @@ export type AdminDashboardSummary = {
   };
 };
 
+export type TenantDashboardChartPoint = {
+  bucket: string;
+  label: string;
+  new_orders: number;
+  activated_orders: number;
+  income_minor: number;
+};
+
+export type TenantDashboardOverview = {
+  tenant: {
+    id: string;
+    name: string;
+    timezone: string;
+    currency: string;
+  };
+  counters: {
+    pending_orders: number;
+    tickets_waiting: number;
+    pending_cancellations: number;
+    pending_module_actions: number;
+  };
+  billing: {
+    currency: string;
+    today_minor: number;
+    this_month_minor: number;
+    this_year_minor: number;
+    all_time_minor: number;
+  };
+  automation: {
+    invoices_created_today: number;
+    credit_card_captures_today: number;
+  };
+  chart: {
+    default_period: "today" | "last_30_days" | "last_year";
+    series: Record<"today" | "last_30_days" | "last_year", TenantDashboardChartPoint[]>;
+  };
+};
+
 export type PortalDashboardSummary = {
   modules: {
     services: { accessible: boolean; total: number | null };
@@ -61,6 +104,23 @@ export type PortalDashboardSummary = {
   };
   recent_tickets: TicketRecord[];
 };
+
+export async function fetchTenantDashboardOverviewFromCookies(
+  cookieHeader: string,
+): Promise<TenantDashboardOverview | null> {
+  const response = await fetch(`${apiBaseUrl}/admin/dashboard/overview`, {
+    cache: "no-store",
+    headers: statefulApiHeaders(cookieHeader),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { data: TenantDashboardOverview };
+
+  return payload.data;
+}
 
 export async function fetchAdminDashboardSummary(
   cookieHeader: string,

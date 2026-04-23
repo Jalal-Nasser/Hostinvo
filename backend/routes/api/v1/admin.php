@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\ClientController;
+use App\Http\Controllers\Api\V1\Admin\DashboardOverviewController;
 use App\Http\Controllers\Api\V1\Admin\DomainContactController;
 use App\Http\Controllers\Api\V1\Admin\DomainController;
 use App\Http\Controllers\Api\V1\Admin\DomainRenewalController;
@@ -46,6 +47,9 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('announcements', AnnouncementController::class)
     ->middleware('tenant.context');
 Route::apiResource('clients', ClientController::class);
+Route::get('dashboard/overview', DashboardOverviewController::class)
+    ->middleware('tenant.context')
+    ->name('dashboard.overview.show');
 Route::get('domains/{domain}/contacts', [DomainContactController::class, 'index'])->name('domains.contacts.index');
 Route::put('domains/{domain}/contacts', [DomainContactController::class, 'update'])->name('domains.contacts.update');
 Route::get('domains/{domain}/renewals', [DomainRenewalController::class, 'index'])->name('domains.renewals.index');
