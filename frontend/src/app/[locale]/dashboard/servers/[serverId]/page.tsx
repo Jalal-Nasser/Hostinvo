@@ -32,8 +32,8 @@ export default async function ServerDetailsPage({
 
   const [productsResponse, clientsResponse, pleskPreview] = server.panel_type === "plesk"
     ? await Promise.all([
-        fetchProductsFromCookies(cookieHeader, { type: "hosting", per_page: "200" }),
-        fetchClientsFromCookies(cookieHeader, { per_page: "200" }),
+        fetchProductsFromCookies(cookieHeader, { type: "hosting", per_page: "100" }),
+        fetchClientsFromCookies(cookieHeader, { per_page: "100" }),
         fetchPleskImportPreviewFromCookies(cookieHeader, params.serverId),
       ])
     : [null, null, null];
