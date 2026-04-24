@@ -12,6 +12,29 @@ use Throwable;
 
 class PleskApiClient
 {
+    public function listSubscriptions(Server $server): array
+    {
+        $response = $this->subscriptionCommand($server, ['--list']);
+        $stdout = trim((string) Arr::get($response, 'stdout', ''));
+
+        if ($stdout === '') {
+            return [];
+        }
+
+        return collect(preg_split('/\r\n|\r|\n/', $stdout) ?: [])
+            ->map(static fn (string $line): string => trim($line))
+            ->filter(static fn (string $line): bool => $line !== '')
+            ->values()
+            ->all();
+    }
+
+    public function subscriptionInfo(Server $server, string $subscription): array
+    {
+        $response = $this->subscriptionCommand($server, ['--info', trim($subscription)]);
+
+        return $this->parseSubscriptionInfoResponse($response);
+    }
+
     public function testConnection(Server $server): array
     {
         $payload = $this->request($server, 'GET', '/server');
@@ -147,6 +170,38 @@ class PleskApiClient
         }
 
         return $payload === [] ? [] : ['json' => $payload];
+    }
+
+    private function parseSubscriptionInfoResponse(array $response): array
+    {
+        $info = [];
+        $data = Arr::get($response, 'data');
+
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                if (is_scalar($value) || $value === null) {
+                    $info[(string) \Illuminate\Support\Str::snake((string) $key)] = $value;
+                }
+            }
+        }
+
+        $stdout = trim((string) Arr::get($response, 'stdout', ''));
+
+        if ($stdout !== '') {
+            foreach (preg_split('/\r\n|\r|\n/', $stdout) ?: [] as $line) {
+                if (! preg_match('/^\s*([^:]+):\s*(.+)$/', trim($line), $matches)) {
+                    continue;
+                }
+
+                $key = \Illuminate\Support\Str::snake((string) \Illuminate\Support\Str::of($matches[1])
+                    ->replace(['(', ')', '/'], ' ')
+                    ->squish());
+
+                $info[$key] = trim($matches[2]);
+            }
+        }
+
+        return $info;
     }
 
     private function indicatesCliSuccess(array $payload): bool

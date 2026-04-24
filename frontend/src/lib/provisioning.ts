@@ -159,6 +159,79 @@ export type ServerConnectionTestRecord = {
   metadata?: Record<string, unknown> | null;
 };
 
+export type PleskImportPreviewRecord = {
+  subscription_name: string;
+  domain: string;
+  username: string | null;
+  service_plan: string | null;
+  email: string | null;
+  owner_name: string | null;
+  status: ServiceStatus;
+  raw_status: string | null;
+  disk_used_mb: number;
+  disk_limit_mb: number;
+  bandwidth_used_mb: number;
+  bandwidth_limit_mb: number;
+  email_accounts_used: number;
+  databases_used: number;
+  existing_service: {
+    id: string;
+    reference_number: string;
+    status: ServiceStatus;
+  } | null;
+  matched_client: {
+    id: string;
+    display_name: string;
+    email: string;
+  } | null;
+  suggested_server_package: {
+    id: string;
+    panel_package_name: string;
+    display_name: string | null;
+  } | null;
+  suggested_product: {
+    id: string;
+    name: string;
+  } | null;
+  requires_product_selection: boolean;
+  raw_info?: Record<string, unknown> | null;
+};
+
+export type PleskImportPreviewResponse = {
+  data: PleskImportPreviewRecord[];
+  meta?: {
+    total: number;
+    already_imported: number;
+    ready_to_import: number;
+  };
+};
+
+export type PleskImportPayload = {
+  imports: Array<{
+    subscription_name: string;
+    product_id?: string | null;
+    client_id?: string | null;
+    billing_cycle?: BillingCycle | null;
+    notes?: string | null;
+    client?: {
+      email?: string | null;
+      company_name?: string | null;
+      first_name?: string | null;
+      last_name?: string | null;
+      phone?: string | null;
+      country?: string | null;
+    };
+  }>;
+};
+
+export type PleskImportResponse = {
+  imported: ServiceRecord[];
+  summary: {
+    services_created: number;
+    clients_created: number;
+  };
+};
+
 export type ServiceRecord = {
   id: string;
   tenant_id: string;
@@ -347,6 +420,63 @@ export async function fetchServerFromCookies(
   return payload.data;
 }
 
+export async function fetchPleskImportPreviewFromCookies(
+  cookieHeader: string,
+  serverId: string,
+  filters: {
+    search?: string;
+  } = {},
+): Promise<PleskImportPreviewResponse | null> {
+  const url = new URL(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-subscriptions`);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: statefulApiHeaders(cookieHeader),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as PleskImportPreviewResponse;
+}
+
+export async function fetchPleskImportPreview(
+  serverId: string,
+  filters: {
+    search?: string;
+  } = {},
+): Promise<PleskImportPreviewResponse | null> {
+  const url = new URL(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-subscriptions`);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as PleskImportPreviewResponse;
+}
+
 export async function fetchServiceFromCookies(
   cookieHeader: string,
   serviceId: string,
@@ -425,6 +555,36 @@ export async function dispatchProvisioningOperation(
   }
 
   const data = (await response.json()) as { data: ProvisioningJobRecord };
+
+  return data.data;
+}
+
+export async function importPleskSubscriptions(
+  serverId: string,
+  payload: PleskImportPayload,
+  xsrfToken?: string | null,
+): Promise<PleskImportResponse> {
+  const response = await fetch(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-subscriptions`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorPayload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+
+    throw new Error(errorPayload?.message ?? "Unable to import existing Plesk subscriptions.");
+  }
+
+  const data = (await response.json()) as { data: PleskImportResponse };
 
   return data.data;
 }

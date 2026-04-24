@@ -199,12 +199,8 @@ class PleskDriver implements ProvisioningDriverInterface
     public function syncUsage(string $username): UsageData
     {
         $subscription = trim($username);
-        $response = $this->client->subscriptionCommand($this->server(), [
-            '--info',
-            $subscription,
-        ]);
+        $info = $this->client->subscriptionInfo($this->server(), $subscription);
 
-        $info = $this->parseSubscriptionInfo($response);
         $responsePayload = [
             'driver' => $this->code(),
             'subscription' => $subscription,
@@ -242,12 +238,8 @@ class PleskDriver implements ProvisioningDriverInterface
     public function syncServiceStatus(string $username): ServiceStatus
     {
         $subscription = trim($username);
-        $response = $this->client->subscriptionCommand($this->server(), [
-            '--info',
-            $subscription,
-        ]);
+        $info = $this->client->subscriptionInfo($this->server(), $subscription);
 
-        $info = $this->parseSubscriptionInfo($response);
         $responsePayload = [
             'driver' => $this->code(),
             'subscription' => $subscription,
@@ -329,35 +321,6 @@ class PleskDriver implements ProvisioningDriverInterface
         $owner = trim((string) ($server->username ?? ''));
 
         return $owner !== '' ? $owner : 'admin';
-    }
-
-    private function parseSubscriptionInfo(array $response): array
-    {
-        $info = [];
-        $data = Arr::get($response, 'data');
-
-        if (is_array($data)) {
-            foreach ($data as $key => $value) {
-                if (is_scalar($value) || $value === null) {
-                    $info[Str::snake((string) $key)] = $value;
-                }
-            }
-        }
-
-        $stdout = trim((string) Arr::get($response, 'stdout', ''));
-
-        if ($stdout !== '') {
-            foreach (preg_split('/\r\n|\r|\n/', $stdout) ?: [] as $line) {
-                if (! preg_match('/^\s*([^:]+):\s*(.+)$/', trim($line), $matches)) {
-                    continue;
-                }
-
-                $key = Str::snake((string) Str::of($matches[1])->replace(['(', ')', '/'], ' ')->squish());
-                $info[$key] = trim($matches[2]);
-            }
-        }
-
-        return $info;
     }
 
     private function extractServicePlan(array $info): ?string

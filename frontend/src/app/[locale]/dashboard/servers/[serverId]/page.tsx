@@ -4,11 +4,14 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { PleskSubscriptionImporter } from "@/components/provisioning/plesk-subscription-importer";
 import { ProvisioningJobRetryButton } from "@/components/provisioning/provisioning-job-retry-button";
 import { ServerConnectionTester } from "@/components/provisioning/server-connection-tester";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
-import { fetchServerFromCookies } from "@/lib/provisioning";
+import { fetchProductsFromCookies } from "@/lib/catalog";
+import { fetchClientsFromCookies } from "@/lib/clients";
+import { fetchPleskImportPreviewFromCookies, fetchServerFromCookies } from "@/lib/provisioning";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +23,20 @@ export default async function ServerDetailsPage({
   setRequestLocale(params.locale);
 
   const t = await getTranslations("Provisioning");
-  const server = await fetchServerFromCookies(cookies().toString(), params.serverId);
+  const cookieHeader = cookies().toString();
+  const server = await fetchServerFromCookies(cookieHeader, params.serverId);
 
   if (!server) {
     notFound();
   }
+
+  const [productsResponse, clientsResponse, pleskPreview] = server.panel_type === "plesk"
+    ? await Promise.all([
+        fetchProductsFromCookies(cookieHeader, { type: "hosting", per_page: "200" }),
+        fetchClientsFromCookies(cookieHeader, { per_page: "200" }),
+        fetchPleskImportPreviewFromCookies(cookieHeader, params.serverId),
+      ])
+    : [null, null, null];
 
   function operationLabel(operation: string) {
     switch (operation) {
@@ -203,6 +215,48 @@ export default async function ServerDetailsPage({
           )}
         </article>
       </section>
+
+      {server.panel_type === "plesk" ? (
+        <PleskSubscriptionImporter
+          serverId={server.id}
+          locale={params.locale}
+          initialPreview={pleskPreview?.data ?? []}
+          products={productsResponse?.data ?? []}
+          clients={clientsResponse?.data ?? []}
+          strings={{
+            title: t("importTitle"),
+            description: t("importDescription"),
+            refreshButton: t("importRefreshButton"),
+            refreshingButton: t("importRefreshingButton"),
+            importButton: t("importButton"),
+            importingButton: t("importingButton"),
+            searchLabel: t("searchLabel"),
+            searchPlaceholder: t("importSearchPlaceholder"),
+            subscriptionLabel: t("importSubscriptionLabel"),
+            usernameLabel: t("usernameLabel"),
+            planLabel: t("importPlanLabel"),
+            statusLabel: t("serviceStatusLabel"),
+            emailLabel: t("importEmailLabel"),
+            usageLabel: t("importUsageLabel"),
+            productLabel: t("productLabel"),
+            clientLabel: t("clientLabel"),
+            autoClientOption: t("importAutoClientOption"),
+            selectProductPlaceholder: t("importSelectProductPlaceholder"),
+            selectClientPlaceholder: t("importSelectClientPlaceholder"),
+            companyNameLabel: t("importCompanyNameLabel"),
+            countryLabel: t("importCountryLabel"),
+            existingServiceLabel: t("importExistingServiceLabel"),
+            existingClientLabel: t("importExistingClientLabel"),
+            noSubscriptions: t("importEmpty"),
+            importSuccess: t("importSuccess"),
+            importError: t("importError"),
+            refreshError: t("importRefreshError"),
+            noSelectionError: t("importNoSelectionError"),
+            alreadyImported: t("importAlreadyImported"),
+            productRequired: t("importProductRequired"),
+          }}
+        />
+      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="glass-card p-6 md:p-8">

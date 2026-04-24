@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\Admin\NetworkIncidentController;
 use App\Http\Controllers\Api\V1\Admin\OrderCheckoutController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
+use App\Http\Controllers\Api\V1\Admin\PleskSubscriptionImportController;
 use App\Http\Controllers\Api\V1\Admin\PortalContentBlockController;
 use App\Http\Controllers\Api\V1\Admin\PortalFooterLinkController;
 use App\Http\Controllers\Api\V1\Admin\PortalSurfaceController;
@@ -103,6 +104,8 @@ Route::get('products/{product}/pricing', [ProductPricingController::class, 'show
 Route::put('products/{product}/pricing', [ProductPricingController::class, 'update'])->name('products.pricing.update');
 Route::apiResource('server-groups', ServerGroupController::class);
 Route::post('servers/{server}/test', [ServerConnectionTestController::class, 'store'])->name('servers.test');
+Route::get('servers/{server}/imports/plesk-subscriptions', [PleskSubscriptionImportController::class, 'index'])->name('servers.imports.plesk-subscriptions.index');
+Route::post('servers/{server}/imports/plesk-subscriptions', [PleskSubscriptionImportController::class, 'store'])->name('servers.imports.plesk-subscriptions.store');
 Route::put('servers/{server}/packages', [ServerPackageController::class, 'update'])->name('servers.packages.update');
 Route::apiResource('servers', ServerController::class);
 Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
