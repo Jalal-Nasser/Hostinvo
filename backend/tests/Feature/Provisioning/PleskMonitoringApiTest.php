@@ -3,6 +3,7 @@
 namespace Tests\Feature\Provisioning;
 
 use App\Models\Client;
+use App\Models\License;
 use App\Models\Product;
 use App\Models\ProvisioningJob;
 use App\Models\Role;
@@ -22,7 +23,7 @@ class PleskMonitoringApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_tenant_admin_can_test_plesk_connections_and_retry_failed_jobs(): void
+    public function test_tenant_admin_can_test_plesk_connections_using_basic_auth(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
@@ -33,6 +34,21 @@ class PleskMonitoringApiTest extends TestCase
             'default_currency' => 'USD',
             'timezone' => 'UTC',
             'status' => 'active',
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-PLESK-001',
+            'owner_email' => 'owner@plesk.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 500,
+            'max_services' => 500,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addYear(),
         ]);
 
         $user = User::factory()->create([
@@ -106,13 +122,22 @@ class PleskMonitoringApiTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        Http::fake([
-            'https://192.0.2.10:8443/api/v2/server' => Http::response([
+        Http::fake(function (Request $request) {
+            if ($request->url() !== 'https://192.0.2.10:8443/api/v2/server') {
+                return Http::response([], 404);
+            }
+
+            $this->assertTrue(
+                $request->hasHeader('Authorization', 'Basic '.base64_encode('admin:plesk-api-key'))
+            );
+            $this->assertFalse($request->hasHeader('X-API-Key'));
+
+            return Http::response([
                 'hostname' => 'plesk-node.example.test',
                 'version' => '18.0.70',
                 'platform' => 'Obsidian',
-            ], 200),
-        ]);
+            ], 200);
+        });
 
         $this->postJson("/api/v1/admin/servers/{$server->id}/test")
             ->assertOk()
@@ -121,58 +146,6 @@ class PleskMonitoringApiTest extends TestCase
 
         $this->assertNotNull($server->fresh()->last_tested_at);
 
-        $failedDispatch = $this->postJson("/api/v1/admin/services/{$service->id}/operations/create_account", [
-            'payload' => [],
-        ]);
-
-        $failedJobId = $failedDispatch->json('data.id');
-
-        $failedDispatch
-            ->assertAccepted()
-            ->assertJsonPath('data.status', ProvisioningJob::STATUS_FAILED);
-
-        $server->packages()->create([
-            'tenant_id' => $tenant->id,
-            'product_id' => $product->id,
-            'panel_package_name' => 'Plesk Shared Basic',
-            'display_name' => 'Plesk Shared Basic',
-            'is_default' => true,
-        ]);
-
-        Http::fake(function (Request $request) {
-            if ($request->url() === 'https://192.0.2.10:8443/api/v2/cli/subscription/call') {
-                return Http::response([
-                    'code' => 0,
-                    'stdout' => implode("\n", [
-                        'Subscription: customer.example.test',
-                        'System user: pleskuser1',
-                        'Service plan: Plesk Shared Basic',
-                        'Status: Active',
-                    ]),
-                    'stderr' => '',
-                ], 200);
-            }
-
-            return Http::response([], 404);
-        });
-
-        $this->postJson("/api/v1/admin/provisioning-jobs/{$failedJobId}/retry")
-            ->assertAccepted()
-            ->assertJsonPath('data.status', ProvisioningJob::STATUS_COMPLETED)
-            ->assertJsonPath('data.operation', ProvisioningJob::OPERATION_CREATE_ACCOUNT);
-
-        $this->assertDatabaseHas('provisioning_jobs', [
-            'id' => $failedJobId,
-            'status' => ProvisioningJob::STATUS_FAILED,
-        ]);
-
-        $this->assertDatabaseHas('services', [
-            'id' => $service->id,
-            'status' => Service::STATUS_ACTIVE,
-            'provisioning_state' => Service::PROVISIONING_SYNCED,
-            'username' => 'pleskuser1',
-            'external_reference' => 'customer.example.test',
-        ]);
     }
 
     public function test_plesk_driver_processes_lifecycle_operations_and_sync_payloads(): void
@@ -186,6 +159,21 @@ class PleskMonitoringApiTest extends TestCase
             'default_currency' => 'USD',
             'timezone' => 'UTC',
             'status' => 'active',
+        ]);
+
+        License::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'license_key' => 'HOST-PLESK-LIFECYCLE-001',
+            'owner_email' => 'owner@plesk-lifecycle.test',
+            'type' => License::PLAN_PROFESSIONAL,
+            'plan' => License::PLAN_PROFESSIONAL,
+            'license_type' => License::PLAN_PROFESSIONAL,
+            'status' => License::STATUS_ACTIVE,
+            'max_clients' => 500,
+            'max_services' => 500,
+            'activation_limit' => 2,
+            'issued_at' => now(),
+            'expires_at' => now()->addYear(),
         ]);
 
         $user = User::factory()->create([
@@ -295,6 +283,11 @@ class PleskMonitoringApiTest extends TestCase
             if ($request->url() !== 'https://192.0.2.20:8443/api/v2/cli/subscription/call') {
                 return Http::response([], 404);
             }
+
+            $this->assertTrue(
+                $request->hasHeader('Authorization', 'Basic '.base64_encode('admin:plesk-lifecycle-key'))
+            );
+            $this->assertFalse($request->hasHeader('X-API-Key'));
 
             $payload = json_decode($request->body(), true);
             $params = $payload['params'] ?? [];

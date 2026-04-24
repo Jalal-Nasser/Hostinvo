@@ -9,9 +9,8 @@ use Illuminate\Support\Arr;
 readonly class PleskConnectionConfig
 {
     public function __construct(
-        public ?string $username,
-        public ?string $apiKey,
-        public ?string $apiSecret,
+        public string $username,
+        public string $password,
         public string $apiBaseUrl,
         public bool $verifySsl,
         public int $timeout,
@@ -26,26 +25,23 @@ readonly class PleskConnectionConfig
         $credentials = (array) ($server->credentials ?? []);
         $username = trim((string) ($server->username ?: Arr::get($credentials, 'username', '')));
         $apiKey = trim((string) Arr::get($credentials, 'api_key', ''));
-        $apiSecret = trim((string) Arr::get($credentials, 'api_secret', ''));
 
-        if ($apiKey === '' && ($username === '' || $apiSecret === '')) {
+        if ($username === '' || $apiKey === '') {
             throw new ProvisioningException(
                 __('provisioning.plesk.credentials_missing'),
                 requestPayload: ['server_id' => $server->id],
                 responsePayload: [
                     'missing' => array_values(array_filter([
-                        $apiKey === '' && $username === '' ? 'username' : null,
-                        $apiKey === '' && $apiSecret === '' ? 'api_secret' : null,
-                        $apiKey === '' ? 'api_key_or_basic_auth' : null,
+                        $username === '' ? 'username' : null,
+                        $apiKey === '' ? 'api_key' : null,
                     ])),
                 ],
             );
         }
 
         return new self(
-            username: $username !== '' ? $username : null,
-            apiKey: $apiKey !== '' ? $apiKey : null,
-            apiSecret: $apiSecret !== '' ? $apiSecret : null,
+            username: $username,
+            password: $apiKey,
             apiBaseUrl: self::normalizeBaseUrl($server),
             verifySsl: (bool) $server->verify_ssl,
             timeout: max(5, (int) config('provisioning.plesk.timeout', 30)),

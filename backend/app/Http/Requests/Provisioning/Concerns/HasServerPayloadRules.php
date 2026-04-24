@@ -14,16 +14,10 @@ trait HasServerPayloadRules
             && ($this->isMethod('post') || blank($existingServer?->username));
         $requiresCpanelToken = fn () => $this->input('panel_type') === Server::PANEL_CPANEL
             && ($this->isMethod('post') || blank($existingServer?->credentials['api_token'] ?? null));
-        $hasIncomingPleskApiKey = fn (): bool => filled($this->input('credentials.api_key'));
-        $hasExistingPleskApiKey = fn (): bool => filled($existingServer?->credentials['api_key'] ?? null);
         $requiresPleskUsername = fn () => $this->input('panel_type') === Server::PANEL_PLESK
-            && ! $hasIncomingPleskApiKey()
-            && ! $hasExistingPleskApiKey()
             && ($this->isMethod('post') || blank($existingServer?->username));
-        $requiresPleskSecret = fn () => $this->input('panel_type') === Server::PANEL_PLESK
-            && ! $hasIncomingPleskApiKey()
-            && ! $hasExistingPleskApiKey()
-            && ($this->isMethod('post') || blank($existingServer?->credentials['api_secret'] ?? null));
+        $requiresPleskApiKey = fn () => $this->input('panel_type') === Server::PANEL_PLESK
+            && ($this->isMethod('post') || blank($existingServer?->credentials['api_key'] ?? null));
 
         return [
             'server_group_id' => ['nullable', 'integer'],
@@ -50,12 +44,16 @@ trait HasServerPayloadRules
                 'max:2048',
                 Rule::requiredIf($requiresCpanelToken),
             ],
-            'credentials.api_key' => ['nullable', 'string', 'max:2048'],
             'credentials.api_secret' => [
                 'nullable',
                 'string',
                 'max:2048',
-                Rule::requiredIf($requiresPleskSecret),
+            ],
+            'credentials.api_key' => [
+                'nullable',
+                'string',
+                'max:2048',
+                Rule::requiredIf($requiresPleskApiKey),
             ],
             'credentials.notes' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],

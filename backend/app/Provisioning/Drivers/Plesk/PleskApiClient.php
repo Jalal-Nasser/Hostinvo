@@ -129,19 +129,15 @@ class PleskApiClient
     {
         $request = Http::acceptJson()
             ->contentType('application/json')
-            ->withOptions([
-                'verify' => $config->verifySsl,
-            ])
             ->connectTimeout($config->connectTimeout)
-            ->timeout($config->timeout);
+            ->timeout($config->timeout)
+            ->withBasicAuth($config->username, $config->password);
 
-        if ($config->apiKey) {
-            return $request->withHeaders([
-                'X-API-Key' => $config->apiKey,
-            ]);
+        if (! $config->verifySsl) {
+            $request = $request->withoutVerifying();
         }
 
-        return $request->withBasicAuth($config->username ?? '', $config->apiSecret ?? '');
+        return $request;
     }
 
     private function requestOptions(string $method, array $payload): array
