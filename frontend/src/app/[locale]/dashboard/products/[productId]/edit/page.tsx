@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ProductForm } from "@/components/catalog/product-form";
+import { ProductManagementTabs } from "@/components/catalog/product-management-tabs";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
@@ -14,8 +15,10 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: Readonly<{
   params: { locale: string; productId: string };
+  searchParams?: { tab?: string };
 }>) {
   setRequestLocale(params.locale);
 
@@ -54,7 +57,29 @@ export default async function EditProductPage({
       locale={params.locale as AppLocale}
       title={t("editProductTitle")}
     >
+      <ProductManagementTabs
+        active={
+          searchParams?.tab === "module"
+            ? "module"
+            : searchParams?.tab === "configurable-options"
+              ? "configurable-options"
+              : searchParams?.tab === "other"
+                ? "other"
+                : "details"
+        }
+        locale={params.locale}
+        productId={product.id}
+      />
       <ProductForm
+        activeSection={
+          searchParams?.tab === "module"
+            ? "module"
+            : searchParams?.tab === "configurable-options"
+              ? "configurable-options"
+              : searchParams?.tab === "other"
+                ? "other"
+                : "details"
+        }
         groups={groups?.data ?? []}
         initialProduct={product}
         mode="edit"

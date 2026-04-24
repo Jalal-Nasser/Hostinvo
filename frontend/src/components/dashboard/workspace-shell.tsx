@@ -56,6 +56,7 @@ type WorkspaceNavItem = {
     | "settings"
     | "products"
     | "groups"
+    | "addons"
     | "provisioning"
     | "tenants";
   group?: WorkspaceNavGroup;
@@ -149,6 +150,12 @@ function SidebarIcon({ icon }: { icon: WorkspaceNavItem["icon"] }) {
       return (
         <svg {...common}>
           <path d="M4 6.5A1.5 1.5 0 015.5 5h5A1.5 1.5 0 0112 6.5v3A1.5 1.5 0 0110.5 11h-5A1.5 1.5 0 014 9.5v-3zm8 0A1.5 1.5 0 0113.5 5h5A1.5 1.5 0 0120 6.5v3A1.5 1.5 0 0118.5 11h-5A1.5 1.5 0 0112 9.5v-3zm-8 8A1.5 1.5 0 015.5 13h5A1.5 1.5 0 0112 14.5v3a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 17.5v-3zm8 1.5h8" />
+        </svg>
+      );
+    case "addons":
+      return (
+        <svg {...common}>
+          <path d="M7 7h10v10H7zM4 12h3m10 0h3M12 4v3m0 10v3" />
         </svg>
       );
     case "provisioning":
@@ -359,6 +366,16 @@ export async function WorkspaceShell({
       active: currentPath === "/dashboard/product-groups",
       visible: hasAnyPermission(user, ["product_groups.view", "product_groups.manage"]),
       icon: "groups",
+      group: "catalog",
+    },
+    {
+      href: localePath(locale, "/dashboard/product-addons"),
+      label: dashboardT("productAddonsLink"),
+      active:
+        currentPath === "/dashboard/product-addons" ||
+        currentPath.startsWith("/dashboard/product-addons/"),
+      visible: hasAnyPermission(user, ["products.view", "products.manage"]),
+      icon: "addons",
       group: "catalog",
     },
     {

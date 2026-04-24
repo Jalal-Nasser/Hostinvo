@@ -47,12 +47,20 @@ export default async function ProductsPage({
   return (
     <DashboardShell
       actions={
-        <Link
-          href={localePath(params.locale, "/dashboard/products/new")}
-          className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-        >
-          {t("newProductButton")}
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={localePath(params.locale, "/dashboard/product-addons")}
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+          >
+            {t("productAddonsButton")}
+          </Link>
+          <Link
+            href={localePath(params.locale, "/dashboard/products/new")}
+            className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+          >
+            {t("newProductButton")}
+          </Link>
+        </div>
       }
       currentPath="/dashboard/products"
       description={t("productsListDescription")}

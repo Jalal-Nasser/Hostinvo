@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ProductManagementTabs } from "@/components/catalog/product-management-tabs";
 import { ProductPricingForm } from "@/components/catalog/product-pricing-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
@@ -48,6 +49,11 @@ export default async function ProductPricingPage({
       locale={params.locale as AppLocale}
       title={t("pricingTitle")}
     >
+      <ProductManagementTabs
+        active="pricing"
+        locale={params.locale}
+        productId={product.id}
+      />
       <ProductPricingForm product={product} />
     </DashboardShell>
   );

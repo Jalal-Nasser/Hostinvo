@@ -6,6 +6,8 @@ export const visibilityOptions = ["public", "private", "hidden"] as const;
 export const productTypes = ["hosting"] as const;
 export const provisioningModules = ["cpanel", "plesk", "directadmin", "custom"] as const;
 export const configurableOptionTypes = ["select", "radio", "quantity", "yes_no"] as const;
+export const productPaymentTypes = ["free", "onetime", "recurring"] as const;
+export const productQuantityModes = ["no", "multiple_services", "scalable"] as const;
 export const billingCycles = [
   "monthly",
   "quarterly",
@@ -22,6 +24,8 @@ export type ProductType = (typeof productTypes)[number];
 export type ProvisioningModule = (typeof provisioningModules)[number];
 export type ConfigurableOptionType = (typeof configurableOptionTypes)[number];
 export type BillingCycle = (typeof billingCycles)[number];
+export type ProductPaymentType = (typeof productPaymentTypes)[number];
+export type ProductQuantityMode = (typeof productQuantityModes)[number];
 
 export type ProductGroupRecord = {
   id: string;
@@ -77,14 +81,30 @@ export type ProductRecord = {
   provisioning_module: ProvisioningModule | null;
   provisioning_package: string | null;
   name: string;
+  tagline: string | null;
   slug: string;
   sku: string | null;
   summary: string | null;
   description: string | null;
+  color: string | null;
   status: ProductStatus;
   visibility: VisibilityOption;
   display_order: number;
   is_featured: boolean;
+  welcome_email: string | null;
+  require_domain: boolean;
+  stock_control: boolean;
+  stock_quantity: number | null;
+  apply_tax: boolean;
+  retired: boolean;
+  payment_type: ProductPaymentType;
+  allow_multiple_quantities: ProductQuantityMode;
+  recurring_cycles_limit: number | null;
+  auto_terminate_days: number | null;
+  termination_email: string | null;
+  prorata_billing: boolean;
+  prorata_date: number | null;
+  charge_next_month: number | null;
   starting_price?: {
     billing_cycle: BillingCycle;
     currency: string;
@@ -126,14 +146,30 @@ export type ProductFormPayload = {
   provisioning_module?: ProvisioningModule | null;
   provisioning_package?: string | null;
   name: string;
+  tagline?: string | null;
   slug?: string | null;
   sku?: string | null;
   summary?: string | null;
   description?: string | null;
+  color?: string | null;
   status: ProductStatus;
   visibility: VisibilityOption;
   display_order: number;
   is_featured: boolean;
+  welcome_email?: string | null;
+  require_domain?: boolean;
+  stock_control?: boolean;
+  stock_quantity?: number | null;
+  apply_tax?: boolean;
+  retired?: boolean;
+  payment_type?: ProductPaymentType;
+  allow_multiple_quantities?: ProductQuantityMode;
+  recurring_cycles_limit?: number | null;
+  auto_terminate_days?: number | null;
+  termination_email?: string | null;
+  prorata_billing?: boolean;
+  prorata_date?: number | null;
+  charge_next_month?: number | null;
   configurable_options?: ConfigurableOptionRecord[];
 };
 

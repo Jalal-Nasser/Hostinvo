@@ -30,6 +30,24 @@ export default async function SettingsPage({
 
   const cards = [
     {
+      key: "products",
+      title: "Products/Services",
+      description: "Manage hosting products, pricing, package settings, and product groups.",
+      href: localePath(params.locale, "/dashboard/products"),
+    },
+    {
+      key: "addons",
+      title: "Product Addons",
+      description: "Create and manage recurring or one-time add-ons attached to hosting products.",
+      href: localePath(params.locale, "/dashboard/product-addons"),
+    },
+    {
+      key: "servers",
+      title: "Servers",
+      description: "Configure provisioning servers, package mappings, and panel connectivity.",
+      href: localePath(params.locale, "/dashboard/servers"),
+    },
+    {
       key: "branding",
       title: copy.settings.brandingTitle,
       description: copy.settings.brandingDescription,

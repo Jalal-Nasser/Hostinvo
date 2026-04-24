@@ -8,7 +8,9 @@ import { useState, useTransition } from "react";
 import { backendOrigin, localePath } from "@/lib/auth";
 import {
   configurableOptionTypes,
+  productPaymentTypes,
   productStatuses,
+  productQuantityModes,
   productTypes,
   provisioningModules,
   type ConfigurableOptionChoiceRecord,
@@ -18,6 +20,8 @@ import {
   type ProductRecord,
   type ProductStatus,
   type ProductType,
+  type ProductPaymentType,
+  type ProductQuantityMode,
   type ProvisioningModule,
   type VisibilityOption,
   visibilityOptions,
@@ -29,6 +33,7 @@ type ProductFormProps = {
   groups: ProductGroupRecord[];
   servers?: ServerRecord[];
   initialProduct?: ProductRecord;
+  activeSection?: "details" | "module" | "configurable-options" | "other";
 };
 
 type ConfigurableOptionChoiceState = ConfigurableOptionChoiceRecord;
@@ -100,7 +105,13 @@ function choiceTypesRequireList(optionType: ConfigurableOptionType): boolean {
   return optionType === "select" || optionType === "radio";
 }
 
-export function ProductForm({ mode, groups, servers = [], initialProduct }: ProductFormProps) {
+export function ProductForm({
+  mode,
+  groups,
+  servers = [],
+  initialProduct,
+  activeSection = "details",
+}: ProductFormProps) {
   const t = useTranslations("Catalog");
   const locale = useLocale();
   const router = useRouter();
@@ -117,16 +128,40 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
     initialProduct?.provisioning_package ?? "",
   );
   const [name, setName] = useState(initialProduct?.name ?? "");
+  const [tagline, setTagline] = useState(initialProduct?.tagline ?? "");
   const [slug, setSlug] = useState(initialProduct?.slug ?? "");
   const [sku, setSku] = useState(initialProduct?.sku ?? "");
   const [summary, setSummary] = useState(initialProduct?.summary ?? "");
   const [description, setDescription] = useState(initialProduct?.description ?? "");
+  const [color, setColor] = useState(initialProduct?.color ?? "");
   const [status, setStatus] = useState<ProductStatus>(initialProduct?.status ?? "draft");
   const [visibility, setVisibility] = useState<VisibilityOption>(
     initialProduct?.visibility ?? "public",
   );
   const [displayOrder, setDisplayOrder] = useState(initialProduct?.display_order ?? 0);
   const [isFeatured, setIsFeatured] = useState(initialProduct?.is_featured ?? false);
+  const [welcomeEmail, setWelcomeEmail] = useState(initialProduct?.welcome_email ?? "");
+  const [requireDomain, setRequireDomain] = useState(initialProduct?.require_domain ?? false);
+  const [stockControl, setStockControl] = useState(initialProduct?.stock_control ?? false);
+  const [stockQuantity, setStockQuantity] = useState(initialProduct?.stock_quantity ?? 0);
+  const [applyTax, setApplyTax] = useState(initialProduct?.apply_tax ?? false);
+  const [retired, setRetired] = useState(initialProduct?.retired ?? false);
+  const [paymentType, setPaymentType] = useState<ProductPaymentType>(
+    initialProduct?.payment_type ?? "recurring",
+  );
+  const [quantityMode, setQuantityMode] = useState<ProductQuantityMode>(
+    initialProduct?.allow_multiple_quantities ?? "no",
+  );
+  const [recurringCyclesLimit, setRecurringCyclesLimit] = useState(
+    initialProduct?.recurring_cycles_limit ?? 0,
+  );
+  const [autoTerminateDays, setAutoTerminateDays] = useState(
+    initialProduct?.auto_terminate_days ?? 0,
+  );
+  const [terminationEmail, setTerminationEmail] = useState(initialProduct?.termination_email ?? "");
+  const [prorataBilling, setProrataBilling] = useState(initialProduct?.prorata_billing ?? false);
+  const [prorataDate, setProrataDate] = useState(initialProduct?.prorata_date ?? 1);
+  const [chargeNextMonth, setChargeNextMonth] = useState(initialProduct?.charge_next_month ?? 0);
   const [configurableOptions, setConfigurableOptions] = useState<ConfigurableOptionState[]>(
     initialProduct?.configurable_options?.map((option, optionIndex) => ({
       id: option.id,
@@ -172,6 +207,18 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
     custom: t("moduleCustom"),
   };
 
+  const paymentTypeLabels: Record<ProductPaymentType, string> = {
+    free: t("paymentTypeFree"),
+    onetime: t("paymentTypeOneTime"),
+    recurring: t("paymentTypeRecurring"),
+  };
+
+  const quantityModeLabels: Record<ProductQuantityMode, string> = {
+    no: t("quantityModeNo"),
+    multiple_services: t("quantityModeMultipleServices"),
+    scalable: t("quantityModeScalable"),
+  };
+
   const optionTypeLabels: Record<ConfigurableOptionType, string> = {
     select: t("optionTypeSelect"),
     radio: t("optionTypeRadio"),
@@ -209,14 +256,31 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
       provisioning_module: provisioningModule || null,
       provisioning_package: nullable(provisioningPackage),
       name: name.trim(),
+      tagline: nullable(tagline),
       slug: nullable(slug),
       sku: nullable(sku),
       summary: nullable(summary),
       description: nullable(description),
+      color: nullable(color),
       status,
       visibility,
       display_order: Number.isFinite(Number(displayOrder)) ? Number(displayOrder) : 0,
       is_featured: isFeatured,
+      welcome_email: nullable(welcomeEmail),
+      require_domain: requireDomain,
+      stock_control: stockControl,
+      stock_quantity: stockControl ? Number(stockQuantity || 0) : null,
+      apply_tax: applyTax,
+      retired: retired,
+      payment_type: paymentType,
+      allow_multiple_quantities: quantityMode,
+      recurring_cycles_limit:
+        paymentType === "recurring" ? Number(recurringCyclesLimit || 0) : null,
+      auto_terminate_days: Number(autoTerminateDays || 0),
+      termination_email: nullable(terminationEmail),
+      prorata_billing: prorataBilling,
+      prorata_date: prorataBilling ? Number(prorataDate || 1) : null,
+      charge_next_month: prorataBilling ? Number(chargeNextMonth || 0) : null,
       configurable_options: configurableOptions.map((option, optionIndex) => ({
         id: option.id,
         name: option.name.trim(),
@@ -302,8 +366,11 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
 
   return (
     <div className="grid gap-6">
+      {(activeSection === "details" || activeSection === "module" || activeSection === "other") ? (
       <section className="glass-card p-6 md:p-8">
         <div className="grid gap-6 md:grid-cols-2">
+          {activeSection === "details" ? (
+            <>
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("productGroupLabel")}</span>
             <select
@@ -334,7 +401,184 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
               ))}
             </select>
           </label>
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("productNameLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setName(event.target.value)}
+              value={name}
+            />
+          </label>
 
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("taglineLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setTagline(event.target.value)}
+              value={tagline}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("slugLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setSlug(event.target.value)}
+              value={slug}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("skuLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setSku(event.target.value)}
+              value={sku}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+            <span>{t("summaryLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setSummary(event.target.value)}
+              value={summary}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+            <span>{t("descriptionLabel")}</span>
+            <textarea
+              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setDescription(event.target.value)}
+              value={description}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("colorLabel")}</span>
+            <input
+              className="h-12 rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-2 outline-none transition focus:border-accent"
+              onChange={(event) => setColor(event.target.value)}
+              type="color"
+              value={color || "#7c3aed"}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("welcomeEmailLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setWelcomeEmail(event.target.value)}
+              value={welcomeEmail}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("statusLabel")}</span>
+            <select
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setStatus(event.target.value as ProductStatus)}
+              value={status}
+            >
+              {productStatuses.map((value) => (
+                <option key={value} value={value}>
+                  {statusLabels[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("visibilityLabel")}</span>
+            <select
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              onChange={(event) => setVisibility(event.target.value as VisibilityOption)}
+              value={visibility}
+            >
+              {visibilityOptions.map((value) => (
+                <option key={value} value={value}>
+                  {visibilityLabels[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            <span>{t("displayOrderLabel")}</span>
+            <input
+              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              min={0}
+              onChange={(event) => setDisplayOrder(Number(event.target.value) || 0)}
+              type="number"
+              value={displayOrder}
+            />
+          </label>
+
+          <div className="md:col-span-2 grid gap-3 md:grid-cols-2">
+            <label className="flex items-center gap-3 text-sm text-muted">
+              <input
+                checked={requireDomain}
+                className="h-4 w-4 rounded border-line"
+                onChange={(event) => setRequireDomain(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("requireDomainLabel")}</span>
+            </label>
+            <label className="flex items-center gap-3 text-sm text-muted">
+              <input
+                checked={applyTax}
+                className="h-4 w-4 rounded border-line"
+                onChange={(event) => setApplyTax(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("applyTaxLabel")}</span>
+            </label>
+            <label className="flex items-center gap-3 text-sm text-muted">
+              <input
+                checked={isFeatured}
+                className="h-4 w-4 rounded border-line"
+                onChange={(event) => setIsFeatured(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("featuredLabel")}</span>
+            </label>
+            <label className="flex items-center gap-3 text-sm text-muted">
+              <input
+                checked={retired}
+                className="h-4 w-4 rounded border-line"
+                onChange={(event) => setRetired(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("retiredLabel")}</span>
+            </label>
+            <label className="flex items-center gap-3 text-sm text-muted">
+              <input
+                checked={stockControl}
+                className="h-4 w-4 rounded border-line"
+                onChange={(event) => setStockControl(event.target.checked)}
+                type="checkbox"
+              />
+              <span>{t("stockControlLabel")}</span>
+            </label>
+            {stockControl ? (
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                <span>{t("stockQuantityLabel")}</span>
+                <input
+                  className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                  min={0}
+                  onChange={(event) => setStockQuantity(Number(event.target.value) || 0)}
+                  type="number"
+                  value={stockQuantity}
+                />
+              </label>
+            ) : null}
+          </div>
+            </>
+          ) : null}
+
+          {activeSection === "module" ? (
+            <>
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("linkedServerLabel")}</span>
             <select
@@ -384,105 +628,118 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
               value={provisioningPackage}
             />
           </label>
+            </>
+          ) : null}
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("productNameLabel")}</span>
-            <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setName(event.target.value)}
-              value={name}
-            />
-          </label>
+          {activeSection === "other" ? (
+            <>
+              <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+                <span>{t("paymentTypeLabel")}</span>
+                <div className="flex flex-wrap gap-4 rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3">
+                  {productPaymentTypes.map((value) => (
+                    <label key={value} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        checked={paymentType === value}
+                        onChange={() => setPaymentType(value)}
+                        type="radio"
+                      />
+                      <span>{paymentTypeLabels[value]}</span>
+                    </label>
+                  ))}
+                </div>
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("slugLabel")}</span>
-            <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setSlug(event.target.value)}
-              value={slug}
-            />
-          </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+                <span>{t("quantityModeLabel")}</span>
+                <div className="grid gap-2 rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3">
+                  {productQuantityModes.map((value) => (
+                    <label key={value} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        checked={quantityMode === value}
+                        onChange={() => setQuantityMode(value)}
+                        type="radio"
+                      />
+                      <span>{quantityModeLabels[value]}</span>
+                    </label>
+                  ))}
+                </div>
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("skuLabel")}</span>
-            <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setSku(event.target.value)}
-              value={sku}
-            />
-          </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                <span>{t("recurringCyclesLimitLabel")}</span>
+                <input
+                  className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                  min={0}
+                  onChange={(event) => setRecurringCyclesLimit(Number(event.target.value) || 0)}
+                  type="number"
+                  value={recurringCyclesLimit}
+                />
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("displayOrderLabel")}</span>
-            <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              min={0}
-              onChange={(event) => setDisplayOrder(Number(event.target.value) || 0)}
-              type="number"
-              value={displayOrder}
-            />
-          </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                <span>{t("autoTerminateDaysLabel")}</span>
+                <input
+                  className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                  min={0}
+                  onChange={(event) => setAutoTerminateDays(Number(event.target.value) || 0)}
+                  type="number"
+                  value={autoTerminateDays}
+                />
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
-            <span>{t("summaryLabel")}</span>
-            <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setSummary(event.target.value)}
-              value={summary}
-            />
-          </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                <span>{t("terminationEmailLabel")}</span>
+                <input
+                  className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                  onChange={(event) => setTerminationEmail(event.target.value)}
+                  value={terminationEmail}
+                />
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
-            <span>{t("descriptionLabel")}</span>
-            <textarea
-              className="min-h-28 rounded-[1.5rem] border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setDescription(event.target.value)}
-              value={description}
-            />
-          </label>
+              <label className="flex items-center gap-3 text-sm text-muted">
+                <input
+                  checked={prorataBilling}
+                  className="h-4 w-4 rounded border-line"
+                  onChange={(event) => setProrataBilling(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>{t("prorataBillingLabel")}</span>
+              </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("statusLabel")}</span>
-            <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setStatus(event.target.value as ProductStatus)}
-              value={status}
-            >
-              {productStatuses.map((value) => (
-                <option key={value} value={value}>
-                  {statusLabels[value]}
-                </option>
-              ))}
-            </select>
-          </label>
+              {prorataBilling ? (
+                <>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>{t("prorataDateLabel")}</span>
+                    <input
+                      className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                      max={31}
+                      min={1}
+                      onChange={(event) => setProrataDate(Number(event.target.value) || 1)}
+                      type="number"
+                      value={prorataDate}
+                    />
+                  </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
-            <span>{t("visibilityLabel")}</span>
-            <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
-              onChange={(event) => setVisibility(event.target.value as VisibilityOption)}
-              value={visibility}
-            >
-              {visibilityOptions.map((value) => (
-                <option key={value} value={value}>
-                  {visibilityLabels[value]}
-                </option>
-              ))}
-            </select>
-          </label>
+                  <label className="grid gap-2 text-sm font-medium text-foreground">
+                    <span>{t("chargeNextMonthLabel")}</span>
+                    <input
+                      className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+                      max={31}
+                      min={0}
+                      onChange={(event) => setChargeNextMonth(Number(event.target.value) || 0)}
+                      type="number"
+                      value={chargeNextMonth}
+                    />
+                  </label>
+                </>
+              ) : null}
+            </>
+          ) : null}
         </div>
-
-        <label className="mt-6 flex items-center gap-3 text-sm text-muted">
-          <input
-            checked={isFeatured}
-            className="h-4 w-4 rounded border-line"
-            onChange={(event) => setIsFeatured(event.target.checked)}
-            type="checkbox"
-          />
-          <span>{t("featuredLabel")}</span>
-        </label>
       </section>
+      ) : null}
 
+      {activeSection === "configurable-options" ? (
       <section className="glass-card p-6 md:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -784,6 +1041,7 @@ export function ProductForm({ mode, groups, servers = [], initialProduct }: Prod
           </div>
         )}
       </section>
+      ) : null}
 
       {message ? (
         <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">

@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\PortalContentBlockController;
 use App\Http\Controllers\Api\V1\Admin\PortalFooterLinkController;
 use App\Http\Controllers\Api\V1\Admin\PortalSurfaceController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
+use App\Http\Controllers\Api\V1\Admin\ProductAddonController;
 use App\Http\Controllers\Api\V1\Admin\ProductGroupController;
 use App\Http\Controllers\Api\V1\Admin\ProductPricingController;
 use App\Http\Controllers\Api\V1\Admin\ProvisioningJobController;
@@ -100,6 +101,9 @@ Route::apiResource('portal-footer-links', PortalFooterLinkController::class)
 Route::apiResource('provisioning-jobs', ProvisioningJobController::class)->only(['index', 'show']);
 Route::post('provisioning-jobs/{provisioningJob}/retry', [ProvisioningJobRetryController::class, 'store'])->name('provisioning-jobs.retry');
 Route::apiResource('product-groups', ProductGroupController::class);
+Route::apiResource('product-addons', ProductAddonController::class)->parameters([
+    'product-addons' => 'productAddon',
+]);
 Route::apiResource('products', ProductController::class);
 Route::get('products/{product}/pricing', [ProductPricingController::class, 'show'])->name('products.pricing.show');
 Route::put('products/{product}/pricing', [ProductPricingController::class, 'update'])->name('products.pricing.update');
