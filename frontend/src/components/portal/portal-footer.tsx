@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { PortalLocaleSelect } from "@/components/portal/portal-locale-select";
 import { PortalSocialIcon } from "@/components/portal/portal-icons";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { localePath } from "@/lib/auth";
@@ -26,7 +25,6 @@ type PortalFooterProps = {
 
 export function PortalFooter({
   locale,
-  currentPath,
   columns,
   branding,
 }: PortalFooterProps) {
@@ -126,11 +124,6 @@ export function PortalFooter({
 
       <div className="mx-auto mt-16 flex max-w-[980px] flex-col gap-3 border-t border-[rgba(255,255,255,0.08)] ps-8 pe-8 pt-6 text-[12px] text-[#dde5f7] md:flex-row md:items-center md:justify-between">
         <p>{copyrightText}</p>
-        <PortalLocaleSelect
-          currentLocale={locale}
-          currentPath={currentPath}
-          label=""
-        />
       </div>
     </footer>
   );

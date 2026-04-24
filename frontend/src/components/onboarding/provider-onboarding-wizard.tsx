@@ -6,7 +6,6 @@ import { siCpanel, siLinux, siPlesk } from "simple-icons";
 
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import { fetchAuthConfig, type AuthConfigResponse } from "@/lib/auth-security";
 import { localePath } from "@/lib/auth";
@@ -515,7 +514,6 @@ export function ProviderOnboardingWizard({
             className="block w-full max-w-[12rem]"
           />
           <div className="flex items-center gap-4">
-            <LocaleSwitcher currentLocale={locale} path="/onboarding" />
             {!isAuthenticated ? (
               <Link
                 href={localePath(locale, "/auth/login")}

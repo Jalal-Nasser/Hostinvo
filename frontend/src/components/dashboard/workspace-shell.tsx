@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { DemoTenantDashboardButton } from "@/components/platform-owner/demo-tenant-dashboard-button";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { DocumentTitle } from "@/components/shared/document-title";
@@ -668,7 +667,6 @@ export async function WorkspaceShell({
 
                   <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                     {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
-                    <LocaleSwitcher currentLocale={locale} path={currentPath} />
                     {actions}
                   </div>
                 </div>
@@ -725,7 +723,6 @@ export async function WorkspaceShell({
                 <p className="mt-0.5 text-[#667085]">{user.email}</p>
               </div>
               <div className="flex items-center gap-2">
-                <LocaleSwitcher currentLocale={locale} path={currentPath} />
                 <LogoutButton />
               </div>
             </div>

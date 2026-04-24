@@ -15,6 +15,6 @@ class DashboardOverviewController extends Controller
     ): JsonResponse {
         abort_unless($request->user()?->hasPermissionTo('dashboard.view'), 403);
 
-        return $this->success($overviewService->build());
+        return $this->success($overviewService->build($request->user()));
     }
 }

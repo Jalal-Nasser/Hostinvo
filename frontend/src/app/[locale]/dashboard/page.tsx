@@ -26,6 +26,29 @@ type DashboardPageProps = Readonly<{
   params: { locale: string };
 }>;
 
+function formatRelativeTime(locale: string, value: string | null): string {
+  if (!value) {
+    return "N/A";
+  }
+
+  const timestamp = new Date(value);
+  const diffMs = timestamp.getTime() - Date.now();
+  const diffMinutes = Math.round(diffMs / 60000);
+
+  if (Math.abs(diffMinutes) < 60) {
+    return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(diffMinutes, "minute");
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+
+  if (Math.abs(diffHours) < 24) {
+    return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(diffHours, "hour");
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(diffDays, "day");
+}
+
 function tenantDashboardActions(locale: string, t: Awaited<ReturnType<typeof getTranslations>>, user: NonNullable<Awaited<ReturnType<typeof getAuthenticatedUserFromCookies>>>) {
   return [
     hasAnyPermission(user, ["clients.manage"]) ? (
@@ -212,6 +235,25 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     },
   ];
 
+  const healthTone =
+    overview.system_health.rating === "good"
+      ? "text-[#5cb85c]"
+      : overview.system_health.rating === "warning"
+        ? "text-[#d68c10]"
+        : "text-[#dc2626]";
+  const healthBar =
+    overview.system_health.rating === "good"
+      ? "bg-[#7ecf72]"
+      : overview.system_health.rating === "warning"
+        ? "bg-[#efb24f]"
+        : "bg-[#ef8c8c]";
+  const healthLabel =
+    overview.system_health.rating === "good"
+      ? "Good"
+      : overview.system_health.rating === "warning"
+        ? "Needs Review"
+        : "Needs Attention";
+
   return (
     <DashboardShell
       actions={actions}
@@ -320,6 +362,229 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             <p className="mt-2 text-[28px] font-semibold leading-none text-[#111827]">{item.value}</p>
           </Link>
         ))}
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-2">
+        <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
+            <h2 className="text-[15px] font-medium text-[#1f2937]">Support</h2>
+            <Link className="text-[12px] text-[#036deb]" href={localePath(params.locale, "/dashboard/tickets")}>
+              View all tickets
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4 px-5 py-5">
+            <div>
+              <p className="text-[13px] text-[#6b7280]">Awaiting Reply</p>
+              <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                {overview.support.awaiting_reply}
+              </p>
+              <p className="mt-1 text-[13px] text-[#6b7280]">Tickets</p>
+            </div>
+            <div>
+              <p className="text-[13px] text-[#6b7280]">Assigned To You</p>
+              <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                {overview.support.assigned_to_you}
+              </p>
+              <p className="mt-1 text-[13px] text-[#6b7280]">Tickets</p>
+            </div>
+          </div>
+          <div className="border-t border-[#e5e7eb] px-5 py-3 text-[12px] text-[#4b5563]">
+            Open tickets and assignments are based on the current tenant queue.
+          </div>
+        </article>
+
+        <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
+            <h2 className="text-[15px] font-medium text-[#1f2937]">System Health</h2>
+            <Link className="text-[12px] text-[#036deb]" href={localePath(params.locale, "/dashboard/provisioning")}>
+              View issues
+            </Link>
+          </div>
+          <div className="px-5 py-5">
+            <p className="text-[13px] text-[#6b7280]">Overall Rating</p>
+            <p className={["mt-1 text-[30px] font-medium leading-none", healthTone].join(" ")}>
+              {healthLabel}
+            </p>
+            <div className="mt-4 h-4 overflow-hidden rounded-[3px] bg-[#edf2f7]">
+              <div
+                className={[healthBar, "h-full transition-all"].join(" ")}
+                style={{ width: `${overview.system_health.score}%` }}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-4 text-[13px]">
+              <div className="text-[#6b7280]">
+                <span className="font-medium text-[#111827]">{overview.system_health.warnings}</span> Warnings
+              </div>
+              <div className="text-[#6b7280]">
+                <span className="font-medium text-[#111827]">{overview.system_health.needs_attention}</span>{" "}
+                Needing Attention
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <div className="grid gap-5">
+          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+            <div className="border-b border-[#e5e7eb] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#1f2937]">Client Activity</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4 px-5 py-5">
+              <div>
+                <p className="text-[13px] text-[#6b7280]">Active Clients</p>
+                <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                  {overview.client_activity.active_clients}
+                </p>
+              </div>
+              <div>
+                <p className="text-[13px] text-[#6b7280]">Users Online</p>
+                <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                  {overview.client_activity.users_online_last_hour}
+                </p>
+                <p className="mt-1 text-[13px] text-[#6b7280]">Last hour</p>
+              </div>
+            </div>
+            <div className="border-t border-[#e5e7eb]">
+              {overview.client_activity.recent_clients.length > 0 ? (
+                overview.client_activity.recent_clients.map((client) => (
+                  <div
+                    key={client.id}
+                    className="grid grid-cols-[minmax(0,1fr)_90px] gap-3 border-b border-[#eef2f7] px-5 py-3 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-medium text-[#111827]">{client.display_name}</p>
+                      <p className="truncate text-[12px] text-[#6b7280]">{client.email}</p>
+                    </div>
+                    <div className="text-right text-[12px] uppercase tracking-[0.08em] text-[#6b7280]">
+                      {client.status}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-5 text-sm text-[#6b7280]">No client activity yet.</div>
+              )}
+            </div>
+          </article>
+
+          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+            <div className="border-b border-[#e5e7eb] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#1f2937]">Connected Servers</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-4 border-b border-[#eef2f7] px-5 py-4 text-[13px]">
+              <div>
+                <p className="text-[#6b7280]">Configured</p>
+                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                  {overview.servers.connected_total}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#6b7280]">Active</p>
+                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                  {overview.servers.active_total}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#6b7280]">Needs Attention</p>
+                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                  {overview.servers.needs_attention_total}
+                </p>
+              </div>
+            </div>
+            <div>
+              {overview.servers.items.length > 0 ? (
+                overview.servers.items.map((server) => (
+                  <div
+                    key={server.id}
+                    className="grid grid-cols-[minmax(0,1.2fr)_110px_120px] gap-3 border-b border-[#eef2f7] px-5 py-4 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-medium text-[#111827]">{server.name}</p>
+                      <p className="truncate text-[12px] text-[#6b7280]">
+                        {server.hostname} {server.ip_address ? `• ${server.ip_address}` : ""}
+                      </p>
+                    </div>
+                    <div className="text-[12px] text-[#6b7280]">
+                      <p className="uppercase tracking-[0.08em]">{server.status}</p>
+                      <p className="mt-1">{server.panel_type}</p>
+                    </div>
+                    <div className="text-right text-[12px] text-[#6b7280]">
+                      <p>
+                        {server.current_accounts}
+                        {server.max_accounts ? ` / ${server.max_accounts}` : ""} accounts
+                      </p>
+                      <p className="mt-1">Tested {formatRelativeTime(params.locale, server.last_tested_at)}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-5 text-sm text-[#6b7280]">No servers connected yet.</div>
+              )}
+            </div>
+          </article>
+        </div>
+
+        <div className="grid gap-5">
+          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+            <div className="border-b border-[#e5e7eb] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#1f2937]">Staff Online</h2>
+            </div>
+            <div className="px-5 py-5">
+              {overview.staff_online.items.length > 0 ? (
+                <div className="grid gap-4">
+                  {overview.staff_online.items.map((staff) => (
+                    <div key={staff.id} className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#dbeafe] text-sm font-semibold text-[#1d4ed8]">
+                        {staff.name
+                          .split(" ")
+                          .map((part) => part[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-medium text-[#111827]">{staff.name}</p>
+                        <p className="truncate text-[12px] text-[#6b7280]">
+                          {formatRelativeTime(params.locale, staff.last_login_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-[#6b7280]">No staff online in the last 15 minutes.</div>
+              )}
+            </div>
+          </article>
+
+          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
+            <div className="border-b border-[#e5e7eb] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#1f2937]">Activity</h2>
+            </div>
+            <div className="max-h-[380px] overflow-y-auto">
+              {overview.activity.length > 0 ? (
+                overview.activity.map((item, index) => (
+                  <div
+                    key={`${item.type}-${item.occurred_at ?? index}-${index}`}
+                    className="border-b border-[#eef2f7] px-5 py-4 last:border-b-0"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-semibold text-[#111827]">{item.title}</p>
+                        <p className="mt-1 text-[12px] leading-5 text-[#4b5563]">{item.message}</p>
+                      </div>
+                      <p className="shrink-0 text-[12px] text-[#6b7280]">
+                        {formatRelativeTime(params.locale, item.occurred_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-5 text-sm text-[#6b7280]">No recent activity yet.</div>
+              )}
+            </div>
+          </article>
+        </div>
       </section>
     </DashboardShell>
   );

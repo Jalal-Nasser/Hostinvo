@@ -4,7 +4,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { DocumentTitle } from "@/components/shared/document-title";
 
 type AuthShellProps = {
@@ -168,7 +167,6 @@ export async function AuthShell({
   locale,
   title,
   description,
-  currentPath,
 }: AuthShellProps) {
   const t = await getTranslations("Auth");
   const shellCopy = shellCopyByLocale[locale] ?? shellCopyByLocale.en;
@@ -274,7 +272,6 @@ export async function AuthShell({
               </svg>
               <span>{t("backToHome")}</span>
             </Link>
-            <LocaleSwitcher currentLocale={locale as "en" | "ar"} path={currentPath} />
           </div>
 
           <div className="flex flex-1 items-center px-6 pb-10 pt-2 sm:px-8 xl:px-10">

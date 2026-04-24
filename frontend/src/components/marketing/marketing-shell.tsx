@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { getLaunchContent } from "@/lib/launch-content";
@@ -90,7 +89,6 @@ export async function MarketingShell({
             })}
           </nav>
           <div className="flex items-center gap-3">
-            <LocaleSwitcher currentLocale={locale} path={currentPath} variant="dark" />
             <Link
               href={localePath(locale, "/auth/login")}
               className="hidden rounded-lg px-4 py-2 text-sm font-medium text-[#93A5C1] transition-colors hover:text-white lg:block"

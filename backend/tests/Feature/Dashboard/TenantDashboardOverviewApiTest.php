@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\ProvisioningJob;
 use App\Models\Product;
 use App\Models\Role;
+use App\Models\Server;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\TenantUser;
@@ -135,12 +136,30 @@ class TenantDashboardOverviewApiTest extends TestCase
             'is_featured' => false,
         ]);
 
+        $server = Server::query()->forceCreate([
+            'tenant_id' => $tenant->id,
+            'name' => 'Primary cPanel',
+            'hostname' => 'vmi.dashboard.test',
+            'panel_type' => Server::PANEL_CPANEL,
+            'api_endpoint' => 'https://vmi.dashboard.test:2087',
+            'status' => Server::STATUS_ACTIVE,
+            'username' => 'root',
+            'ip_address' => '192.0.2.10',
+            'max_accounts' => 100,
+            'account_count' => 1,
+            'last_tested_at' => now(),
+            'credentials' => [
+                'username' => 'root',
+                'api_token' => 'token-value',
+            ],
+        ]);
+
         $service = Service::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'client_id' => $client->id,
             'product_id' => $product->id,
             'user_id' => $user->id,
-            'server_id' => null,
+            'server_id' => $server->id,
             'reference_number' => 'SRV-DASH-001',
             'service_type' => Service::TYPE_HOSTING,
             'billing_cycle' => 'monthly',
@@ -156,7 +175,7 @@ class TenantDashboardOverviewApiTest extends TestCase
         ProvisioningJob::query()->forceCreate([
             'tenant_id' => $tenant->id,
             'service_id' => $service->id,
-            'server_id' => null,
+            'server_id' => $server->id,
             'requested_by_user_id' => $user->id,
             'operation' => ProvisioningJob::OPERATION_SUSPEND_ACCOUNT,
             'status' => ProvisioningJob::STATUS_QUEUED,
@@ -227,6 +246,15 @@ class TenantDashboardOverviewApiTest extends TestCase
             ->assertJsonPath('data.billing.all_time_minor', 2500)
             ->assertJsonPath('data.automation.invoices_created_today', 1)
             ->assertJsonPath('data.automation.credit_card_captures_today', 1)
+            ->assertJsonPath('data.support.awaiting_reply', 1)
+            ->assertJsonPath('data.support.assigned_to_you', 0)
+            ->assertJsonPath('data.client_activity.active_clients', 1)
+            ->assertJsonPath('data.servers.connected_total', 1)
+            ->assertJsonPath('data.servers.active_total', 1)
+            ->assertJsonPath('data.servers.items.0.name', 'Primary cPanel')
+            ->assertJsonPath('data.system_health.rating', 'warning')
+            ->assertJsonPath('data.system_health.warnings', 1)
+            ->assertJsonPath('data.system_health.needs_attention', 0)
             ->assertJsonPath('data.chart.series.last_30_days.29.new_orders', 1)
             ->assertJsonPath('data.chart.series.last_30_days.29.activated_orders', 1)
             ->assertJsonPath('data.chart.series.last_30_days.29.income_minor', 2500);

@@ -85,6 +85,58 @@ export type TenantDashboardOverview = {
     invoices_created_today: number;
     credit_card_captures_today: number;
   };
+  support: {
+    awaiting_reply: number;
+    assigned_to_you: number;
+  };
+  client_activity: {
+    active_clients: number;
+    users_online_last_hour: number;
+    recent_clients: Array<{
+      id: string;
+      display_name: string;
+      email: string;
+      status: string;
+    }>;
+  };
+  servers: {
+    connected_total: number;
+    active_total: number;
+    needs_attention_total: number;
+    items: Array<{
+      id: string;
+      name: string;
+      hostname: string;
+      ip_address: string | null;
+      panel_type: string;
+      status: string;
+      has_credentials: boolean;
+      last_tested_at: string | null;
+      current_accounts: number;
+      max_accounts: number | null;
+    }>;
+  };
+  system_health: {
+    rating: "good" | "warning" | "attention";
+    score: number;
+    warnings: number;
+    needs_attention: number;
+  };
+  staff_online: {
+    count: number;
+    items: Array<{
+      id: string;
+      name: string;
+      email: string;
+      last_login_at: string | null;
+    }>;
+  };
+  activity: Array<{
+    type: string;
+    title: string;
+    message: string;
+    occurred_at: string | null;
+  }>;
   chart: {
     default_period: "today" | "last_30_days" | "last_year";
     series: Record<"today" | "last_30_days" | "last_year", TenantDashboardChartPoint[]>;
