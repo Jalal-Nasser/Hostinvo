@@ -206,10 +206,77 @@ export type PleskImportPreviewResponse = {
   };
 };
 
+export type PleskPlanPreviewRecord = {
+  plan_name: string;
+  owner_name: string | null;
+  disk_limit_mb: number | null;
+  bandwidth_limit_mb: number | null;
+  websites_limit: number | null;
+  mailboxes_limit: number | null;
+  databases_limit: number | null;
+  existing_server_package: {
+    id: string;
+    panel_package_name: string;
+    display_name: string | null;
+  } | null;
+  existing_product: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  raw_info?: Record<string, unknown> | null;
+};
+
+export type PleskPlanPreviewResponse = {
+  data: PleskPlanPreviewRecord[];
+  meta?: {
+    total: number;
+    already_imported: number;
+    ready_to_import: number;
+  };
+};
+
+export type PleskPlanImportPayload = {
+  imports: Array<{
+    plan_name: string;
+    product_name?: string | null;
+    product_group_id?: number | null;
+  }>;
+};
+
+export type PleskPlanImportResponse = {
+  products: ProductImportRecord[];
+  summary: {
+    products_created: number;
+    products_mapped: number;
+  };
+};
+
+export type ProductImportRecord = {
+  id: string;
+  tenant_id: string;
+  product_group_id: string | null;
+  server_id: number | null;
+  type: string;
+  provisioning_module: string | null;
+  provisioning_package: string | null;
+  name: string;
+  slug: string;
+  summary: string | null;
+  description: string | null;
+  status: string;
+  visibility: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PleskImportPayload = {
   imports: Array<{
     subscription_name: string;
     product_id?: string | null;
+    product?: {
+      name?: string | null;
+    };
     client_id?: string | null;
     billing_cycle?: BillingCycle | null;
     notes?: string | null;
@@ -447,6 +514,33 @@ export async function fetchPleskImportPreviewFromCookies(
   return (await response.json()) as PleskImportPreviewResponse;
 }
 
+export async function fetchPleskPlanPreviewFromCookies(
+  cookieHeader: string,
+  serverId: string,
+  filters: {
+    search?: string;
+  } = {},
+): Promise<PleskPlanPreviewResponse | null> {
+  const url = new URL(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-plans`);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: statefulApiHeaders(cookieHeader),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as PleskPlanPreviewResponse;
+}
+
 export async function fetchPleskImportPreview(
   serverId: string,
   filters: {
@@ -475,6 +569,36 @@ export async function fetchPleskImportPreview(
   }
 
   return (await response.json()) as PleskImportPreviewResponse;
+}
+
+export async function fetchPleskPlanPreview(
+  serverId: string,
+  filters: {
+    search?: string;
+  } = {},
+): Promise<PleskPlanPreviewResponse | null> {
+  const url = new URL(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-plans`);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as PleskPlanPreviewResponse;
 }
 
 export async function fetchServiceFromCookies(
@@ -585,6 +709,36 @@ export async function importPleskSubscriptions(
   }
 
   const data = (await response.json()) as { data: PleskImportResponse };
+
+  return data.data;
+}
+
+export async function importPleskPlans(
+  serverId: string,
+  payload: PleskPlanImportPayload,
+  xsrfToken?: string | null,
+): Promise<PleskPlanImportResponse> {
+  const response = await fetch(`${apiBaseUrl}/admin/servers/${serverId}/imports/plesk-plans`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorPayload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+
+    throw new Error(errorPayload?.message ?? "Unable to import Plesk plans.");
+  }
+
+  const data = (await response.json()) as { data: PleskPlanImportResponse };
 
   return data.data;
 }

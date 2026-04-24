@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Provisioning\Drivers\Plesk\PleskApiClient;
 use App\Provisioning\ProvisioningLogger;
 use App\Services\Licensing\LicenseService;
+use App\Services\Catalog\ProductService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -34,6 +35,7 @@ class PleskImportService
         private readonly ServerRepositoryInterface $servers,
         private readonly LicenseService $licenseService,
         private readonly ProvisioningLogger $logger,
+        private readonly ProductService $productService,
     ) {
     }
 
@@ -91,7 +93,7 @@ class PleskImportService
                     ]);
                 }
 
-                $product = $this->resolveImportProduct($row, $preview, $tenant->id, $index);
+                $product = $this->resolveImportProduct($server, $row, $preview, $tenant->id, $index);
                 $client = $this->resolveImportClient($row, $preview, $tenant, $actor, $index);
                 $service = $this->createImportedService($server, $tenant, $product, $client, $preview, $row, $actor);
 
@@ -260,15 +262,21 @@ class PleskImportService
             ?? $packages->first(fn (ServerPackage $package): bool => Str::lower((string) ($package->display_name ?? '')) === Str::lower((string) $servicePlan));
     }
 
-    private function resolveImportProduct(array $row, array $preview, string $tenantId, int $index): Product
+    private function resolveImportProduct(Server $server, array $row, array $preview, string $tenantId, int $index): Product
     {
         $productId = $row['product_id']
             ?? Arr::get($preview, 'suggested_product.id');
 
         if (! $productId) {
-            throw ValidationException::withMessages([
-                "imports.{$index}.product_id" => ['Select a product before importing this subscription.'],
-            ]);
+            $productName = trim((string) ($row['product']['name'] ?? ''));
+
+            if ($productName === '') {
+                throw ValidationException::withMessages([
+                    "imports.{$index}.product_id" => ['Select or create a product before importing this subscription.'],
+                ]);
+            }
+
+            return $this->createImportedProduct($server, $preview, $tenantId, $productName);
         }
 
         $product = $this->products->findByIdForDisplay((string) $productId);
@@ -280,6 +288,44 @@ class PleskImportService
         }
 
         return $product;
+    }
+
+    private function createImportedProduct(Server $server, array $preview, string $tenantId, string $productName): Product
+    {
+        $tenant = Tenant::query()->findOrFail($tenantId);
+        $actor = request()->user();
+
+        if (! $actor instanceof User) {
+            throw ValidationException::withMessages([
+                'product' => ['Authenticated user context is required to create a product during import.'],
+            ]);
+        }
+
+        $product = $this->productService->create([
+            'server_id' => $server->id,
+            'type' => Product::TYPE_HOSTING,
+            'provisioning_module' => Product::MODULE_PLESK,
+            'provisioning_package' => $preview['service_plan'] ?: null,
+            'name' => $productName,
+            'summary' => sprintf('Imported during Plesk subscription onboarding for %s.', $preview['subscription_name']),
+            'description' => $this->buildImportedProductDescription($preview),
+            'status' => Product::STATUS_ACTIVE,
+            'visibility' => Product::VISIBILITY_HIDDEN,
+            'display_order' => 0,
+            'is_featured' => false,
+        ], $actor);
+
+        $this->productService->updatePricing($product, [
+            'pricing' => [[
+                'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
+                'currency' => Str::upper((string) ($tenant->default_currency ?: config('hostinvo.default_currency', 'USD'))),
+                'price' => 0,
+                'setup_fee' => 0,
+                'is_enabled' => true,
+            ]],
+        ]);
+
+        return $this->products->findByIdForDisplay($product->id) ?? $product;
     }
 
     private function resolveImportClient(array $row, array $preview, Tenant $tenant, User $actor, int $index): Client
@@ -583,5 +629,15 @@ class PleskImportService
     private function generateReferenceNumber(): string
     {
         return 'SVC-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
+    }
+
+    private function buildImportedProductDescription(array $preview): string
+    {
+        return collect([
+            sprintf('Created during import of existing Plesk subscription %s.', $preview['subscription_name']),
+            filled($preview['service_plan'] ?? null) ? sprintf('Plesk service plan: %s', $preview['service_plan']) : 'No Plesk service plan was attached to the remote subscription.',
+            ($preview['disk_limit_mb'] ?? 0) > 0 ? sprintf('Disk limit: %d MB', $preview['disk_limit_mb']) : null,
+            ($preview['bandwidth_limit_mb'] ?? 0) > 0 ? sprintf('Bandwidth limit: %d MB', $preview['bandwidth_limit_mb']) : null,
+        ])->filter()->implode("\n");
     }
 }

@@ -19,6 +19,8 @@ class ImportPleskSubscriptionsRequest extends FormRequest
             'imports' => ['required', 'array', 'min:1'],
             'imports.*.subscription_name' => ['required', 'string', 'max:255'],
             'imports.*.product_id' => ['nullable', 'uuid'],
+            'imports.*.product' => ['nullable', 'array'],
+            'imports.*.product.name' => ['nullable', 'string', 'max:255'],
             'imports.*.client_id' => ['nullable', 'uuid'],
             'imports.*.billing_cycle' => ['nullable', 'string', Rule::in(ProductPricing::billingCycles())],
             'imports.*.notes' => ['nullable', 'string'],

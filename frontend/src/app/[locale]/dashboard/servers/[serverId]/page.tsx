@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { PleskPlanImporter } from "@/components/provisioning/plesk-plan-importer";
 import { PleskSubscriptionImporter } from "@/components/provisioning/plesk-subscription-importer";
 import { ProvisioningJobRetryButton } from "@/components/provisioning/provisioning-job-retry-button";
 import { ServerConnectionTester } from "@/components/provisioning/server-connection-tester";
@@ -11,7 +12,11 @@ import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchProductsFromCookies } from "@/lib/catalog";
 import { fetchClientsFromCookies } from "@/lib/clients";
-import { fetchPleskImportPreviewFromCookies, fetchServerFromCookies } from "@/lib/provisioning";
+import {
+  fetchPleskImportPreviewFromCookies,
+  fetchPleskPlanPreviewFromCookies,
+  fetchServerFromCookies,
+} from "@/lib/provisioning";
 
 export const dynamic = "force-dynamic";
 
@@ -30,13 +35,14 @@ export default async function ServerDetailsPage({
     notFound();
   }
 
-  const [productsResponse, clientsResponse, pleskPreview] = server.panel_type === "plesk"
+  const [productsResponse, clientsResponse, pleskPreview, pleskPlanPreview] = server.panel_type === "plesk"
     ? await Promise.all([
         fetchProductsFromCookies(cookieHeader, { type: "hosting", per_page: "100" }),
         fetchClientsFromCookies(cookieHeader, { per_page: "100" }),
         fetchPleskImportPreviewFromCookies(cookieHeader, params.serverId),
+        fetchPleskPlanPreviewFromCookies(cookieHeader, params.serverId),
       ])
-    : [null, null, null];
+    : [null, null, null, null];
 
   function operationLabel(operation: string) {
     switch (operation) {
@@ -217,45 +223,80 @@ export default async function ServerDetailsPage({
       </section>
 
       {server.panel_type === "plesk" ? (
-        <PleskSubscriptionImporter
-          serverId={server.id}
-          locale={params.locale}
-          initialPreview={pleskPreview?.data ?? []}
-          products={productsResponse?.data ?? []}
-          clients={clientsResponse?.data ?? []}
-          strings={{
-            title: t("importTitle"),
-            description: t("importDescription"),
-            refreshButton: t("importRefreshButton"),
-            refreshingButton: t("importRefreshingButton"),
-            importButton: t("importButton"),
-            importingButton: t("importingButton"),
-            searchLabel: t("searchLabel"),
-            searchPlaceholder: t("importSearchPlaceholder"),
-            subscriptionLabel: t("importSubscriptionLabel"),
-            usernameLabel: t("usernameLabel"),
-            planLabel: t("importPlanLabel"),
-            statusLabel: t("serviceStatusLabel"),
-            emailLabel: t("importEmailLabel"),
-            usageLabel: t("importUsageLabel"),
-            productLabel: t("productLabel"),
-            clientLabel: t("clientLabel"),
-            autoClientOption: t("importAutoClientOption"),
-            selectProductPlaceholder: t("importSelectProductPlaceholder"),
-            selectClientPlaceholder: t("importSelectClientPlaceholder"),
-            companyNameLabel: t("importCompanyNameLabel"),
-            countryLabel: t("importCountryLabel"),
-            existingServiceLabel: t("importExistingServiceLabel"),
-            existingClientLabel: t("importExistingClientLabel"),
-            noSubscriptions: t("importEmpty"),
-            importSuccess: t("importSuccess"),
-            importError: t("importError"),
-            refreshError: t("importRefreshError"),
-            noSelectionError: t("importNoSelectionError"),
-            alreadyImported: t("importAlreadyImported"),
-            productRequired: t("importProductRequired"),
-          }}
-        />
+        <div className="grid gap-4">
+          <PleskPlanImporter
+            serverId={server.id}
+            locale={params.locale}
+            initialPreview={pleskPlanPreview?.data ?? []}
+            strings={{
+              title: t("planImportTitle"),
+              description: t("planImportDescription"),
+              refreshButton: t("planImportRefreshButton"),
+              refreshingButton: t("planImportRefreshingButton"),
+              importButton: t("planImportButton"),
+              importingButton: t("planImportingButton"),
+              searchLabel: t("searchLabel"),
+              searchPlaceholder: t("planImportSearchPlaceholder"),
+              planLabel: t("importPlanLabel"),
+              ownerLabel: t("planImportOwnerLabel"),
+              diskLimitLabel: t("planImportDiskLimitLabel"),
+              bandwidthLimitLabel: t("planImportBandwidthLimitLabel"),
+              websitesLimitLabel: t("planImportWebsitesLimitLabel"),
+              mailboxesLimitLabel: t("planImportMailboxesLimitLabel"),
+              databasesLimitLabel: t("planImportDatabasesLimitLabel"),
+              productNameLabel: t("planImportProductNameLabel"),
+              existingProductLabel: t("planImportExistingProductLabel"),
+              noPlans: t("planImportEmpty"),
+              importSuccess: t("planImportSuccess"),
+              importError: t("planImportError"),
+              refreshError: t("planImportRefreshError"),
+              noSelectionError: t("planImportNoSelectionError"),
+              alreadyImported: t("importAlreadyImported"),
+            }}
+          />
+
+          <PleskSubscriptionImporter
+            serverId={server.id}
+            locale={params.locale}
+            initialPreview={pleskPreview?.data ?? []}
+            products={productsResponse?.data ?? []}
+            clients={clientsResponse?.data ?? []}
+            strings={{
+              title: t("importTitle"),
+              description: t("importDescription"),
+              refreshButton: t("importRefreshButton"),
+              refreshingButton: t("importRefreshingButton"),
+              importButton: t("importButton"),
+              importingButton: t("importingButton"),
+              searchLabel: t("searchLabel"),
+              searchPlaceholder: t("importSearchPlaceholder"),
+              subscriptionLabel: t("importSubscriptionLabel"),
+              usernameLabel: t("usernameLabel"),
+              planLabel: t("importPlanLabel"),
+              statusLabel: t("serviceStatusLabel"),
+              emailLabel: t("importEmailLabel"),
+              usageLabel: t("importUsageLabel"),
+              productLabel: t("productLabel"),
+              clientLabel: t("clientLabel"),
+              autoClientOption: t("importAutoClientOption"),
+              selectProductPlaceholder: t("importSelectProductPlaceholder"),
+              selectClientPlaceholder: t("importSelectClientPlaceholder"),
+              companyNameLabel: t("importCompanyNameLabel"),
+              countryLabel: t("importCountryLabel"),
+              existingServiceLabel: t("importExistingServiceLabel"),
+              existingClientLabel: t("importExistingClientLabel"),
+              noSubscriptions: t("importEmpty"),
+              importSuccess: t("importSuccess"),
+              importError: t("importError"),
+              refreshError: t("importRefreshError"),
+              noSelectionError: t("importNoSelectionError"),
+              alreadyImported: t("importAlreadyImported"),
+              productRequired: t("importProductRequired"),
+              createProductOption: t("importCreateProductOption"),
+              createProductNameLabel: t("importCreateProductNameLabel"),
+            }}
+          />
+        </div>
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">

@@ -45,6 +45,8 @@ type ImporterStrings = {
   noSelectionError: string;
   alreadyImported: string;
   productRequired: string;
+  createProductOption: string;
+  createProductNameLabel: string;
 };
 
 type PleskSubscriptionImporterProps = {
@@ -59,6 +61,8 @@ type PleskSubscriptionImporterProps = {
 type ImportDraft = {
   selected: boolean;
   productId: string;
+  createProduct: boolean;
+  productName: string;
   clientId: string;
   clientEmail: string;
   companyName: string;
@@ -140,14 +144,25 @@ export function PleskSubscriptionImporter({
       const imports = selected.map((record) => {
         const draft = drafts[record.subscription_name];
 
-        if (!draft?.productId) {
+        if (!draft?.createProduct && !draft?.productId) {
           throw new Error(`${record.subscription_name}: ${strings.productRequired}`);
         }
 
         const payload: PleskImportPayload["imports"][number] = {
           subscription_name: record.subscription_name,
-          product_id: draft.productId,
         };
+
+        if (draft.createProduct) {
+          if (!draft.productName.trim()) {
+            throw new Error(`${record.subscription_name}: ${strings.productRequired}`);
+          }
+
+          payload.product = {
+            name: draft.productName.trim(),
+          };
+        } else {
+          payload.product_id = draft.productId;
+        }
 
         if (draft.clientId) {
           payload.client_id = draft.clientId;
@@ -291,16 +306,28 @@ export function PleskSubscriptionImporter({
                   <label className="grid gap-2 text-sm font-medium text-foreground">
                     <span>{strings.productLabel}</span>
                     <select
-                      value={draft.productId}
+                      value={draft.createProduct ? "__create__" : draft.productId}
                       disabled={disabled}
-                      onChange={(event) =>
-                        patchDraft(record.subscription_name, {
-                          productId: event.target.value,
-                        })
-                      }
+                      onChange={(event) => {
+                        const value = event.target.value;
+
+                        patchDraft(
+                          record.subscription_name,
+                          value === "__create__"
+                            ? {
+                                createProduct: true,
+                                productId: "",
+                              }
+                            : {
+                                createProduct: false,
+                                productId: value,
+                              },
+                        );
+                      }}
                       className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <option value="">{strings.selectProductPlaceholder}</option>
+                      <option value="__create__">{strings.createProductOption}</option>
                       {sortedProducts.map((product) => (
                         <option key={product.id} value={product.id}>
                           {product.name}
@@ -330,6 +357,24 @@ export function PleskSubscriptionImporter({
                     </select>
                   </label>
                 </div>
+
+                {draft.createProduct ? (
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <label className="grid gap-2 text-sm font-medium text-foreground">
+                      <span>{strings.createProductNameLabel}</span>
+                      <input
+                        value={draft.productName}
+                        disabled={disabled}
+                        onChange={(event) =>
+                          patchDraft(record.subscription_name, {
+                            productName: event.target.value,
+                          })
+                        }
+                        className="rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                    </label>
+                  </div>
+                ) : null}
 
                 {!draft.clientId && !record.matched_client ? (
                   <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -419,6 +464,8 @@ function buildDraft(subscriptionName: string, record: PleskImportPreviewRecord |
   return {
     selected: false,
     productId: record?.suggested_product?.id ?? "",
+    createProduct: false,
+    productName: record?.service_plan ?? record?.domain ?? subscriptionName,
     clientId: "",
     clientEmail: record?.email ?? "",
     companyName: record?.owner_name ?? record?.domain ?? subscriptionName,

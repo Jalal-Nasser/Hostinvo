@@ -12,6 +12,29 @@ use Throwable;
 
 class PleskApiClient
 {
+    public function listServicePlans(Server $server): array
+    {
+        $response = $this->servicePlanCommand($server, ['--list']);
+        $stdout = trim((string) Arr::get($response, 'stdout', ''));
+
+        if ($stdout === '') {
+            return [];
+        }
+
+        return collect(preg_split('/\r\n|\r|\n/', $stdout) ?: [])
+            ->map(static fn (string $line): string => trim($line))
+            ->filter(static fn (string $line): bool => $line !== '')
+            ->values()
+            ->all();
+    }
+
+    public function servicePlanInfo(Server $server, string $plan): array
+    {
+        $response = $this->servicePlanCommand($server, ['--info', trim($plan)]);
+
+        return $this->parseInfoResponse($response);
+    }
+
     public function listSubscriptions(Server $server): array
     {
         $response = $this->subscriptionCommand($server, ['--list']);
@@ -32,7 +55,7 @@ class PleskApiClient
     {
         $response = $this->subscriptionCommand($server, ['--info', trim($subscription)]);
 
-        return $this->parseSubscriptionInfoResponse($response);
+        return $this->parseInfoResponse($response);
     }
 
     public function testConnection(Server $server): array
@@ -57,6 +80,19 @@ class PleskApiClient
             path: '/cli/subscription/call',
             payload: ['params' => array_values($parameters)],
             operation: 'subscription',
+            cliCommand: true,
+            safeRequestPayload: ['params' => $this->sanitizeCliParameters($parameters)],
+        );
+    }
+
+    public function servicePlanCommand(Server $server, array $parameters): array
+    {
+        return $this->request(
+            server: $server,
+            method: 'POST',
+            path: '/cli/service_plan/call',
+            payload: ['params' => array_values($parameters)],
+            operation: 'service_plan',
             cliCommand: true,
             safeRequestPayload: ['params' => $this->sanitizeCliParameters($parameters)],
         );
@@ -172,7 +208,7 @@ class PleskApiClient
         return $payload === [] ? [] : ['json' => $payload];
     }
 
-    private function parseSubscriptionInfoResponse(array $response): array
+    private function parseInfoResponse(array $response): array
     {
         $info = [];
         $data = Arr::get($response, 'data');

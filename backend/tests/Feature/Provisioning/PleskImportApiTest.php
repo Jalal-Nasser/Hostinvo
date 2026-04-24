@@ -240,6 +240,80 @@ class PleskImportApiTest extends TestCase
         $this->assertSame(1, $server->fresh()->current_accounts);
     }
 
+    public function test_tenant_admin_can_create_product_inline_when_importing_custom_plesk_subscription(): void
+    {
+        [$tenant, $user, $server] = $this->createImportContext(withExistingClient: false);
+
+        Sanctum::actingAs($user);
+
+        Http::fake(function (Request $request) {
+            $payload = json_decode($request->body(), true);
+            $params = $payload['params'] ?? [];
+
+            return match ($params[0] ?? null) {
+                '--info' => Http::response([
+                    'code' => 0,
+                    'stdout' => implode("\n", [
+                        'Subscription: canadian-mcsa.com',
+                        'Status: Active',
+                        'Contact email: billing@canadian-mcsa.com',
+                        'Customer name: Canadian MCSA',
+                        'Disk space: 498 MB',
+                        'Hard disk quota: Unlimited (not supported)',
+                        'Traffic: 0 B/Month',
+                        'Traffic limit: 70.0 GB',
+                    ]),
+                    'stderr' => '',
+                ], 200),
+                default => Http::response(['code' => 1, 'stderr' => 'Unsupported command'], 200),
+            };
+        });
+
+        $response = $this->postJson("/api/v1/admin/servers/{$server->id}/imports/plesk-subscriptions", [
+            'imports' => [
+                [
+                    'subscription_name' => 'canadian-mcsa.com',
+                    'product' => [
+                        'name' => 'Canadian MCSA Hosting',
+                    ],
+                ],
+            ],
+        ]);
+
+        $productId = $response->json('data.imported.0.product.id');
+        $serviceId = $response->json('data.imported.0.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.imported.0.domain', 'canadian-mcsa.com')
+            ->assertJsonPath('data.imported.0.product.name', 'Canadian MCSA Hosting');
+
+        $this->assertDatabaseHas('products', [
+            'id' => $productId,
+            'tenant_id' => $tenant->id,
+            'server_id' => $server->id,
+            'name' => 'Canadian MCSA Hosting',
+            'provisioning_module' => Product::MODULE_PLESK,
+            'provisioning_package' => null,
+            'visibility' => Product::VISIBILITY_HIDDEN,
+        ]);
+
+        $this->assertDatabaseHas('product_pricing', [
+            'tenant_id' => $tenant->id,
+            'product_id' => $productId,
+            'billing_cycle' => ProductPricing::CYCLE_MONTHLY,
+            'price' => 0,
+        ]);
+
+        $this->assertDatabaseHas('services', [
+            'id' => $serviceId,
+            'tenant_id' => $tenant->id,
+            'product_id' => $productId,
+            'server_id' => $server->id,
+            'domain' => 'canadian-mcsa.com',
+        ]);
+    }
+
     /**
      * @return array{0: Tenant, 1: User, 2: Server, 3: Product, 4?: Client}
      */
