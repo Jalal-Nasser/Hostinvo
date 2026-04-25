@@ -9,11 +9,11 @@ use App\Contracts\Repositories\Orders\OrderRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ProvisioningJobRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServerRepositoryInterface;
 use App\Contracts\Repositories\Provisioning\ServiceRepositoryInterface;
+use App\Models\OrderItem;
 use App\Models\ProvisioningJob;
 use App\Models\ProvisioningLog;
 use App\Models\Server;
 use App\Models\Service;
-use App\Models\OrderItem;
 use App\Models\User;
 use App\Provisioning\Contracts\ProvisioningDriverInterface;
 use App\Provisioning\Data\ProvisioningContext;
@@ -694,7 +694,7 @@ class ProvisioningService
                 $context,
                 $operation,
                 fn () => $driver->suspendAccount(
-                    $this->resolveDriverAccountIdentifier($context),
+                    $this->resolveLifecycleAccountIdentifier($context),
                     (string) ($context->payload['reason'] ?? 'Suspended by Hostinvo.')
                 ),
             ),
@@ -702,13 +702,13 @@ class ProvisioningService
                 $driver,
                 $context,
                 $operation,
-                fn () => $driver->unsuspendAccount($this->resolveDriverAccountIdentifier($context)),
+                fn () => $driver->unsuspendAccount($this->resolveLifecycleAccountIdentifier($context)),
             ),
             ProvisioningJob::OPERATION_TERMINATE_ACCOUNT => $this->handleBooleanOperation(
                 $driver,
                 $context,
                 $operation,
-                fn () => $driver->terminateAccount($this->resolveDriverAccountIdentifier($context)),
+                fn () => $driver->terminateAccount($this->resolveLifecycleAccountIdentifier($context)),
             ),
             ProvisioningJob::OPERATION_CHANGE_PACKAGE => $this->handleBooleanOperation(
                 $driver,
@@ -936,6 +936,23 @@ class ProvisioningService
         }
 
         return $identifier;
+    }
+
+    private function resolveLifecycleAccountIdentifier(ProvisioningContext $context): string
+    {
+        if ($context->server->panel_type === Server::PANEL_PLESK) {
+            $identifier = trim((string) ($context->service->external_id ?? ''));
+
+            if ($identifier === '') {
+                throw ValidationException::withMessages([
+                    'external_id' => ['A Plesk subscription external_id is required for lifecycle operations.'],
+                ]);
+            }
+
+            return $identifier;
+        }
+
+        return $this->resolveDriverAccountIdentifier($context);
     }
 
     private function inferServerIp(Server $server): string
@@ -1235,7 +1252,7 @@ class ProvisioningService
 
     private function persistProvisioningSecret(Service $service, string $operation, ?string $plainPassword = null): string
     {
-        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential();
+        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential;
 
         $resolvedPassword = filled($plainPassword)
             ? trim((string) $plainPassword)
@@ -1266,7 +1283,7 @@ class ProvisioningService
 
     private function syncServiceCredentialRecord(Service $service, array $attributes): void
     {
-        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential();
+        $credential = $service->credentials()->first() ?? new \App\Models\ServiceCredential;
 
         $credential->tenant_id = $service->tenant_id;
         $credential->service_id = $service->id;

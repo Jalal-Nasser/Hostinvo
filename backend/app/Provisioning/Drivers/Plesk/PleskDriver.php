@@ -108,16 +108,12 @@ class PleskDriver implements ProvisioningDriverInterface
 
     public function suspendAccount(string $username, string $reason): bool
     {
-        $subscription = trim($username);
-
-        $response = $this->client->subscriptionCommand($this->server(), [
-            '--webspace-off',
-            $subscription,
-        ]);
+        $subscriptionId = trim($username);
+        $response = $this->client->updateSubscriptionStatus($this->server(), $subscriptionId, 'suspended');
 
         $this->rememberTelemetry(
-            ['subscription' => $subscription, 'reason' => $reason],
-            $this->summarizeResponse($response, $subscription),
+            ['subscription_id' => $subscriptionId, 'status' => 'suspended', 'reason' => $reason],
+            $this->summarizeResponse($response, $subscriptionId),
         );
 
         return true;
@@ -125,16 +121,12 @@ class PleskDriver implements ProvisioningDriverInterface
 
     public function unsuspendAccount(string $username): bool
     {
-        $subscription = trim($username);
-
-        $response = $this->client->subscriptionCommand($this->server(), [
-            '--webspace-on',
-            $subscription,
-        ]);
+        $subscriptionId = trim($username);
+        $response = $this->client->updateSubscriptionStatus($this->server(), $subscriptionId, 'active');
 
         $this->rememberTelemetry(
-            ['subscription' => $subscription],
-            $this->summarizeResponse($response, $subscription),
+            ['subscription_id' => $subscriptionId, 'status' => 'active'],
+            $this->summarizeResponse($response, $subscriptionId),
         );
 
         return true;
@@ -142,16 +134,12 @@ class PleskDriver implements ProvisioningDriverInterface
 
     public function terminateAccount(string $username): bool
     {
-        $subscription = trim($username);
-
-        $response = $this->client->subscriptionCommand($this->server(), [
-            '--remove',
-            $subscription,
-        ]);
+        $subscriptionId = trim($username);
+        $response = $this->client->deleteSubscription($this->server(), $subscriptionId);
 
         $this->rememberTelemetry(
-            ['subscription' => $subscription],
-            $this->summarizeResponse($response, $subscription),
+            ['subscription_id' => $subscriptionId],
+            $this->summarizeResponse($response, $subscriptionId),
         );
 
         return true;
@@ -396,6 +384,8 @@ class PleskDriver implements ProvisioningDriverInterface
             'driver' => $this->code(),
             'subscription' => $subscription,
             'service_plan' => $servicePlan,
+            'http_status' => Arr::get($response, 'http_status'),
+            'status' => Arr::get($response, 'status'),
             'code' => Arr::get($response, 'code'),
             'stdout' => filled(Arr::get($response, 'stdout')) ? Str::limit((string) Arr::get($response, 'stdout'), 400) : null,
             'stderr' => filled(Arr::get($response, 'stderr')) ? Str::limit((string) Arr::get($response, 'stderr'), 400) : null,

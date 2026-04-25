@@ -82,6 +82,32 @@ class PleskApiClient
         return $this->parseInfoResponse($response);
     }
 
+    public function updateSubscriptionStatus(Server $server, string $subscriptionId, string $status): array
+    {
+        $subscriptionId = trim($subscriptionId);
+        $status = trim($status);
+
+        return $this->request(
+            server: $server,
+            method: 'PUT',
+            path: sprintf('/subscriptions/%s/status', rawurlencode($subscriptionId)),
+            payload: ['status' => $status],
+            operation: 'subscription_status',
+        );
+    }
+
+    public function deleteSubscription(Server $server, string $subscriptionId): array
+    {
+        $subscriptionId = trim($subscriptionId);
+
+        return $this->request(
+            server: $server,
+            method: 'DELETE',
+            path: sprintf('/subscriptions/%s', rawurlencode($subscriptionId)),
+            operation: 'subscription_delete',
+        );
+    }
+
     public function testConnection(Server $server): array
     {
         $payload = $this->request($server, 'GET', '/server');
@@ -132,7 +158,7 @@ class PleskApiClient
         ?array $safeRequestPayload = null,
     ): array {
         $config = PleskConnectionConfig::fromServer($server);
-        $url = rtrim($config->apiBaseUrl, '/') . '/' . ltrim($path, '/');
+        $url = rtrim($config->apiBaseUrl, '/').'/'.ltrim($path, '/');
         $response = null;
         $exception = null;
 
@@ -145,6 +171,7 @@ class PleskApiClient
 
                 if ($attempt < $config->retryTimes) {
                     usleep($config->retrySleepMs * 1000);
+
                     continue;
                 }
             } catch (Throwable $caught) {
@@ -153,6 +180,7 @@ class PleskApiClient
 
             if ($response?->serverError() && $attempt < $config->retryTimes) {
                 usleep($config->retrySleepMs * 1000);
+
                 continue;
             }
 
@@ -190,6 +218,10 @@ class PleskApiClient
         }
 
         if (! is_array($body)) {
+            if (trim($response->body()) === '') {
+                return ['http_status' => $response->status()];
+            }
+
             throw new ProvisioningException(
                 __('provisioning.plesk.invalid_response'),
                 requestPayload: $requestPayload,
@@ -313,6 +345,7 @@ class PleskApiClient
             if ($redactNext) {
                 $sanitized[] = '[REDACTED]';
                 $redactNext = false;
+
                 continue;
             }
 

@@ -253,6 +253,7 @@ class PleskMonitoringApiTest extends TestCase
             'domain' => 'lifecycle.example.test',
             'username' => 'plesklife1',
             'external_reference' => 'lifecycle.example.test',
+            'external_id' => '1001',
         ]);
 
         Sanctum::actingAs($user);
@@ -280,6 +281,22 @@ class PleskMonitoringApiTest extends TestCase
         ];
 
         Http::fake(function (Request $request) use (&$infoResponses) {
+            if (str_starts_with($request->url(), 'https://192.0.2.20:8443/api/v2/subscriptions/1001')) {
+                $payload = json_decode($request->body(), true) ?: [];
+
+                if ($request->method() === 'PUT' && $request->url() === 'https://192.0.2.20:8443/api/v2/subscriptions/1001/status') {
+                    return match ($payload['status'] ?? null) {
+                        'suspended' => Http::response([], 200),
+                        'active' => Http::response([], 200),
+                        default => Http::response(['message' => 'Invalid status'], 422),
+                    };
+                }
+
+                if ($request->method() === 'DELETE' && $request->url() === 'https://192.0.2.20:8443/api/v2/subscriptions/1001') {
+                    return Http::response('', 204);
+                }
+            }
+
             if ($request->url() !== 'https://192.0.2.20:8443/api/v2/cli/subscription/call') {
                 return Http::response([], 404);
             }
@@ -294,8 +311,6 @@ class PleskMonitoringApiTest extends TestCase
             $operation = $params[0] ?? null;
 
             return match ($operation) {
-                '--webspace-off' => Http::response(['code' => 0, 'stdout' => 'Status: Suspended', 'stderr' => ''], 200),
-                '--webspace-on' => Http::response(['code' => 0, 'stdout' => 'Status: Active', 'stderr' => ''], 200),
                 '--switch-subscription' => Http::response(['code' => 0, 'stdout' => 'Service plan: Plesk Shared Plus', 'stderr' => ''], 200),
                 '--update' => Http::response(['code' => 0, 'stdout' => 'Password updated', 'stderr' => ''], 200),
                 '--info' => Http::response([
@@ -303,7 +318,6 @@ class PleskMonitoringApiTest extends TestCase
                     'stdout' => array_shift($infoResponses) ?? 'Status: Active',
                     'stderr' => '',
                 ], 200),
-                '--remove' => Http::response(['code' => 0, 'stdout' => 'Subscription removed', 'stderr' => ''], 200),
                 default => Http::response(['code' => 1, 'stderr' => 'Unsupported test operation'], 200),
             };
         });
@@ -397,5 +411,14 @@ class PleskMonitoringApiTest extends TestCase
         ]);
 
         $this->assertSame(0, $server->fresh()->current_accounts);
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+            && $request->url() === 'https://192.0.2.20:8443/api/v2/subscriptions/1001/status'
+            && (json_decode($request->body(), true)['status'] ?? null) === 'suspended');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+            && $request->url() === 'https://192.0.2.20:8443/api/v2/subscriptions/1001/status'
+            && (json_decode($request->body(), true)['status'] ?? null) === 'active');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'DELETE'
+            && $request->url() === 'https://192.0.2.20:8443/api/v2/subscriptions/1001');
     }
 }

@@ -5,9 +5,11 @@ namespace Tests\Feature\Provisioning;
 use App\Models\Client;
 use App\Models\Product;
 use App\Models\ProductPricing;
+use App\Models\ProvisioningJob;
 use App\Models\Server;
 use App\Models\Service;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -121,6 +123,63 @@ class PleskServiceSyncCommandTest extends TestCase
             'external_id' => null,
             'status' => Service::STATUS_PENDING,
         ]);
+    }
+
+    public function test_it_tests_plesk_service_actions_using_external_id(): void
+    {
+        [$tenant, $server, $product, $client] = $this->createSyncContext();
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'plesk-actions@example.test',
+        ]);
+        $server->forceFill(['account_count' => 1])->save();
+
+        $service = $this->createService($tenant, $product, $client, [
+            'user_id' => $user->id,
+            'server_id' => $server->id,
+            'reference_number' => 'SVC-PLESK-ACTIONS',
+            'status' => Service::STATUS_ACTIVE,
+            'provisioning_state' => Service::PROVISIONING_SYNCED,
+            'domain' => 'actions.example.test',
+            'username' => 'actionsuser',
+            'external_reference' => 'actions.example.test',
+            'external_id' => 'sub-actions-501',
+        ]);
+
+        Http::fake(function (Request $request) {
+            $this->assertTrue(
+                $request->hasHeader('Authorization', 'Basic '.base64_encode('admin:plesk-sync-key'))
+            );
+
+            return match ([$request->method(), $request->url()]) {
+                ['PUT', 'https://192.0.2.70:8443/api/v2/subscriptions/sub-actions-501/status'] => Http::response([], 200),
+                ['DELETE', 'https://192.0.2.70:8443/api/v2/subscriptions/sub-actions-501'] => Http::response('', 204),
+                default => Http::response(['message' => 'Unexpected request'], 404),
+            };
+        });
+
+        $this->artisan('plesk:test-service-actions', [
+            '--service' => $service->id,
+        ])
+            ->expectsOutputToContain('Plesk service action test completed.')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('services', [
+            'id' => $service->id,
+            'status' => Service::STATUS_TERMINATED,
+            'provisioning_state' => Service::PROVISIONING_SYNCED,
+        ]);
+        $this->assertSame(0, $server->fresh()->current_accounts);
+        $this->assertSame(3, ProvisioningJob::query()->where('service_id', $service->id)->where('status', ProvisioningJob::STATUS_COMPLETED)->count());
+        Http::assertSentCount(3);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+            && $request->url() === 'https://192.0.2.70:8443/api/v2/subscriptions/sub-actions-501/status'
+            && (json_decode($request->body(), true)['status'] ?? null) === 'suspended');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+            && $request->url() === 'https://192.0.2.70:8443/api/v2/subscriptions/sub-actions-501/status'
+            && (json_decode($request->body(), true)['status'] ?? null) === 'active');
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'DELETE'
+            && $request->url() === 'https://192.0.2.70:8443/api/v2/subscriptions/sub-actions-501');
     }
 
     /**

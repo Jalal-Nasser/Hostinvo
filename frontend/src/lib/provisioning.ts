@@ -700,10 +700,14 @@ export async function dispatchProvisioningOperation(
 
   if (!response.ok) {
     const errorPayload = (await response.json().catch(() => null)) as
-      | { message?: string }
+      | { message?: string; errors?: Record<string, string[]> }
       | null;
 
-    throw new Error(errorPayload?.message ?? "Unable to dispatch the provisioning operation.");
+    const validationMessage = errorPayload?.errors
+      ? Object.values(errorPayload.errors).flat().find(Boolean)
+      : null;
+
+    throw new Error(validationMessage ?? errorPayload?.message ?? "Unable to dispatch the provisioning operation.");
   }
 
   const data = (await response.json()) as { data: ProvisioningJobRecord };
