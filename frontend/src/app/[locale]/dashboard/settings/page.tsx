@@ -6,6 +6,7 @@ import { tenantAdminCopy } from "@/components/tenant-admin/copy";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
+  hasRole,
   isPlatformOwnerContext,
   localePath,
 } from "@/lib/auth";
@@ -27,6 +28,7 @@ export default async function SettingsPage({
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
   const isPlatformOwner = isPlatformOwnerContext(user);
+  const isTenantAdmin = hasRole(user, "tenant_admin") && !isPlatformOwner;
 
   const cards = [
     {
@@ -71,6 +73,16 @@ export default async function SettingsPage({
       description: copy.settings.paymentGatewaysDescription,
       href: localePath(params.locale, "/dashboard/settings/payments"),
     },
+    ...(isTenantAdmin
+      ? [
+          {
+            key: "import-whmcs",
+            title: "WHMCS Migration",
+            description: "Prepare and review WHMCS import workflows for this tenant workspace.",
+            href: localePath(params.locale, "/dashboard/settings/import/whmcs"),
+          },
+        ]
+      : []),
   ];
 
   if (isPlatformOwner) {

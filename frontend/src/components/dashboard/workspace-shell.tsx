@@ -60,6 +60,7 @@ type WorkspaceNavItem = {
     | "provisioning"
     | "tenants";
   group?: WorkspaceNavGroup;
+  children?: WorkspaceNavItem[];
 };
 
 function SidebarIcon({ icon }: { icon: WorkspaceNavItem["icon"] }) {
@@ -173,20 +174,36 @@ function SidebarIcon({ icon }: { icon: WorkspaceNavItem["icon"] }) {
   }
 }
 
-function SidebarLink({ item }: { item: WorkspaceNavItem }) {
+function SidebarLink({ item, depth = 0 }: { item: WorkspaceNavItem; depth?: number }) {
   return (
-    <Link
-      href={item.href}
-      className={[
-        "dashboard-sidebar-link",
-        item.active ? "dashboard-sidebar-link-active" : "",
-      ].join(" ")}
-    >
-      <span className="dashboard-sidebar-icon">
-        <SidebarIcon icon={item.icon} />
-      </span>
-      <span className="truncate">{item.label}</span>
-    </Link>
+    <div>
+      <Link
+        href={item.href}
+        className={[
+          "dashboard-sidebar-link",
+          item.active ? "dashboard-sidebar-link-active" : "",
+          depth > 0 ? "ps-9 text-[12.5px]" : "",
+        ].join(" ")}
+      >
+        {depth === 0 ? (
+          <span className="dashboard-sidebar-icon">
+            <SidebarIcon icon={item.icon} />
+          </span>
+        ) : (
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-45" />
+        )}
+        <span className="truncate">{item.label}</span>
+      </Link>
+      {item.children?.some((child) => child.visible) ? (
+        <div className="mt-0.5 space-y-0.5">
+          {item.children
+            .filter((child) => child.visible)
+            .map((child) => (
+              <SidebarLink key={child.href} item={child} depth={depth + 1} />
+            ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -230,6 +247,7 @@ export async function WorkspaceShell({
   const isPlatformOwner = isPlatformOwnerContext(user);
   const hasPortalWorkspace = canAccessClientPortal(user);
   const hasTenantContextReturn = hasRole(user, "super_admin") && hasActiveTenantContext(user);
+  const isTenantAdmin = hasRole(user, "tenant_admin") && !isPlatformOwner;
   const overviewHref = hasAdminWorkspace
     ? localePath(locale, "/dashboard")
     : defaultWorkspacePath(locale, user);
@@ -396,6 +414,24 @@ export async function WorkspaceShell({
       visible: hasAdminWorkspace,
       icon: "settings",
       group: "catalog",
+      children: [
+        {
+          href: localePath(locale, "/dashboard/settings/import/whmcs"),
+          label: locale === "ar" ? "Import" : "Import",
+          active: currentPath === "/dashboard/settings/import/whmcs",
+          visible: isTenantAdmin,
+          icon: "settings",
+          children: [
+            {
+              href: localePath(locale, "/dashboard/settings/import/whmcs"),
+              label: locale === "ar" ? "WHMCS Migration" : "WHMCS Migration",
+              active: currentPath === "/dashboard/settings/import/whmcs",
+              visible: isTenantAdmin,
+              icon: "settings",
+            },
+          ],
+        },
+      ],
     },
   ];
 
