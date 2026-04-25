@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ServiceOperationPanel } from "@/components/provisioning/service-operation-panel";
+import { ServiceDuplicateButton } from "@/components/provisioning/service-duplicate-button";
 import { ProvisioningJobRetryButton } from "@/components/provisioning/provisioning-job-retry-button";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
@@ -70,6 +71,13 @@ export default async function ServiceDetailsPage({
               {t("viewServerButton")}
             </Link>
           ) : null}
+          <Link
+            className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+            href={localePath(params.locale, `/dashboard/services/${service.id}/edit`)}
+          >
+            {t("editServiceButton")}
+          </Link>
+          <ServiceDuplicateButton serviceId={service.id} />
           <Link
             className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/services")}

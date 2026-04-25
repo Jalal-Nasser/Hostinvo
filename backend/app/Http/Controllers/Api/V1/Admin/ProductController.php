@@ -50,6 +50,18 @@ class ProductController extends Controller
         );
     }
 
+    public function duplicate(Product $product, ProductService $productService): JsonResponse
+    {
+        $this->authorize('create', Product::class);
+        $this->authorize('view', $product);
+
+        $copy = $productService->duplicate($product, request()->user());
+
+        return (new ProductResource($copy))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
+    }
+
     public function destroy(Product $product, ProductService $productService): Response
     {
         $this->authorize('delete', $product);

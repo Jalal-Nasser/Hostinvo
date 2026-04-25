@@ -197,5 +197,26 @@ class ProvisioningFoundationApiTest extends TestCase
         $this->getJson('/api/v1/admin/provisioning-jobs')
             ->assertOk()
             ->assertJsonPath('data.0.service_id', $serviceId);
+
+        $duplicateResponse = $this->postJson("/api/v1/admin/services/{$serviceId}/duplicate");
+        $duplicateId = $duplicateResponse->json('data.id');
+
+        $duplicateResponse
+            ->assertCreated()
+            ->assertJsonPath('data.client.id', $client->id)
+            ->assertJsonPath('data.product.id', $product->id)
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.provisioning_state', 'idle')
+            ->assertJsonPath('data.domain', 'customer.example.test-copy')
+            ->assertJsonPath('data.external_reference', null);
+
+        $this->assertNotSame($serviceId, $duplicateId);
+        $this->assertDatabaseHas('services', [
+            'id' => $duplicateId,
+            'client_id' => $client->id,
+            'product_id' => $product->id,
+            'status' => 'pending',
+            'provisioning_state' => 'idle',
+        ]);
     }
 }

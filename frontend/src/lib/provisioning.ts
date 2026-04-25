@@ -1,4 +1,4 @@
-import { apiBaseUrl, statefulApiHeaders } from "@/lib/auth";
+import { apiBaseUrl, ensureCsrfCookie, readBrowserCookie, statefulApiHeaders } from "@/lib/auth";
 import { type BillingCycle } from "@/lib/catalog";
 
 export const serviceStatuses = [
@@ -613,6 +613,34 @@ export async function fetchServiceFromCookies(
 
   if (!response.ok) {
     return null;
+  }
+
+  const payload = (await response.json()) as { data: ServiceRecord };
+
+  return payload.data;
+}
+
+export async function duplicateService(serviceId: string): Promise<ServiceRecord> {
+  await ensureCsrfCookie();
+
+  const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+  const response = await fetch(`${apiBaseUrl}/admin/services/${serviceId}/duplicate`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+    },
+  });
+
+  if (!response.ok) {
+    const errorPayload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+
+    throw new Error(errorPayload?.message ?? "Unable to duplicate the service.");
   }
 
   const payload = (await response.json()) as { data: ServiceRecord };

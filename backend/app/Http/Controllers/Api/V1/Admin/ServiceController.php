@@ -50,6 +50,18 @@ class ServiceController extends Controller
         );
     }
 
+    public function duplicate(Service $service, ProvisioningService $provisioningService): JsonResponse
+    {
+        $this->authorize('create', Service::class);
+        $this->authorize('view', $service);
+
+        $copy = $provisioningService->duplicateService($service, request()->user());
+
+        return (new ServiceResource($copy))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
+    }
+
     public function destroy(Service $service, ProvisioningService $provisioningService): Response
     {
         $this->authorize('delete', $service);

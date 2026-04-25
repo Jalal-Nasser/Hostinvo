@@ -14,6 +14,8 @@ type ServiceFormProps = {
   clients: ClientRecord[];
   products: ProductRecord[];
   servers: ServerRecord[];
+  initialService?: ServiceRecord | null;
+  mode?: "create" | "edit";
 };
 
 function readCookie(name: string): string | null {
@@ -51,19 +53,19 @@ function firstErrorFromPayload(payload: {
   return Object.values(payload.errors)[0]?.[0] ?? null;
 }
 
-export function ServiceForm({ clients, products, servers }: ServiceFormProps) {
+export function ServiceForm({ clients, products, servers, initialService = null, mode = "create" }: ServiceFormProps) {
   const t = useTranslations("Provisioning");
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [clientId, setClientId] = useState("");
-  const [productId, setProductId] = useState("");
-  const [serverId, setServerId] = useState("");
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const [domain, setDomain] = useState("");
-  const [username, setUsername] = useState("");
-  const [notes, setNotes] = useState("");
+  const [clientId, setClientId] = useState(initialService?.client_id ?? "");
+  const [productId, setProductId] = useState(initialService?.product_id ?? "");
+  const [serverId, setServerId] = useState(initialService?.server_id?.toString() ?? "");
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(initialService?.billing_cycle ?? "monthly");
+  const [domain, setDomain] = useState(initialService?.domain ?? "");
+  const [username, setUsername] = useState(initialService?.username ?? "");
+  const [notes, setNotes] = useState(initialService?.notes ?? "");
 
   function handleProductChange(nextProductId: string) {
     const product = products.find((item) => item.id === nextProductId);
@@ -83,8 +85,12 @@ export function ServiceForm({ clients, products, servers }: ServiceFormProps) {
         await ensureCsrfCookie();
 
         const xsrfToken = readCookie("XSRF-TOKEN");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/services`, {
-          method: "POST",
+        const endpoint = mode === "create"
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/services`
+          : `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/services/${initialService?.id}`;
+
+        const response = await fetch(endpoint, {
+          method: mode === "create" ? "POST" : "PUT",
           credentials: "include",
           headers: {
             Accept: "application/json",
@@ -198,7 +204,7 @@ export function ServiceForm({ clients, products, servers }: ServiceFormProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <button className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60" disabled={isPending} onClick={submit} type="button">
-          {isPending ? t("saving") : t("createServiceButton")}
+          {isPending ? t("saving") : mode === "create" ? t("createServiceButton") : t("updateServiceButton")}
         </button>
         <Link className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft" href={localePath(locale, "/dashboard/services")}>
           {t("cancelButton")}

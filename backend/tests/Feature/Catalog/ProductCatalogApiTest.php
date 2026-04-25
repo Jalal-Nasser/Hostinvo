@@ -227,6 +227,24 @@ class ProductCatalogApiTest extends TestCase
         $this->getJson('/api/v1/admin/product-groups')
             ->assertOk()
             ->assertJsonPath('data.0.id', $groupId);
+
+        $duplicateResponse = $this->postJson("/api/v1/admin/products/{$productId}/duplicate");
+        $duplicateId = $duplicateResponse->json('data.id');
+
+        $duplicateResponse
+            ->assertCreated()
+            ->assertJsonPath('data.name', 'Copy of Starter Hosting Plus')
+            ->assertJsonPath('data.status', Product::STATUS_DRAFT)
+            ->assertJsonPath('data.visibility', Product::VISIBILITY_HIDDEN)
+            ->assertJsonFragment(['billing_cycle' => 'monthly'])
+            ->assertJsonPath('data.configurable_options.0.name', 'Storage');
+
+        $this->assertNotSame($productId, $duplicateId);
+        $this->assertDatabaseHas('product_pricing', [
+            'tenant_id' => $tenant->id,
+            'product_id' => $duplicateId,
+            'billing_cycle' => 'monthly',
+        ]);
     }
 
     public function test_tenant_admin_can_manage_product_addons(): void

@@ -101,6 +101,66 @@ class ProvisioningService
         });
     }
 
+    public function duplicateService(Service $service, User $actor): Service
+    {
+        return DB::transaction(function () use ($service, $actor): Service {
+            if ($service->tenant_id !== $actor->tenant_id) {
+                throw ValidationException::withMessages([
+                    'service' => ['The selected service is invalid for the current tenant.'],
+                ]);
+            }
+
+            $copy = $this->services->create([
+                'tenant_id' => $service->tenant_id,
+                'client_id' => $service->client_id,
+                'product_id' => $service->product_id,
+                'order_id' => null,
+                'order_item_id' => null,
+                'user_id' => $actor->id,
+                'server_id' => $service->server_id,
+                'server_package_id' => $service->server_package_id,
+                'reference_number' => $this->generateReferenceNumber(),
+                'service_type' => $service->service_type,
+                'status' => Service::STATUS_PENDING,
+                'provisioning_state' => Service::PROVISIONING_IDLE,
+                'billing_cycle' => $service->billing_cycle,
+                'price' => $service->price,
+                'currency' => $service->currency,
+                'domain' => $this->duplicateNullableIdentifier($service->domain),
+                'username' => $this->duplicateNullableIdentifier($service->username),
+                'registration_date' => now()->toDateString(),
+                'next_due_date' => $service->next_due_date?->toDateString(),
+                'termination_date' => null,
+                'external_reference' => null,
+                'last_operation' => null,
+                'activated_at' => null,
+                'suspended_at' => null,
+                'terminated_at' => null,
+                'last_synced_at' => null,
+                'notes' => trim((string) collect([
+                    $service->notes,
+                    "Duplicated from service {$service->reference_number}. Review domain and username before provisioning.",
+                ])->filter()->implode("\n")),
+                'metadata' => array_replace_recursive((array) ($service->metadata ?? []), [
+                    'duplicate' => [
+                        'source_service_id' => $service->id,
+                        'source_reference_number' => $service->reference_number,
+                        'duplicated_at' => now()->toIso8601String(),
+                        'duplicated_by_user_id' => $actor->id,
+                    ],
+                ]),
+            ]);
+
+            $this->logger->recordServiceNote(
+                $copy,
+                'Service record duplicated for review before provisioning.',
+                ['source_service_id' => $service->id]
+            );
+
+            return $this->getServiceForDisplay($copy);
+        });
+    }
+
     public function deleteService(Service $service): void
     {
         if ($service->provisioningJobs()->whereIn('status', [
@@ -1242,6 +1302,15 @@ class ProvisioningService
     private function generateReferenceNumber(): string
     {
         return 'SVC-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
+    }
+
+    private function duplicateNullableIdentifier(?string $value): ?string
+    {
+        if (! filled($value)) {
+            return null;
+        }
+
+        return Str::limit($value.'-copy', 255, '');
     }
 
     private function dispatchServiceActivatedNotification(?Service $service): void

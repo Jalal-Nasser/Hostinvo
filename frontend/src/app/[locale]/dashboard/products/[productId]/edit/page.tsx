@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ProductForm } from "@/components/catalog/product-form";
+import { ProductDuplicateButton } from "@/components/catalog/product-duplicate-button";
 import { ProductManagementTabs } from "@/components/catalog/product-management-tabs";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
@@ -44,6 +45,7 @@ export default async function EditProductPage({
           >
             {t("managePricingButton")}
           </Link>
+          <ProductDuplicateButton productId={product.id} />
           <Link
             className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
             href={localePath(params.locale, "/dashboard/products")}

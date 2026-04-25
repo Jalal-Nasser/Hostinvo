@@ -104,6 +104,7 @@ Route::apiResource('product-groups', ProductGroupController::class);
 Route::apiResource('product-addons', ProductAddonController::class)->parameters([
     'product-addons' => 'productAddon',
 ]);
+Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
 Route::apiResource('products', ProductController::class);
 Route::get('products/{product}/pricing', [ProductPricingController::class, 'show'])->name('products.pricing.show');
 Route::put('products/{product}/pricing', [ProductPricingController::class, 'update'])->name('products.pricing.update');
@@ -115,6 +116,7 @@ Route::get('servers/{server}/imports/plesk-subscriptions', [PleskSubscriptionImp
 Route::post('servers/{server}/imports/plesk-subscriptions', [PleskSubscriptionImportController::class, 'store'])->name('servers.imports.plesk-subscriptions.store');
 Route::put('servers/{server}/packages', [ServerPackageController::class, 'update'])->name('servers.packages.update');
 Route::apiResource('servers', ServerController::class);
+Route::post('services/{service}/duplicate', [ServiceController::class, 'duplicate'])->name('services.duplicate');
 Route::post('services/{service}/operations/{operation}', [ServiceProvisioningController::class, 'store'])->name('services.operations.store');
 Route::apiResource('services', ServiceController::class);
 Route::apiResource('tenants', TenantController::class)->only(['index', 'store', 'show', 'update']);

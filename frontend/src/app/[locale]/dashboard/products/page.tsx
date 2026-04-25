@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ProductDuplicateButton } from "@/components/catalog/product-duplicate-button";
 import { type AppLocale } from "@/i18n/routing";
 import { getAuthenticatedUserFromCookies, isPlatformOwnerContext, localePath } from "@/lib/auth";
 import { fetchProductGroupsFromCookies, fetchProductsFromCookies } from "@/lib/catalog";
@@ -182,6 +183,7 @@ export default async function ProductsPage({
                   >
                     {t("managePricingButton")}
                   </Link>
+                  <ProductDuplicateButton productId={product.id} />
                 </div>
               </div>
 

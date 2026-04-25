@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ServiceDuplicateButton } from "@/components/provisioning/service-duplicate-button";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
 import { fetchServicesFromCookies } from "@/lib/provisioning";
@@ -154,6 +155,7 @@ export default async function ServicesPage({
                   >
                     {t("viewServiceButton")}
                   </Link>
+                  <ServiceDuplicateButton serviceId={service.id} />
                 </div>
               </div>
             </article>
