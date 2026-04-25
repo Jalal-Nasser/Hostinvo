@@ -40,6 +40,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'locale',
         'password',
+        'requires_password_reset',
     ];
 
     protected $guarded = [
@@ -68,6 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'email_verification_required' => 'boolean',
+            'requires_password_reset' => 'boolean',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
         ];
