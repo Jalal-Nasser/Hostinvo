@@ -29,6 +29,7 @@ class ServiceResource extends JsonResource
             'domain' => $this->domain,
             'username' => $this->username,
             'external_reference' => $this->external_reference,
+            'external_id' => $this->external_id,
             'last_operation' => $this->last_operation,
             'registration_date' => optional($this->registration_date)?->toDateString(),
             'next_due_date' => optional($this->next_due_date)?->toDateString(),

@@ -51,6 +51,30 @@ class PleskApiClient
             ->all();
     }
 
+    public function listRestSubscriptions(Server $server): array
+    {
+        $payload = $this->request(
+            server: $server,
+            method: 'GET',
+            path: '/subscriptions',
+            operation: 'list_subscriptions',
+        );
+
+        if (array_is_list($payload)) {
+            return $payload;
+        }
+
+        foreach (['subscriptions', 'data', 'items'] as $key) {
+            $records = Arr::get($payload, $key);
+
+            if (is_array($records)) {
+                return array_values($records);
+            }
+        }
+
+        return [];
+    }
+
     public function subscriptionInfo(Server $server, string $subscription): array
     {
         $response = $this->subscriptionCommand($server, ['--info', trim($subscription)]);

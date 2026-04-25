@@ -65,6 +65,7 @@ class Service extends Model
         'status',
         'provisioning_state',
         'external_reference',
+        'external_id',
         'last_operation',
         'activated_at',
         'suspended_at',
