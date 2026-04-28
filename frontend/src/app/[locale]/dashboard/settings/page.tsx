@@ -6,7 +6,6 @@ import { tenantAdminCopy } from "@/components/tenant-admin/copy";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
-  hasRole,
   isPlatformOwnerContext,
   localePath,
 } from "@/lib/auth";
@@ -20,6 +19,24 @@ type SettingsPageProps = {
   };
 };
 
+function MigrationIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.75"
+      viewBox="0 0 24 24"
+    >
+      <path d="M4 7.5h9.5A3.5 3.5 0 0 1 17 11v0a3.5 3.5 0 0 1-3.5 3.5H7" />
+      <path d="m10 11 3.5 3.5L10 18" />
+      <path d="M5 4h14a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 5 4Z" />
+    </svg>
+  );
+}
+
 export default async function SettingsPage({
   params,
 }: Readonly<SettingsPageProps>) {
@@ -28,7 +45,7 @@ export default async function SettingsPage({
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
   const isPlatformOwner = isPlatformOwnerContext(user);
-  const isTenantAdmin = hasRole(user, "tenant_admin") && !isPlatformOwner;
+  const hasTenantSettingsContext = !isPlatformOwner;
 
   const cards = [
     {
@@ -73,17 +90,9 @@ export default async function SettingsPage({
       description: copy.settings.paymentGatewaysDescription,
       href: localePath(params.locale, "/dashboard/settings/payments"),
     },
-    ...(isTenantAdmin
-      ? [
-          {
-            key: "import-whmcs",
-            title: "WHMCS Migration",
-            description: "Prepare and review WHMCS import workflows for this tenant workspace.",
-            href: localePath(params.locale, "/dashboard/settings/import/whmcs"),
-          },
-        ]
-      : []),
   ];
+
+  const migrationHref = localePath(params.locale, "/dashboard/settings/import/whmcs");
 
   if (isPlatformOwner) {
     return (
@@ -195,6 +204,42 @@ export default async function SettingsPage({
       locale={params.locale as AppLocale}
       title={copy.settings.title}
     >
+      {hasTenantSettingsContext ? (
+        <section className="grid gap-4">
+          <div>
+            <p className="dashboard-kicker">Settings</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+              Import & Migration
+            </h2>
+          </div>
+
+          <article className="glass-card p-6 md:p-8">
+            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+              <div className="flex min-w-0 gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#dbeafe] bg-[#eff6ff] text-[#036deb]">
+                  <MigrationIcon />
+                </span>
+                <div className="min-w-0">
+                  <p className="dashboard-kicker">Import & Migration</p>
+                  <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
+                    WHMCS Migration
+                  </h3>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6b7280]">
+                    Import clients, products, and services from an existing WHMCS installation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 md:pt-1">
+                <Link className="btn-primary whitespace-nowrap" href={migrationHref}>
+                  Start Migration
+                </Link>
+              </div>
+            </div>
+          </article>
+        </section>
+      ) : null}
+
       <section className="grid gap-5 xl:grid-cols-3">
         {cards.map((card) => (
           <article key={card.key} className="glass-card p-6 md:p-8">

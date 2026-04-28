@@ -7,7 +7,7 @@ import { StatusBanner } from "@/components/tenant-admin/status-banner";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
-  hasRole,
+  isPlatformOwnerContext,
   localePath,
 } from "@/lib/auth";
 
@@ -39,7 +39,7 @@ export default async function WhmcsImportSettingsPage({
 
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
-  const isTenantAdmin = hasRole(user, "tenant_admin");
+  const hasTenantSettingsContext = !isPlatformOwnerContext(user);
   const actions = (
     <Link
       href={localePath(params.locale, "/dashboard/settings")}
@@ -49,7 +49,7 @@ export default async function WhmcsImportSettingsPage({
     </Link>
   );
 
-  if (!isTenantAdmin) {
+  if (!hasTenantSettingsContext) {
     return (
       <DashboardShell
         actions={actions}
