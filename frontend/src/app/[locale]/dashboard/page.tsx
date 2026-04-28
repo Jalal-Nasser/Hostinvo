@@ -179,29 +179,57 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       title: "Pending Orders",
       value: overview.counters.pending_orders,
       href: localePath(params.locale, "/dashboard/orders"),
-      accent: "bg-[#55b84f]",
-      tone: "bg-[#68c75f]",
+      glow: "rgba(34,197,94,0.18)",
+      border: "rgba(34,197,94,0.25)",
+      valueBg: "rgba(34,197,94,0.12)",
+      valueColor: "#4ade80",
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 7h13l-1.4 7.01A2 2 0 0116.64 16H9.12a2 2 0 01-1.96-1.61L5 4H3m6 16a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm8 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        </svg>
+      ),
     },
     {
       title: "Tickets Waiting",
       value: overview.counters.tickets_waiting,
       href: localePath(params.locale, "/dashboard/tickets"),
-      accent: "bg-[#cf1e6e]",
-      tone: "bg-[#e04890]",
+      glow: "rgba(236,72,153,0.18)",
+      border: "rgba(236,72,153,0.28)",
+      valueBg: "rgba(236,72,153,0.12)",
+      valueColor: "#f472b6",
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 10.5h8M8 14h5m-1-10a8 8 0 00-8 8v5l3-2h5a8 8 0 100-16z" />
+        </svg>
+      ),
     },
     {
       title: "Pending Cancellations",
       value: overview.counters.pending_cancellations,
       href: localePath(params.locale, "/dashboard/services"),
-      accent: "bg-[#d68c10]",
-      tone: "bg-[#efb24f]",
+      glow: "rgba(251,146,60,0.18)",
+      border: "rgba(251,146,60,0.28)",
+      valueBg: "rgba(251,146,60,0.12)",
+      valueColor: "#fb923c",
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 7.5h16M7 4v3.5m10-3.5v3.5M5.5 20h13A1.5 1.5 0 0020 18.5v-11A1.5 1.5 0 0018.5 6h-13A1.5 1.5 0 004 7.5v11A1.5 1.5 0 005.5 20zm2.5-8h3m2 0h3m-8 4h8" />
+        </svg>
+      ),
     },
     {
       title: "Pending Module Actions",
       value: overview.counters.pending_module_actions,
       href: localePath(params.locale, "/dashboard/provisioning"),
-      accent: "bg-[#72b7bd]",
-      tone: "bg-[#8bcbd0]",
+      glow: "rgba(34,211,238,0.18)",
+      border: "rgba(34,211,238,0.25)",
+      valueBg: "rgba(34,211,238,0.10)",
+      valueColor: "#22d3ee",
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
+        </svg>
+      ),
     },
   ];
 
@@ -237,16 +265,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
   const healthTone =
     overview.system_health.rating === "good"
-      ? "text-[#5cb85c]"
+      ? "text-[#4ade80]"
       : overview.system_health.rating === "warning"
-        ? "text-[#d68c10]"
-        : "text-[#dc2626]";
+        ? "text-[#fb923c]"
+        : "text-[#f87171]";
   const healthBar =
     overview.system_health.rating === "good"
-      ? "bg-[#7ecf72]"
+      ? "bg-[#4ade80]"
       : overview.system_health.rating === "warning"
-        ? "bg-[#efb24f]"
-        : "bg-[#ef8c8c]";
+        ? "bg-[#fb923c]"
+        : "bg-[#f87171]";
   const healthLabel =
     overview.system_health.rating === "good"
       ? "Good"
@@ -267,18 +295,31 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         {statTiles.map((tile) => (
           <Link
             key={tile.title}
-            className={[
-              "grid min-h-[96px] grid-cols-[112px_minmax(0,1fr)] overflow-hidden rounded-[4px] text-white",
-              tile.tone,
-            ].join(" ")}
             href={tile.href}
+            style={{ borderColor: tile.border, boxShadow: `0 0 24px ${tile.glow}, inset 0 1px 0 rgba(255,255,255,0.04)` }}
+            className="group relative overflow-hidden rounded-xl border bg-[#101827] p-5 transition-all duration-200 hover:scale-[1.02]"
           >
-            <div className={[tile.accent, "flex items-center justify-center text-[32px] font-semibold"].join(" ")}>
-              {tile.value}
+            {/* Subtle glow blob */}
+            <div
+              className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-30 blur-2xl transition-opacity group-hover:opacity-50"
+              style={{ background: tile.glow }}
+            />
+            <div className="relative flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">{tile.title}</p>
+                <p className="mt-2.5 text-[2.25rem] font-bold leading-none tracking-[-0.04em]" style={{ color: tile.valueColor }}>
+                  {tile.value}
+                </p>
+              </div>
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                style={{ background: tile.valueBg, color: tile.valueColor }}
+              >
+                {tile.icon}
+              </span>
             </div>
-            <div className="flex flex-col justify-center px-5 py-4">
-              <p className="text-[13px] font-medium text-white/95">{tile.title}</p>
-            </div>
+            {/* Bottom accent bar */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${tile.valueColor}88, transparent)` }} />
           </Link>
         ))}
       </section>
@@ -302,9 +343,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         />
 
         <div className="grid gap-5">
-          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-            <div className="border-b border-[#e5e7eb] px-4 py-3">
-              <h2 className="text-[15px] font-medium text-[#1f2937]">Billing</h2>
+          <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+            <div className="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#e5e7eb]">Billing</h2>
             </div>
             <div className="grid grid-cols-2">
               {billingCards.map((item, index) => (
@@ -312,37 +353,37 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   key={item.label}
                   className={[
                     "px-5 py-4",
-                    index < 2 ? "border-b border-[#e5e7eb]" : "",
-                    index % 2 === 0 ? "border-e border-[#e5e7eb]" : "",
+                    index < 2 ? "border-b border-[rgba(255,255,255,0.05)]" : "",
+                    index % 2 === 0 ? "border-e border-[rgba(255,255,255,0.05)]" : "",
                   ].join(" ")}
                 >
-                  <p className={["text-[17px] font-medium", item.tone].join(" ")}>
+                  <p className={["text-[17px] font-semibold", item.tone].join(" ")}>
                     {formatMinorCurrency(item.value, overview.billing.currency, params.locale)}
                   </p>
-                  <p className="mt-1 text-[13px] text-[#6b7280]">{item.label}</p>
+                  <p className="mt-1 text-[13px] text-[#4b5563]">{item.label}</p>
                 </div>
               ))}
             </div>
           </article>
 
-          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-            <div className="border-b border-[#e5e7eb] px-4 py-3">
-              <h2 className="text-[15px] font-medium text-[#1f2937]">Automation Overview</h2>
+          <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+            <div className="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#e5e7eb]">Automation Overview</h2>
             </div>
             <div className="grid grid-cols-2">
-              <div className="border-e border-[#e5e7eb] px-5 py-6 text-center">
-                <div className="mx-auto mb-4 h-8 w-28 border-b-2 border-[#82dbe2]">
-                  <div className="mx-auto h-8 w-0 border-x-[18px] border-b-[28px] border-x-transparent border-b-[#82dbe2]" />
+              <div className="border-e border-[rgba(255,255,255,0.05)] px-5 py-6 text-center">
+                <div className="mx-auto mb-4 h-8 w-28 border-b-2 border-[#22d3ee]">
+                  <div className="mx-auto h-8 w-0 border-x-[18px] border-b-[28px] border-x-transparent border-b-[#22d3ee]" />
                 </div>
-                <p className="text-[13px] text-[#6b7280]">Invoices Created</p>
-                <p className="mt-2 text-[32px] font-medium leading-none text-[#76cad3]">
+                <p className="text-[13px] text-[#4b5563]">Invoices Created</p>
+                <p className="mt-2 text-[32px] font-bold leading-none text-[#22d3ee]">
                   {overview.automation.invoices_created_today}
                 </p>
               </div>
               <div className="px-5 py-6 text-center">
-                <div className="mx-auto mb-4 h-8 w-28 border-b-2 border-[#f1b7d0]" />
-                <p className="text-[13px] text-[#6b7280]">Credit Card Captures</p>
-                <p className="mt-2 text-[32px] font-medium leading-none text-[#f08fb8]">
+                <div className="mx-auto mb-4 h-8 w-28 border-b-2 border-[#f472b6]" />
+                <p className="text-[13px] text-[#4b5563]">Credit Card Captures</p>
+                <p className="mt-2 text-[32px] font-bold leading-none text-[#f472b6]">
                   {overview.automation.credit_card_captures_today}
                 </p>
               </div>
@@ -355,68 +396,69 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         {operations.map((item) => (
           <Link
             key={item.label}
-            className="rounded-[4px] border border-[#d9dee6] bg-white px-4 py-4 transition hover:border-[#c7d2e1]"
+            className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827] px-4 py-4 transition-all duration-150 hover:border-[rgba(59,130,246,0.3)] hover:bg-[#131f33]"
             href={item.href}
+            style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}
           >
-            <p className="text-[12px] uppercase tracking-[0.12em] text-[#6b7280]">{item.label}</p>
-            <p className="mt-2 text-[28px] font-semibold leading-none text-[#111827]">{item.value}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4b5563]">{item.label}</p>
+            <p className="mt-2 text-[28px] font-bold leading-none tracking-[-0.03em] text-[#f1f5fb]">{item.value}</p>
           </Link>
         ))}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-2">
-        <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-[15px] font-medium text-[#1f2937]">Support</h2>
-            <Link className="text-[12px] text-[#036deb]" href={localePath(params.locale, "/dashboard/tickets")}>
+        <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+            <h2 className="text-[15px] font-medium text-[#e5e7eb]">Support</h2>
+            <Link className="text-[12px] text-[#3b82f6] hover:text-[#60a5fa]" href={localePath(params.locale, "/dashboard/tickets")}>
               View all tickets
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4 px-5 py-5">
             <div>
-              <p className="text-[13px] text-[#6b7280]">Awaiting Reply</p>
-              <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+              <p className="text-[13px] text-[#4b5563]">Awaiting Reply</p>
+              <p className="mt-1 text-[30px] font-bold leading-none text-[#f1f5fb]">
                 {overview.support.awaiting_reply}
               </p>
-              <p className="mt-1 text-[13px] text-[#6b7280]">Tickets</p>
+              <p className="mt-1 text-[13px] text-[#4b5563]">Tickets</p>
             </div>
             <div>
-              <p className="text-[13px] text-[#6b7280]">Assigned To You</p>
-              <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+              <p className="text-[13px] text-[#4b5563]">Assigned To You</p>
+              <p className="mt-1 text-[30px] font-bold leading-none text-[#f1f5fb]">
                 {overview.support.assigned_to_you}
               </p>
-              <p className="mt-1 text-[13px] text-[#6b7280]">Tickets</p>
+              <p className="mt-1 text-[13px] text-[#4b5563]">Tickets</p>
             </div>
           </div>
-          <div className="border-t border-[#e5e7eb] px-5 py-3 text-[12px] text-[#4b5563]">
+          <div className="border-t border-[rgba(255,255,255,0.05)] px-5 py-3 text-[12px] text-[#374151]">
             Open tickets and assignments are based on the current tenant queue.
           </div>
         </article>
 
-        <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-[15px] font-medium text-[#1f2937]">System Health</h2>
-            <Link className="text-[12px] text-[#036deb]" href={localePath(params.locale, "/dashboard/provisioning")}>
+        <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+            <h2 className="text-[15px] font-medium text-[#e5e7eb]">System Health</h2>
+            <Link className="text-[12px] text-[#3b82f6] hover:text-[#60a5fa]" href={localePath(params.locale, "/dashboard/provisioning")}>
               View issues
             </Link>
           </div>
           <div className="px-5 py-5">
-            <p className="text-[13px] text-[#6b7280]">Overall Rating</p>
-            <p className={["mt-1 text-[30px] font-medium leading-none", healthTone].join(" ")}>
+            <p className="text-[13px] text-[#4b5563]">Overall Rating</p>
+            <p className={["mt-1 text-[30px] font-bold leading-none", healthTone].join(" ")}>
               {healthLabel}
             </p>
-            <div className="mt-4 h-4 overflow-hidden rounded-[3px] bg-[#edf2f7]">
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#1a2540]">
               <div
-                className={[healthBar, "h-full transition-all"].join(" ")}
+                className={[healthBar, "h-full rounded-full transition-all"].join(" ")}
                 style={{ width: `${overview.system_health.score}%` }}
               />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4 text-[13px]">
-              <div className="text-[#6b7280]">
-                <span className="font-medium text-[#111827]">{overview.system_health.warnings}</span> Warnings
+              <div className="text-[#4b5563]">
+                <span className="font-semibold text-[#e5e7eb]">{overview.system_health.warnings}</span> Warnings
               </div>
-              <div className="text-[#6b7280]">
-                <span className="font-medium text-[#111827]">{overview.system_health.needs_attention}</span>{" "}
+              <div className="text-[#4b5563]">
+                <span className="font-semibold text-[#e5e7eb]">{overview.system_health.needs_attention}</span>{" "}
                 Needing Attention
               </div>
             </div>
@@ -426,67 +468,67 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="grid gap-5">
-          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-            <div className="border-b border-[#e5e7eb] px-4 py-3">
-              <h2 className="text-[15px] font-medium text-[#1f2937]">Client Activity</h2>
+          <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+            <div className="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#e5e7eb]">Client Activity</h2>
             </div>
             <div className="grid grid-cols-2 gap-4 px-5 py-5">
               <div>
-                <p className="text-[13px] text-[#6b7280]">Active Clients</p>
-                <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                <p className="text-[13px] text-[#4b5563]">Active Clients</p>
+                <p className="mt-1 text-[30px] font-bold leading-none text-[#f1f5fb]">
                   {overview.client_activity.active_clients}
                 </p>
               </div>
               <div>
-                <p className="text-[13px] text-[#6b7280]">Users Online</p>
-                <p className="mt-1 text-[30px] font-medium leading-none text-[#111827]">
+                <p className="text-[13px] text-[#4b5563]">Users Online</p>
+                <p className="mt-1 text-[30px] font-bold leading-none text-[#f1f5fb]">
                   {overview.client_activity.users_online_last_hour}
                 </p>
-                <p className="mt-1 text-[13px] text-[#6b7280]">Last hour</p>
+                <p className="mt-1 text-[13px] text-[#4b5563]">Last hour</p>
               </div>
             </div>
-            <div className="border-t border-[#e5e7eb]">
+            <div className="border-t border-[rgba(255,255,255,0.05)]">
               {overview.client_activity.recent_clients.length > 0 ? (
                 overview.client_activity.recent_clients.map((client) => (
                   <div
                     key={client.id}
-                    className="grid grid-cols-[minmax(0,1fr)_90px] gap-3 border-b border-[#eef2f7] px-5 py-3 last:border-b-0"
+                    className="grid grid-cols-[minmax(0,1fr)_90px] gap-3 border-b border-[rgba(255,255,255,0.04)] px-5 py-3 last:border-b-0"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium text-[#111827]">{client.display_name}</p>
-                      <p className="truncate text-[12px] text-[#6b7280]">{client.email}</p>
+                      <p className="truncate text-[13px] font-medium text-[#e5e7eb]">{client.display_name}</p>
+                      <p className="truncate text-[12px] text-[#4b5563]">{client.email}</p>
                     </div>
-                    <div className="text-right text-[12px] uppercase tracking-[0.08em] text-[#6b7280]">
+                    <div className="text-right text-[12px] uppercase tracking-[0.08em] text-[#374151]">
                       {client.status}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="px-5 py-5 text-sm text-[#6b7280]">No client activity yet.</div>
+                <div className="px-5 py-5 text-sm text-[#374151]">No client activity yet.</div>
               )}
             </div>
           </article>
 
-          <article className="rounded-[4px] border border-[#d9dee6] bg-white">
-            <div className="border-b border-[#e5e7eb] px-4 py-3">
-              <h2 className="text-[15px] font-medium text-[#1f2937]">Connected Servers</h2>
+          <article className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[#101827]" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}>
+            <div className="border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+              <h2 className="text-[15px] font-medium text-[#e5e7eb]">Connected Servers</h2>
             </div>
-            <div className="grid grid-cols-3 gap-4 border-b border-[#eef2f7] px-5 py-4 text-[13px]">
+            <div className="grid grid-cols-3 gap-4 border-b border-[rgba(255,255,255,0.04)] px-5 py-4 text-[13px]">
               <div>
-                <p className="text-[#6b7280]">Configured</p>
-                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                <p className="text-[#4b5563]">Configured</p>
+                <p className="mt-1 text-[24px] font-bold leading-none text-[#f1f5fb]">
                   {overview.servers.connected_total}
                 </p>
               </div>
               <div>
-                <p className="text-[#6b7280]">Active</p>
-                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                <p className="text-[#4b5563]">Active</p>
+                <p className="mt-1 text-[24px] font-bold leading-none text-[#4ade80]">
                   {overview.servers.active_total}
                 </p>
               </div>
               <div>
-                <p className="text-[#6b7280]">Needs Attention</p>
-                <p className="mt-1 text-[24px] font-medium leading-none text-[#111827]">
+                <p className="text-[#4b5563]">Needs Attention</p>
+                <p className="mt-1 text-[24px] font-bold leading-none text-[#fb923c]">
                   {overview.servers.needs_attention_total}
                 </p>
               </div>
@@ -496,19 +538,19 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 overview.servers.items.map((server) => (
                   <div
                     key={server.id}
-                    className="grid grid-cols-[minmax(0,1.2fr)_110px_120px] gap-3 border-b border-[#eef2f7] px-5 py-4 last:border-b-0"
+                    className="grid grid-cols-[minmax(0,1.2fr)_110px_120px] gap-3 border-b border-[rgba(255,255,255,0.04)] px-5 py-4 last:border-b-0"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium text-[#111827]">{server.name}</p>
-                      <p className="truncate text-[12px] text-[#6b7280]">
+                      <p className="truncate text-[13px] font-medium text-[#e5e7eb]">{server.name}</p>
+                      <p className="truncate text-[12px] text-[#4b5563]">
                         {server.hostname} {server.ip_address ? `• ${server.ip_address}` : ""}
                       </p>
                     </div>
-                    <div className="text-[12px] text-[#6b7280]">
+                    <div className="text-[12px] text-[#4b5563]">
                       <p className="uppercase tracking-[0.08em]">{server.status}</p>
                       <p className="mt-1">{server.panel_type}</p>
                     </div>
-                    <div className="text-right text-[12px] text-[#6b7280]">
+                    <div className="text-right text-[12px] text-[#4b5563]">
                       <p>
                         {server.current_accounts}
                         {server.max_accounts ? ` / ${server.max_accounts}` : ""} accounts
@@ -518,7 +560,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   </div>
                 ))
               ) : (
-                <div className="px-5 py-5 text-sm text-[#6b7280]">No servers connected yet.</div>
+                <div className="px-5 py-5 text-sm text-[#374151]">No servers connected yet.</div>
               )}
             </div>
           </article>

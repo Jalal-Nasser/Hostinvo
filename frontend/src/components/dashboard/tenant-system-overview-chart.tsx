@@ -87,18 +87,18 @@ export function TenantSystemOverviewChart({
         <div className="h-[340px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={activeData} margin={{ top: 12, right: 18, left: 8, bottom: 0 }}>
-              <CartesianGrid stroke="#e5e7eb" vertical={false} />
+              <CartesianGrid stroke="var(--dashboard-chart-grid, #e5e7eb)" vertical={false} />
               <XAxis
                 axisLine={false}
                 dataKey="label"
                 minTickGap={18}
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "var(--dashboard-chart-tick, #6b7280)", fontSize: 11 }}
                 tickLine={false}
                 tickMargin={8}
               />
               <YAxis
                 axisLine={false}
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "var(--dashboard-chart-tick, #6b7280)", fontSize: 11 }}
                 tickFormatter={(value: number) => formatCompact(locale, value)}
                 tickLine={false}
                 width={44}
@@ -107,7 +107,7 @@ export function TenantSystemOverviewChart({
               <YAxis
                 axisLine={false}
                 orientation="right"
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "var(--dashboard-chart-tick, #6b7280)", fontSize: 11 }}
                 tickFormatter={(value: number) => formatCompact(locale, value / 100)}
                 tickLine={false}
                 width={48}
@@ -115,8 +115,8 @@ export function TenantSystemOverviewChart({
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #d1d5db",
+                  backgroundColor: "var(--dashboard-tooltip-bg, #ffffff)",
+                  border: "1px solid var(--dashboard-tooltip-border, #d1d5db)",
                   borderRadius: "6px",
                   boxShadow: "0 8px 24px rgba(15, 23, 42, 0.08)",
                   fontSize: "12px",
@@ -130,7 +130,7 @@ export function TenantSystemOverviewChart({
 
                   return [formatCompact(locale, numericValue), name];
                 }}
-                labelStyle={{ color: "#111827", fontWeight: 600 }}
+                labelStyle={{ color: "var(--dashboard-tooltip-label, #111827)", fontWeight: 600 }}
               />
               <Legend
                 formatter={(value) => <span className="text-[12px] text-[#4b5563]">{value}</span>}

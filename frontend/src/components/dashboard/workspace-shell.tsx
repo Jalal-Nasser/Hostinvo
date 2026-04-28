@@ -8,6 +8,7 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 import { DemoTenantDashboardButton } from "@/components/platform-owner/demo-tenant-dashboard-button";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { DocumentTitle } from "@/components/shared/document-title";
+import { ThemeSwitcher } from "@/components/shared/theme-switcher";
 import { type AppLocale } from "@/i18n/routing";
 import {
   canAccessAdminWorkspace,
@@ -568,8 +569,12 @@ export async function WorkspaceShell({
       tenantBranding?.company_name?.trim() ||
       "Hostinvo";
 
+    const cookieStore = await cookies();
+    const initialTheme = cookieStore.get("hv_theme")?.value === "light" ? "light" : "dark";
+    const themeClass = initialTheme === "light" ? "dashboard-light" : "dashboard-dark";
+
     return (
-      <main className="dashboard-workspace min-h-screen bg-[#faf9f5]">
+      <main className={`dashboard-workspace ${themeClass} min-h-screen`}>
         <DocumentTitle brand={documentTitleBrand} title={title} />
         <div className="w-full px-4 py-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
           <div className="grid gap-6 lg:grid-cols-[272px_minmax(0,1fr)]">
@@ -583,21 +588,21 @@ export async function WorkspaceShell({
                   src={tenantBranding?.logo_url}
                   alt={tenantBranding?.portal_name || tenantBranding?.company_name || "Hostinvo"}
                 />
-                <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                <span className="rounded-md bg-[rgba(59,130,246,0.15)] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#60a5fa]">
                   {workspaceBadge}
                 </span>
               </div>
 
               {/* Active tenant chip */}
-              <div className="mx-2 mt-3 flex items-center gap-2.5 rounded-lg border border-[#e5e7eb] bg-[#fafbfc] px-2.5 py-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[linear-gradient(135deg,#036deb,#1d4ed8)] text-[11px] font-bold tracking-wide text-white">
+              <div className="mx-2 mt-3 flex items-center gap-2.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1a2540] px-2.5 py-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[linear-gradient(135deg,#3b82f6,#1d4ed8)] text-[11px] font-bold tracking-wide text-white">
                   {tenantInitials(tenantName)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold tracking-[-0.01em] text-[#0a1628]">
+                  <p className="truncate text-[13px] font-semibold tracking-[-0.01em] text-[#e5e7eb]">
                     {tenantName}
                   </p>
-                  <p className="truncate text-[11px] text-[#667085]">{tenantMeta}</p>
+                  <p className="truncate text-[11px] text-[#4b5563]">{tenantMeta}</p>
                 </div>
               </div>
 
@@ -606,7 +611,7 @@ export async function WorkspaceShell({
                 {groupedNav.map((entry, index) => (
                   <div
                     key={entry.group}
-                    className={index > 0 ? "mt-4 border-t border-[#eef0f4] pt-3" : undefined}
+                    className={index > 0 ? "mt-4 border-t border-[rgba(255,255,255,0.06)] pt-3" : undefined}
                   >
                     <p className="dashboard-sidebar-section-label">{groupLabels[entry.group]}</p>
                     <div className="space-y-0.5">
@@ -620,11 +625,11 @@ export async function WorkspaceShell({
 
               {/* Workspace switches + user footer */}
               {hasRole(user, "super_admin") ? (
-                <div className="mx-2 mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
+                <div className="mx-2 mt-4 rounded-lg border border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.08)] p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#60a5fa]">
                     {workspaceT("demoTenantDashboardBadge")}
                   </p>
-                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#1f4064]">
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#9ca3af]">
                     {workspaceT("demoTenantDashboardDescription")}
                   </p>
                   <DemoTenantDashboardButton locale={locale} />
@@ -632,15 +637,15 @@ export async function WorkspaceShell({
               ) : null}
 
               {hasPortalWorkspace ? (
-                <div className="mx-2 mt-4 rounded-lg border border-[#dbeafe] bg-[#eff6ff] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#036deb]">
+                <div className="mx-2 mt-4 rounded-lg border border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.08)] p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#60a5fa]">
                     {workspaceT("portalBadge")}
                   </p>
-                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#1f4064]">
+                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#9ca3af]">
                     {workspaceT("switchToPortal")}
                   </p>
                   <Link
-                    className="mt-2.5 inline-flex w-full items-center justify-center rounded-md border border-[#c7dcfd] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#036deb] transition hover:bg-[#f5f9ff]"
+                    className="mt-2.5 inline-flex w-full items-center justify-center rounded-md border border-[rgba(59,130,246,0.3)] bg-[rgba(59,130,246,0.1)] px-3 py-1.5 text-[12px] font-semibold text-[#60a5fa] transition hover:bg-[rgba(59,130,246,0.18)]"
                     href={localePath(locale, "/portal")}
                   >
                     {workspaceT("switchToPortal")}
@@ -648,14 +653,15 @@ export async function WorkspaceShell({
                 </div>
               ) : null}
 
-              <div className="mx-2 mb-1 mt-4 flex items-center gap-2.5 border-t border-[#eef0f4] pt-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef0f4] text-[11px] font-semibold text-[#475467]">
+              <div className="mx-2 mb-1 mt-4 flex items-center gap-2.5 border-t border-[rgba(255,255,255,0.06)] pt-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1e2a3d] text-[11px] font-semibold text-[#9ca3af]">
                   {tenantInitials(user.name || user.email)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[12.5px] font-semibold text-[#0a1628]">{user.name}</p>
-                  <p className="truncate text-[11px] text-[#667085]">{user.email}</p>
+                  <p className="truncate text-[12.5px] font-semibold text-[#e5e7eb]">{user.name}</p>
+                  <p className="truncate text-[11px] text-[#4b5563]">{user.email}</p>
                 </div>
+                <ThemeSwitcher initialTheme={initialTheme} />
                 <LogoutButton />
               </div>
             </aside>
@@ -663,13 +669,13 @@ export async function WorkspaceShell({
             {/* ───────────── Main content ───────────── */}
             <div className="min-w-0 space-y-5">
               {hasTenantContextReturn && activeTenant ? (
-                <section className="rounded-lg border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3 shadow-[var(--shadow-xs)]">
+                <section className="rounded-lg border border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.1)] px-4 py-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#60a5fa]">
                         {workspaceT("tenantContextLabel")}
                       </p>
-                      <p className="mt-1 truncate text-[13.5px] font-semibold text-[#0a1628]">
+                      <p className="mt-1 truncate text-[13.5px] font-semibold text-[#e5e7eb]">
                         {workspaceT("viewingTenantDashboard", { tenant: activeTenant.name })}
                       </p>
                     </div>
@@ -686,28 +692,28 @@ export async function WorkspaceShell({
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
                     {/* Breadcrumb / kicker row */}
-                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#667085]">
-                      <span className="font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#4b5563]">
+                      <span className="font-semibold uppercase tracking-[0.18em] text-[#3b82f6]">
                         {workspaceBadge}
                       </span>
-                      <span className="text-[#d0d5dd]">/</span>
-                      <span className="font-medium text-[#475467]">
+                      <span className="text-[#374151]">/</span>
+                      <span className="font-medium text-[#6b7280]">
                         {activeTenant?.name ?? workspaceT("adminBadge")}
                       </span>
                       {user.roles.slice(0, 1).map((role) => (
                         <span
                           key={role.id}
-                          className="status-pill status-pill-neutral"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9ca3af]"
                         >
                           {role.display_name}
                         </span>
                       ))}
                     </div>
 
-                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2rem]">
+                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-[#f1f5fb] md:text-[2rem]">
                       {title}
                     </h1>
-                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#475467]">
+                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#6b7280]">
                       {description}
                     </p>
 
