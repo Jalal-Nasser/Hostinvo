@@ -339,21 +339,6 @@ export default async function SettingsPage({
           />
         ))}
       </section>
-
-      <section className="glass-card p-6 md:p-8">
-        <p className="dashboard-kicker">{copy.settings.title}</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleCards.map((card) => (
-            <div
-              key={`${card.key}-summary`}
-              className="rounded-xl border border-[#e5e7eb] bg-[#fcfcfb] px-4 py-4 text-sm font-medium text-[#33506f]"
-            >
-              <p className="font-semibold text-[#0a1628]">{card.title}</p>
-              <p className="mt-2 text-[#5f7389]">{card.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </DashboardShell>
   );
 }
