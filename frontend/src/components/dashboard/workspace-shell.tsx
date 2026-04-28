@@ -661,7 +661,6 @@ export async function WorkspaceShell({
                   <p className="truncate text-[12.5px] font-semibold text-[#e5e7eb]">{user.name}</p>
                   <p className="truncate text-[11px] text-[#4b5563]">{user.email}</p>
                 </div>
-                <ThemeSwitcher initialTheme={initialTheme} />
                 <LogoutButton />
               </div>
             </aside>
@@ -725,6 +724,7 @@ export async function WorkspaceShell({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+                    <ThemeSwitcher initialTheme={initialTheme} />
                     {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
                     {actions}
                   </div>
