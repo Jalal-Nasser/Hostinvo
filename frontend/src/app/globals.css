@@ -297,6 +297,56 @@ button {
   }
 
   /* ── Inline data table styling helper ─────────────────────── */
+  .settings-module-card {
+    @apply relative flex min-h-[236px] flex-col overflow-hidden rounded-xl border bg-white p-6 transition-all duration-200 md:p-7;
+    border-color: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 34%, #e5e7eb);
+    box-shadow:
+      0 0 24px var(--settings-card-glow, rgba(59, 130, 246, 0.16)),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      var(--shadow-sm);
+  }
+  .settings-module-card:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 58%, #e5e7eb);
+    box-shadow:
+      0 0 30px var(--settings-card-glow, rgba(59, 130, 246, 0.2)),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      var(--shadow-md);
+  }
+  .settings-module-card::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -2rem;
+    top: -2rem;
+    height: 7rem;
+    width: 7rem;
+    border-radius: 9999px;
+    background: var(--settings-card-glow, rgba(59, 130, 246, 0.16));
+    filter: blur(24px);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .settings-module-card-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-[#667085];
+  }
+  .settings-module-card-icon {
+    @apply relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg;
+    background: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 14%, #ffffff);
+    color: var(--settings-card-accent, #3b82f6);
+  }
+  .settings-module-card-action {
+    @apply inline-flex items-center justify-center rounded-none px-4 py-2.5 text-sm font-semibold text-white transition-all duration-150;
+    background: var(--settings-card-accent, #036deb);
+    box-shadow: 0 8px 20px var(--settings-card-glow, rgba(3, 109, 235, 0.22));
+  }
+  .settings-module-card-action:hover {
+    filter: brightness(0.94);
+    transform: translateY(-1px);
+  }
+  .settings-module-card .settings-module-card-action {
+    margin-top: auto;
+  }
+
   .data-table {
     @apply w-full border-collapse text-start text-sm text-[#1f2937];
   }
@@ -714,6 +764,21 @@ button {
   .dashboard-dark [class*="border-\[#d0d5dd\]"]  { border-color: rgba(148,163,184,0.2) !important; }
   .dashboard-dark [class*="border-line"]          { border-color: rgba(255,255,255,0.07) !important; }
   .dashboard-dark [class*="divide-line"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255,255,255,0.07) !important; }
+
+  .dashboard-dark .settings-module-card {
+    background: #101827 !important;
+    border-color: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 42%, rgba(255,255,255,0.07)) !important;
+    box-shadow:
+      0 0 24px var(--settings-card-glow, rgba(59, 130, 246, 0.16)),
+      inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  }
+  .dashboard-dark .settings-module-card-icon {
+    background: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 16%, #101827) !important;
+    color: color-mix(in srgb, var(--settings-card-accent, #3b82f6) 86%, #ffffff) !important;
+  }
+  .dashboard-dark .settings-module-card-kicker {
+    color: #6b7280 !important;
+  }
 
   /* Header stat tile in dark */
   .dashboard-dark .dashboard-header-stat {
