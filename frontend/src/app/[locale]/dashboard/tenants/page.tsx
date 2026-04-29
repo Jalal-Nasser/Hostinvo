@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { FilterBar, SectionHeader } from "@/components/dashboard/admin-ui";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { TenantForm } from "@/components/platform-owner/tenant-form";
 import { TenantImpersonationButtons } from "@/components/platform-owner/tenant-impersonation-buttons";
 import { type AppLocale } from "@/i18n/routing";
 import {
@@ -48,38 +48,61 @@ export default async function TenantsPage({
 
   return (
     <DashboardShell
+      actions={
+        <Link
+          aria-label={t("createTenantButton")}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#036deb] text-white shadow-[0_8px_20px_rgba(3,109,235,0.22)] transition hover:bg-[#0255b6]"
+          href={localePath(params.locale, "/admin/tenants/create")}
+          title={t("createTenantButton")}
+        >
+          <svg
+            aria-hidden="true"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 5v14m7-7H5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.9"
+            />
+          </svg>
+        </Link>
+      }
       currentPath="/dashboard/tenants"
       description={t("pageDescription")}
       locale={params.locale as AppLocale}
       title={t("pageTitle")}
     >
-      <section className="glass-card p-6 md:p-8">
-        <div className="flex flex-col gap-2">
-          <p className="dashboard-kicker">{t("platformOwnerBadge")}</p>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
-            {t("pageHeading")}
-          </h2>
-          <p className="text-sm leading-7 text-[#6b7280]">{t("platformOwnerDescription")}</p>
-        </div>
+      <section className="glass-card dashboard-compact-card">
+        <SectionHeader
+          actions={
+            <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#123055]">
+              {t("tenantCountLabel", { count: total })}
+            </span>
+          }
+          eyebrow={t("platformOwnerBadge")}
+          title={t("pageHeading")}
+        />
 
-        <div className="mt-6 grid gap-4 md:grid-cols-[1fr_220px_auto] md:items-end">
-          <label className="grid gap-2 text-sm font-medium text-foreground">
+        <FilterBar id="tenant-filters">
+          <label className="dashboard-filter-field">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="dashboard-filter-control"
               defaultValue={searchParams?.search ?? ""}
               name="search"
-              form="tenant-filters"
               placeholder={t("searchPlaceholder")}
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
+          <label className="dashboard-filter-field md:max-w-[220px]">
             <span>{t("statusFilterLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="dashboard-filter-control"
               defaultValue={searchParams?.status ?? ""}
-              form="tenant-filters"
               name="status"
             >
               <option value="">{t("allStatuses")}</option>
@@ -88,38 +111,26 @@ export default async function TenantsPage({
             </select>
           </label>
 
-          <form id="tenant-filters" className="flex flex-wrap gap-3">
+          <div className="dashboard-filter-actions">
             <button
-              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+              className="dashboard-filter-primary"
               type="submit"
             >
               {t("filterButton")}
             </button>
             <Link
-              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+              className="dashboard-filter-secondary"
               href={localePath(params.locale, "/dashboard/tenants")}
             >
               {t("clearFiltersButton")}
             </Link>
-          </form>
-        </div>
+          </div>
+        </FilterBar>
       </section>
 
-      <div className="grid gap-6">
-        <TenantForm locale={params.locale} mode="create" />
-
-        <section className="glass-card p-6 md:p-8">
-          <div className="flex flex-col gap-2">
-            <p className="dashboard-kicker">{t("tenantListTitle")}</p>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
-                {t("tenantListHeading")}
-              </h2>
-              <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-4 py-2 text-sm font-semibold text-[#123055]">
-                {t("tenantCountLabel", { count: total })}
-              </span>
-            </div>
-          </div>
+      <div className="grid gap-4">
+        <section className="glass-card dashboard-compact-card">
+          <SectionHeader eyebrow={t("tenantListTitle")} title={t("tenantListHeading")} />
 
           {tenants.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-[#e5e7eb] bg-[#fcfcfb] px-5 py-5 text-sm leading-7 text-[#6b7280]">

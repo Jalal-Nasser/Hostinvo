@@ -3,8 +3,10 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { PageHeader } from "@/components/dashboard/admin-ui";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { DemoTenantDashboardButton } from "@/components/platform-owner/demo-tenant-dashboard-button";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { DocumentTitle } from "@/components/shared/document-title";
 import { ThemeSwitcher } from "@/components/shared/theme-switcher";
@@ -595,6 +597,9 @@ export async function WorkspaceShell({
                     {workspaceBadge}
                   </span>
                 ) : null}
+                {isSuperAdminUser && !isImpersonating ? (
+                  <DemoTenantDashboardButton iconOnly locale={locale} />
+                ) : null}
               </div>
 
               {/* Active tenant chip */}
@@ -659,50 +664,9 @@ export async function WorkspaceShell({
 
             {/* ───────────── Main content ───────────── */}
             <div className="min-w-0 space-y-5">
-              <section className="dashboard-header-surface">
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    {/* Breadcrumb / kicker row */}
-                    {!isImpersonating ? (
-                      <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-blue-200">
-                        <span className="font-semibold uppercase tracking-[0.18em] text-blue-300">
-                          {workspaceBadge}
-                        </span>
-                        <span className="text-blue-300">/</span>
-                        <span className="font-medium text-blue-200">
-                          {activeTenant?.name ?? workspaceT("adminBadge")}
-                        </span>
-                        {user.roles.slice(0, 1).map((role) => (
-                          <span
-                            key={role.id}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200"
-                          >
-                            {role.display_name}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <h1
-                      className={[
-                        !isImpersonating ? "mt-3" : "",
-                        "text-[1.75rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2rem]",
-                      ].join(" ")}
-                    >
-                      {title}
-                    </h1>
-                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#475467]">
-                      {description}
-                    </p>
-
-                    {headerStats ? (
-                      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {headerStats}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+              <PageHeader
+                actions={
+                  <>
                     <ThemeSwitcher initialTheme={initialTheme} />
                     {hasTenantContextReturn && activeTenant ? (
                       <div className="impersonation-context-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold">
@@ -717,9 +681,26 @@ export async function WorkspaceShell({
                       </div>
                     ) : null}
                     {actions}
-                  </div>
-                </div>
-              </section>
+                  </>
+                }
+                description={description}
+                eyebrow={
+                  !isImpersonating ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span>{workspaceBadge}</span>
+                      <span>/</span>
+                      <span>{activeTenant?.name ?? workspaceT("adminBadge")}</span>
+                      {user.roles.slice(0, 1).map((role) => (
+                        <span key={role.id} className="dashboard-header-role-pill">
+                          {role.display_name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null
+                }
+                stats={headerStats}
+                title={title}
+              />
 
               <div className="grid gap-5">{children}</div>
             </div>

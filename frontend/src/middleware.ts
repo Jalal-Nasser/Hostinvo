@@ -44,6 +44,8 @@ export default function middleware(request: NextRequest) {
   const authState = request.cookies.get(authStateCookieName)?.value ?? null;
   const isMfaPending = authState === "mfa_pending";
   const isProtected =
+    localizedPath === "/admin" ||
+    localizedPath.startsWith("/admin/") ||
     localizedPath === "/dashboard" ||
     localizedPath.startsWith("/dashboard/") ||
     localizedPath === "/portal" ||
