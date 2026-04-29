@@ -5,7 +5,7 @@ import { PortalAccountMenu } from "@/components/portal/portal-account-menu";
 import { PortalCurrencySelect } from "@/components/portal/portal-currency-select";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import type { AuthenticatedUser } from "@/lib/auth";
-import { localePath } from "@/lib/auth";
+import { isSuperAdmin, localePath } from "@/lib/auth";
 import type { TenantBrandingRecord } from "@/lib/tenant-admin";
 
 type PortalTopbarProps = {
@@ -52,8 +52,10 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
   const defaultCurrency =
     branding?.default_currency?.trim().toUpperCase() || "USD";
   const activeTenant = user.active_tenant ?? user.tenant ?? null;
-  const hasTenantContextReturn =
-    user.roles.some((role) => role.name === "super_admin") && Boolean(activeTenant);
+  const isSuperAdminUser = isSuperAdmin(user);
+  const isImpersonating =
+    isSuperAdminUser && (Boolean(user.impersonation?.active) || Boolean(activeTenant));
+  const hasTenantContextReturn = isSuperAdminUser && isImpersonating && Boolean(activeTenant);
   const actionClass =
     "inline-flex items-center gap-2 text-[12px] font-semibold text-[#eef5ff] transition hover:text-white";
 
@@ -63,6 +65,9 @@ export function PortalTopbar({ locale, user, branding }: PortalTopbarProps) {
         <div className="ms-auto flex items-center gap-4 text-[#eef5ff]">
           {hasTenantContextReturn ? (
             <>
+              <span className="inline-flex max-w-[14rem] items-center rounded-full border border-[rgba(219,234,254,0.22)] bg-[rgba(239,246,255,0.1)] px-3 py-1 text-[12px] font-semibold text-[#eef5ff]">
+                <span className="truncate">Impersonating: {activeTenant?.name}</span>
+              </span>
               <ImpersonationReturn
                 className="inline-flex h-8 w-8 items-center justify-center text-[#dce6fa] transition hover:text-white"
                 iconOnly

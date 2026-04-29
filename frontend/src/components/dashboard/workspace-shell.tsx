@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { DemoTenantDashboardButton } from "@/components/platform-owner/demo-tenant-dashboard-button";
 import { ImpersonationReturn } from "@/components/platform-owner/impersonation-return";
 import { DocumentTitle } from "@/components/shared/document-title";
 import { ThemeSwitcher } from "@/components/shared/theme-switcher";
@@ -19,6 +18,7 @@ import {
   hasAnyPermission,
   hasRole,
   isPlatformOwnerContext,
+  isSuperAdmin,
   localePath,
   type WorkspaceMode,
 } from "@/lib/auth";
@@ -228,7 +228,6 @@ export async function WorkspaceShell({
   children,
   actions,
   headerStats,
-  tintedHeader = false,
   mode,
 }: WorkspaceShellProps) {
   const cookieHeader = cookies().toString();
@@ -243,11 +242,14 @@ export async function WorkspaceShell({
   const provisioningT = await getTranslations("Provisioning");
   const workspaceT = await getTranslations("Workspace");
   const activeTenant = user.active_tenant ?? user.tenant ?? null;
+  const isSuperAdminUser = isSuperAdmin(user);
+  const isImpersonating =
+    isSuperAdminUser && (Boolean(user.impersonation?.active) || hasActiveTenantContext(user));
 
   const hasAdminWorkspace = canAccessAdminWorkspace(user);
   const isPlatformOwner = isPlatformOwnerContext(user);
   const hasPortalWorkspace = canAccessClientPortal(user);
-  const hasTenantContextReturn = hasRole(user, "super_admin") && hasActiveTenantContext(user);
+  const hasTenantContextReturn = isSuperAdminUser && isImpersonating && Boolean(activeTenant);
   const isTenantAdmin = hasRole(user, "tenant_admin") && !isPlatformOwner;
   const overviewHref = hasAdminWorkspace
     ? localePath(locale, "/dashboard")
@@ -279,7 +281,7 @@ export async function WorkspaceShell({
       active:
         currentPath === "/dashboard/tenants" ||
         currentPath.startsWith("/dashboard/tenants/"),
-      visible: hasRole(user, "super_admin") && !hasActiveTenantContext(user),
+      visible: isSuperAdminUser && !isImpersonating,
       icon: "tenants",
       group: "core",
     },
@@ -588,9 +590,11 @@ export async function WorkspaceShell({
                   src={tenantBranding?.logo_url}
                   alt={tenantBranding?.portal_name || tenantBranding?.company_name || "Hostinvo"}
                 />
-                <span className="rounded-md bg-[rgba(59,130,246,0.15)] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#60a5fa]">
-                  {workspaceBadge}
-                </span>
+                {!isImpersonating ? (
+                  <span className="rounded-md bg-[rgba(59,130,246,0.15)] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-[#60a5fa]">
+                    {workspaceBadge}
+                  </span>
+                ) : null}
               </div>
 
               {/* Active tenant chip */}
@@ -624,18 +628,6 @@ export async function WorkspaceShell({
               </nav>
 
               {/* Workspace switches + user footer */}
-              {hasRole(user, "super_admin") ? (
-                <div className="mx-2 mt-4 rounded-lg border border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.08)] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#60a5fa]">
-                    {workspaceT("demoTenantDashboardBadge")}
-                  </p>
-                  <p className="mt-1.5 text-[12.5px] leading-5 text-[#9ca3af]">
-                    {workspaceT("demoTenantDashboardDescription")}
-                  </p>
-                  <DemoTenantDashboardButton locale={locale} />
-                </div>
-              ) : null}
-
               {hasPortalWorkspace ? (
                 <div className="mx-2 mt-4 rounded-lg border border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.08)] p-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#60a5fa]">
@@ -667,52 +659,39 @@ export async function WorkspaceShell({
 
             {/* ───────────── Main content ───────────── */}
             <div className="min-w-0 space-y-5">
-              {hasTenantContextReturn && activeTenant ? (
-                <section className="rounded-lg border border-[rgba(59,130,246,0.25)] bg-[rgba(59,130,246,0.1)] px-4 py-3">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#60a5fa]">
-                        {workspaceT("tenantContextLabel")}
-                      </p>
-                      <p className="mt-1 truncate text-[13.5px] font-semibold text-[#e5e7eb]">
-                        {workspaceT("viewingTenantDashboard", { tenant: activeTenant.name })}
-                      </p>
-                    </div>
-                    <ImpersonationReturn
-                      className="shrink-0"
-                      locale={locale}
-                      variant="default"
-                    />
-                  </div>
-                </section>
-              ) : null}
-
-              <section className={tintedHeader ? "dashboard-header-surface" : "dashboard-shell-surface"}>
+              <section className="dashboard-header-surface">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
                     {/* Breadcrumb / kicker row */}
-                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-blue-200">
-                      <span className="font-semibold uppercase tracking-[0.18em] text-blue-300">
-                        {workspaceBadge}
-                      </span>
-                      <span className="text-blue-300">/</span>
-                      <span className="font-medium text-blue-200">
-                        {activeTenant?.name ?? workspaceT("adminBadge")}
-                      </span>
-                      {user.roles.slice(0, 1).map((role) => (
-                        <span
-                          key={role.id}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200"
-                        >
-                          {role.display_name}
+                    {!isImpersonating ? (
+                      <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-blue-200">
+                        <span className="font-semibold uppercase tracking-[0.18em] text-blue-300">
+                          {workspaceBadge}
                         </span>
-                      ))}
-                    </div>
+                        <span className="text-blue-300">/</span>
+                        <span className="font-medium text-blue-200">
+                          {activeTenant?.name ?? workspaceT("adminBadge")}
+                        </span>
+                        {user.roles.slice(0, 1).map((role) => (
+                          <span
+                            key={role.id}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200"
+                          >
+                            {role.display_name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
 
-                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-white md:text-[2rem]">
+                    <h1
+                      className={[
+                        !isImpersonating ? "mt-3" : "",
+                        "text-[1.75rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2rem]",
+                      ].join(" ")}
+                    >
                       {title}
                     </h1>
-                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-blue-100">
+                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#475467]">
                       {description}
                     </p>
 
@@ -725,7 +704,18 @@ export async function WorkspaceShell({
 
                   <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                     <ThemeSwitcher initialTheme={initialTheme} />
-                    {hasTenantContextReturn ? <ImpersonationReturn locale={locale} /> : null}
+                    {hasTenantContextReturn && activeTenant ? (
+                      <div className="impersonation-context-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold">
+                        <span className="max-w-[16rem] truncate">
+                          {workspaceT("impersonatingTenant", { tenant: activeTenant.name })}
+                        </span>
+                        <ImpersonationReturn
+                          className="impersonation-exit-button inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition disabled:pointer-events-none disabled:opacity-60"
+                          iconOnly
+                          locale={locale}
+                        />
+                      </div>
+                    ) : null}
                     {actions}
                   </div>
                 </div>
@@ -752,9 +742,11 @@ export async function WorkspaceShell({
                   href={localePath(locale, "/")}
                   className="block w-[10rem] shrink-0"
                 />
-                <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
-                  {workspaceBadge}
-                </span>
+                {!isImpersonating ? (
+                  <span className="rounded-md bg-[#eff6ff] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#036deb]">
+                    {workspaceBadge}
+                  </span>
+                ) : null}
               </div>
               <h1 className="mt-4 text-[1.85rem] font-semibold tracking-[-0.035em] text-[#0a1628] md:text-[2.1rem]">
                 {title}
@@ -762,7 +754,7 @@ export async function WorkspaceShell({
               <p className="mt-2 max-w-2xl text-[13.5px] leading-6 text-[#475467]">
                 {description}
               </p>
-              {hasAdminWorkspace ? (
+              {hasAdminWorkspace && !isImpersonating ? (
                 <div className="mt-4">
                   <Link href={localePath(locale, "/dashboard")} className="btn-secondary">
                     {workspaceT("switchToAdmin")}

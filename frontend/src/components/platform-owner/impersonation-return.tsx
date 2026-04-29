@@ -52,7 +52,7 @@ export function ImpersonationReturn({
           viewBox="0 0 24 24"
         >
           <path
-            d="M10 7H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4M14 16l4-4m0 0-4-4m4 4H9"
+            d="M11 17l-5-5m0 0l5-5m-5 5h12"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="1.8"

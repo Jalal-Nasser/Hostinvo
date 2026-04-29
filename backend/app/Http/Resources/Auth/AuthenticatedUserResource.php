@@ -46,6 +46,7 @@ class AuthenticatedUserResource extends JsonResource
             'email' => $this->email,
             'locale' => $this->locale,
             'is_active' => $this->is_active,
+            'is_super_admin' => $this->roles->contains('name', 'super_admin'),
             'email_verified_at' => $this->email_verified_at,
             'email_verification_required' => (bool) $this->email_verification_required,
             'last_login_at' => $this->last_login_at,

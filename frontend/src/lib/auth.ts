@@ -5,6 +5,7 @@ export type AuthenticatedUser = {
   email: string;
   locale: string;
   is_active: boolean;
+  is_super_admin?: boolean;
   email_verified_at?: string | null;
   email_verification_required?: boolean;
   last_login_at: string | null;
@@ -161,6 +162,10 @@ export function hasRole(user: AuthenticatedUser | null, roleName: string): boole
   }
 
   return user.roles.some((role) => role.name === roleName);
+}
+
+export function isSuperAdmin(user: AuthenticatedUser | null): boolean {
+  return Boolean(user?.is_super_admin) || hasRole(user, "super_admin");
 }
 
 export function hasAnyPermission(

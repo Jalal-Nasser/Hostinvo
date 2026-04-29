@@ -468,6 +468,7 @@
     "navigationLabel": "تنقل مساحة العمل",
     "availableLabel": "متاح",
     "restrictedLabel": "مقيّد",
+    "impersonatingTenant": "Impersonating: {tenant}",
     "tenantContextLabel": "سياق المستأجر",
     "viewingTenantDashboard": "أنت تعرض لوحة المستأجر: {tenant}"
   },

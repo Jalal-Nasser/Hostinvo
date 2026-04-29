@@ -469,6 +469,7 @@
     "navigationLabel": "Workspace navigation",
     "availableLabel": "Available",
     "restrictedLabel": "Restricted",
+    "impersonatingTenant": "Impersonating: {tenant}",
     "tenantContextLabel": "Tenant context",
     "viewingTenantDashboard": "Viewing tenant dashboard: {tenant}"
   },
