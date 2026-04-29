@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { FilterBar, SectionHeader } from "@/components/dashboard/admin-ui";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { TenantImpersonationButtons } from "@/components/platform-owner/tenant-impersonation-buttons";
+import { TenantRowActions } from "@/components/platform-owner/tenant-row-actions";
 import { type AppLocale } from "@/i18n/routing";
 import {
   getAuthenticatedUserFromCookies,
@@ -51,13 +51,13 @@ export default async function TenantsPage({
       actions={
         <Link
           aria-label={t("createTenantButton")}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#036deb] text-white shadow-[0_8px_20px_rgba(3,109,235,0.22)] transition hover:bg-[#0255b6]"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#036deb] text-white shadow-[0_8px_20px_rgba(3,109,235,0.16)] transition hover:bg-[#0255b6]"
           href={localePath(params.locale, "/admin/tenants/create")}
           title={t("createTenantButton")}
         >
           <svg
             aria-hidden="true"
-            className="h-5 w-5"
+            className="h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -79,12 +79,11 @@ export default async function TenantsPage({
       <section className="glass-card dashboard-compact-card">
         <SectionHeader
           actions={
-            <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#123055]">
+            <span className="tenant-count-pill">
               {t("tenantCountLabel", { count: total })}
             </span>
           }
-          eyebrow={t("platformOwnerBadge")}
-          title={t("pageHeading")}
+          title={t("tenantListHeading")}
         />
 
         <FilterBar id="tenant-filters">
@@ -112,10 +111,7 @@ export default async function TenantsPage({
           </label>
 
           <div className="dashboard-filter-actions">
-            <button
-              className="dashboard-filter-primary"
-              type="submit"
-            >
+            <button className="dashboard-filter-primary" type="submit">
               {t("filterButton")}
             </button>
             <Link
@@ -126,92 +122,72 @@ export default async function TenantsPage({
             </Link>
           </div>
         </FilterBar>
-      </section>
 
-      <div className="grid gap-4">
-        <section className="glass-card dashboard-compact-card">
-          <SectionHeader eyebrow={t("tenantListTitle")} title={t("tenantListHeading")} />
+        {tenants.length === 0 ? (
+          <div className="tenant-empty-state">
+            {t("emptyStateDescription")}
+          </div>
+        ) : (
+          <div className="tenant-table-wrap">
+            <table className="tenant-table">
+              <thead>
+                <tr>
+                  <th>{t("tenantColumnLabel")}</th>
+                  <th>{t("statusColumnLabel")}</th>
+                  <th>{t("ownerColumnLabel")}</th>
+                  <th className="text-end">{t("actionsColumnLabel")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tenants.map((tenant) => {
+                  const subtitle =
+                    tenant.owner?.email ?? tenant.primary_domain ?? t("notAvailable");
 
-          {tenants.length === 0 ? (
-            <div className="mt-6 rounded-2xl border border-[#e5e7eb] bg-[#fcfcfb] px-5 py-5 text-sm leading-7 text-[#6b7280]">
-              {t("emptyStateDescription")}
-            </div>
-          ) : (
-            <div className="mt-6 grid gap-4">
-              {tenants.map((tenant) => (
-                <article
-                  key={tenant.id}
-                  className="rounded-2xl border border-[#e5e7eb] bg-[#fcfcfb] p-5"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-xl font-semibold text-[#0a1628]">
-                          {tenant.name}
-                        </h3>
-                        <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#123055]">
+                  return (
+                    <tr key={tenant.id}>
+                      <td>
+                        <div className="tenant-cell-main">
+                          <Link
+                            className="tenant-name-link"
+                            href={localePath(params.locale, `/dashboard/tenants/${tenant.id}`)}
+                          >
+                            {tenant.name}
+                          </Link>
+                          <p>{subtitle}</p>
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className={[
+                            "tenant-status-pill",
+                            tenant.status === "active"
+                              ? "tenant-status-active"
+                              : "tenant-status-suspended",
+                          ].join(" ")}
+                        >
                           {tenant.status === "active" ? t("statusActive") : t("statusSuspended")}
                         </span>
-                      </div>
-                      <p className="mt-2 text-sm text-[#6b7280]">
-                        {tenant.primary_domain ?? t("notAvailable")}
-                      </p>
-                      <p className="mt-2 text-sm text-[#6b7280]">
-                        {tenant.owner?.name ?? t("noOwnerAssigned")} / {tenant.owner?.email ?? t("notAvailable")}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      <Link
-                        className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                        href={localePath(params.locale, `/dashboard/tenants/${tenant.id}`)}
-                      >
-                        {t("viewTenantButton")}
-                      </Link>
-                      <TenantImpersonationButtons
-                        tenantId={tenant.id}
-                        locale={params.locale}
-                        compact
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 md:grid-cols-4">
-                    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.22em] text-[#7b8794]">
-                        {t("localeLabel")}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-[#0a1628]">{tenant.default_locale}</p>
-                    </div>
-                    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.22em] text-[#7b8794]">
-                        {t("currencyLabel")}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-[#0a1628]">{tenant.default_currency}</p>
-                    </div>
-                    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.22em] text-[#7b8794]">
-                        {t("planLabel")}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-[#0a1628]">
-                        {tenant.license_summary?.plan ?? tenant.plan}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.22em] text-[#7b8794]">
-                        {t("licenseStatusLabel")}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold text-[#0a1628]">
-                        {tenant.license_summary?.status ?? t("licenseUnavailable")}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+                      </td>
+                      <td>
+                        <span className="tenant-owner-text">
+                          {tenant.owner?.email ?? tenant.owner?.name ?? t("noOwnerAssigned")}
+                        </span>
+                      </td>
+                      <td>
+                        <TenantRowActions
+                          tenantId={tenant.id}
+                          locale={params.locale}
+                          status={tenant.status}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </DashboardShell>
   );
 }
