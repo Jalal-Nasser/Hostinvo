@@ -3,15 +3,35 @@ import { cookies } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { WhmcsImportPanel, type WhmcsImportRecord } from "@/components/import/whmcs-import-panel";
 import { StatusBanner } from "@/components/tenant-admin/status-banner";
 import { type AppLocale } from "@/i18n/routing";
 import {
+  apiBaseUrl,
   getAuthenticatedUserFromCookies,
   isPlatformOwnerContext,
   localePath,
+  statefulApiHeaders,
 } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
+
+async function fetchLatestImport(cookieHeader: string): Promise<WhmcsImportRecord | null> {
+  const response = await fetch(`${apiBaseUrl}/admin/whmcs/import`, {
+    cache: "no-store",
+    headers: statefulApiHeaders(cookieHeader, "/dashboard/settings/import/whmcs"),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    data: { import: WhmcsImportRecord | null };
+  };
+
+  return payload.data.import;
+}
 
 export default async function WhmcsImportSettingsPage({
   params,
@@ -24,22 +44,18 @@ export default async function WhmcsImportSettingsPage({
   const copy = {
     title: isArabic ? "WHMCS Migration" : "WHMCS Migration",
     description: isArabic
-      ? "Prepare and review WHMCS import workflows for this tenant workspace."
-      : "Prepare and review WHMCS import workflows for this tenant workspace.",
+      ? "Import clients, products, and services from an existing WHMCS installation."
+      : "Import clients, products, and services from an existing WHMCS installation.",
     backToSettings: isArabic ? "Back to settings" : "Back to settings",
     unauthorizedMessage: isArabic
       ? "This import area is available only to tenant admin users."
       : "This import area is available only to tenant admin users.",
-    sectionKicker: isArabic ? "Import" : "Import",
-    sectionTitle: isArabic ? "WHMCS migration workspace" : "WHMCS migration workspace",
-    sectionDescription: isArabic
-      ? "Use this area for WHMCS migration entry points. The sidebar location is ready for tenant-admin import workflows."
-      : "Use this area for WHMCS migration entry points. The sidebar location is ready for tenant-admin import workflows.",
   };
 
   const cookieHeader = cookies().toString();
   const user = await getAuthenticatedUserFromCookies(cookieHeader);
   const hasTenantSettingsContext = !isPlatformOwnerContext(user);
+  const latestImport = hasTenantSettingsContext ? await fetchLatestImport(cookieHeader) : null;
   const actions = (
     <Link
       href={localePath(params.locale, "/dashboard/settings")}
@@ -71,15 +87,7 @@ export default async function WhmcsImportSettingsPage({
       locale={params.locale as AppLocale}
       title={copy.title}
     >
-      <section className="glass-card p-6 md:p-8">
-        <p className="dashboard-kicker">{copy.sectionKicker}</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#0a1628]">
-          {copy.sectionTitle}
-        </h2>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6b7280]">
-          {copy.sectionDescription}
-        </p>
-      </section>
+      <WhmcsImportPanel initialImport={latestImport} />
     </DashboardShell>
   );
 }
