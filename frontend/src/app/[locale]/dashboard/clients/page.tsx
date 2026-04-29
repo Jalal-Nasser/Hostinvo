@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
-import { fetchClientsFromCookies } from "@/lib/clients";
+import { fetchClientsFromCookies, type ClientRecord, type ClientStatus } from "@/lib/clients";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,38 @@ export default async function ClientsPage({
   });
 
   const clients = response?.data ?? [];
+  const meta = response?.meta;
+  const currentPage = meta?.current_page ?? 1;
+  const lastPage = meta?.last_page ?? 1;
+  const perPage = meta?.per_page ?? clients.length;
+  const total = meta?.total ?? clients.length;
+  const firstRecord = total === 0 ? 0 : (currentPage - 1) * perPage + 1;
+  const lastRecord = total === 0 ? 0 : firstRecord + clients.length - 1;
+  const basePath = localePath(params.locale, "/dashboard/clients");
+  const statusLabels: Record<ClientStatus, string> = {
+    active: t("statusActive"),
+    inactive: t("statusInactive"),
+    lead: t("statusLead"),
+  };
+  const pageHref = (page: number) => {
+    const query = new URLSearchParams();
+
+    if (searchParams?.search) {
+      query.set("search", searchParams.search);
+    }
+
+    if (searchParams?.status) {
+      query.set("status", searchParams.status);
+    }
+
+    if (page > 1) {
+      query.set("page", String(page));
+    }
+
+    const serialized = query.toString();
+
+    return serialized ? `${basePath}?${serialized}` : basePath;
+  };
 
   return (
     <DashboardShell
@@ -42,22 +74,26 @@ export default async function ClientsPage({
       locale={params.locale as AppLocale}
       title={t("listTitle")}
     >
-      <section className="glass-card p-6 md:p-8">
-        <form className="grid gap-4 md:grid-cols-[1fr_220px_auto] md:items-end">
-          <label className="grid gap-2 text-sm font-medium text-foreground">
+      <section className="client-list-panel">
+        <form className="client-search-bar">
+          <div className="client-search-mark" aria-hidden="true">
+            <span />
+          </div>
+
+          <label className="client-filter-field">
             <span>{t("searchLabel")}</span>
             <input
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="client-filter-control"
               defaultValue={searchParams?.search ?? ""}
               name="search"
               placeholder={t("searchPlaceholder")}
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium text-foreground">
+          <label className="client-filter-field">
             <span>{t("statusLabel")}</span>
             <select
-              className="rounded-2xl border border-line bg-[#faf9f5]/85 px-4 py-3 outline-none transition focus:border-accent"
+              className="client-filter-control"
               defaultValue={searchParams?.status ?? ""}
               name="status"
             >
@@ -68,89 +104,141 @@ export default async function ClientsPage({
             </select>
           </label>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="client-filter-actions">
             <button
-              className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+              className="client-filter-primary"
               type="submit"
             >
               {t("searchButton")}
             </button>
 
             <Link
-              className="rounded-full border border-line bg-[#faf9f5]/80 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-              href={localePath(params.locale, "/dashboard/clients")}
+              className="client-filter-secondary"
+              href={basePath}
             >
               {t("clearFilters")}
             </Link>
           </div>
         </form>
-      </section>
 
-      {clients.length === 0 ? (
-        <section className="glass-card p-8">
+        <div className="client-list-meta">
+          <span>
+            {total} Records Found, Showing {firstRecord} to {lastRecord}
+          </span>
+          <span>
+            Jump to Page: <strong>{currentPage}</strong>
+          </span>
+        </div>
+
+        {clients.length === 0 ? (
+          <section className="client-empty-state">
           <h2 className="text-2xl font-semibold text-foreground">{t("emptyStateTitle")}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted">{t("emptyStateDescription")}</p>
-        </section>
-      ) : (
-        <section className="grid gap-4">
-          {clients.map((client) => (
-            <article key={client.id} className="glass-card p-6 md:p-8">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-foreground">{client.display_name}</h2>
-                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-                      {t(
-                        client.status === "active"
-                          ? "statusActive"
-                          : client.status === "inactive"
-                            ? "statusInactive"
-                            : "statusLead",
-                      )}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-muted">{client.email}</p>
-                  <p className="mt-2 text-sm text-muted">{client.phone ?? t("notAvailable")}</p>
-                </div>
+          </section>
+        ) : (
+          <>
+            <div className="client-table-wrap">
+              <table className="client-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>{t("firstNameLabel")}</th>
+                    <th>{t("lastNameLabel")}</th>
+                    <th>{t("companyNameLabel")}</th>
+                    <th>{t("emailLabel")}</th>
+                    <th>{t("servicesCountLabel")}</th>
+                    <th>{t("createdAtLabel")}</th>
+                    <th>{t("statusLabel")}</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clients.map((client, index) => (
+                    <tr key={client.id}>
+                      <td className="client-table-id">{firstRecord + index}</td>
+                      <td>{client.first_name || displayNamePart(client, "first")}</td>
+                      <td>{client.last_name || displayNamePart(client, "last")}</td>
+                      <td>{client.company_name || client.display_name}</td>
+                      <td>
+                        <a className="client-email-link" href={`mailto:${client.email}`}>
+                          {client.email}
+                        </a>
+                      </td>
+                      <td>{client.services_count ?? 0}</td>
+                      <td>{formatClientDate(client.created_at, params.locale)}</td>
+                      <td>
+                        <span className={`client-status-pill client-status-${client.status}`}>
+                          {statusLabels[client.status]}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="client-row-actions">
+                          <Link
+                            className="client-row-action"
+                            href={localePath(params.locale, `/dashboard/clients/${client.id}`)}
+                          >
+                            {t("viewDetails")}
+                          </Link>
+                          <Link
+                            className="client-row-action"
+                            href={localePath(params.locale, `/dashboard/clients/${client.id}/edit`)}
+                          >
+                            {t("editClientButton")}
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                    href={localePath(params.locale, `/dashboard/clients/${client.id}`)}
-                  >
-                    {t("viewDetails")}
-                  </Link>
-                  <Link
-                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
-                    href={localePath(params.locale, `/dashboard/clients/${client.id}/edit`)}
-                  >
-                    {t("editClientButton")}
-                  </Link>
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-4 md:grid-cols-4">
-                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("countryLabel")}</p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{client.country}</p>
-                </div>
-                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("localeLabel")}</p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{client.preferred_locale}</p>
-                </div>
-                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("contactsCountLabel")}</p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{client.contacts_count ?? 0}</p>
-                </div>
-                <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("addressesCountLabel")}</p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{client.addresses_count ?? 0}</p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+            {lastPage > 1 ? (
+              <nav className="client-pagination" aria-label="Client pagination">
+                <Link
+                  aria-disabled={currentPage <= 1}
+                  className="client-page-link"
+                  href={currentPage <= 1 ? pageHref(1) : pageHref(currentPage - 1)}
+                >
+                  &laquo; Previous Page
+                </Link>
+                <span className="client-page-current">{currentPage}</span>
+                <Link
+                  aria-disabled={currentPage >= lastPage}
+                  className="client-page-link"
+                  href={currentPage >= lastPage ? pageHref(lastPage) : pageHref(currentPage + 1)}
+                >
+                  Next Page &raquo;
+                </Link>
+              </nav>
+            ) : null}
+          </>
+        )}
+      </section>
     </DashboardShell>
   );
+}
+
+function displayNamePart(client: ClientRecord, part: "first" | "last") {
+  const parts = client.display_name.trim().split(/\s+/);
+
+  if (part === "first") {
+    return parts[0] ?? "-";
+  }
+
+  return parts.length > 1 ? parts.slice(1).join(" ") : "-";
+}
+
+function formatClientDate(value: string, locale: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }

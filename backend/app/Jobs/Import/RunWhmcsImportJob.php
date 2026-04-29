@@ -91,6 +91,10 @@ class RunWhmcsImportJob implements ShouldQueue, ShouldBeEncrypted
             return 'Unable to connect to the WHMCS MySQL host. If WHMCS uses localhost, Docker Desktop must use host.docker.internal, or use the MySQL container/service hostname.';
         }
 
+        if (str_contains($message, 'SQLSTATE[HY000] [2002] Network is unreachable')) {
+            return 'Unable to reach the WHMCS MySQL host from Docker. Use a reachable hostname such as host.docker.internal for a Windows-hosted database, a Docker Compose service name, or the database server IP.';
+        }
+
         return $message;
     }
 }

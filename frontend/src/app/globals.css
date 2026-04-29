@@ -363,6 +363,120 @@ button {
     @apply border border-[#d0d5dd] bg-white text-[#1f2937] hover:bg-[#f9fafb];
   }
 
+  .client-list-panel {
+    @apply rounded-lg border border-[#d9dee6] bg-white;
+    box-shadow: var(--shadow-sm);
+  }
+  .client-search-bar {
+    @apply grid gap-3 border-b border-[#d9dee6] bg-[#f3f4f6] p-3 md:grid-cols-[44px_minmax(240px,1fr)_220px_auto] md:items-end;
+  }
+  .client-search-mark {
+    @apply flex h-10 w-10 items-center justify-center rounded-full bg-[#026beb];
+  }
+  .client-search-mark span {
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 4px solid #ffffff;
+    border-radius: 999px;
+  }
+  .client-search-mark span::after {
+    content: "";
+    position: absolute;
+    right: -8px;
+    bottom: -6px;
+    width: 10px;
+    height: 4px;
+    border-radius: 999px;
+    background: #ffffff;
+    transform: rotate(45deg);
+  }
+  .client-filter-field {
+    @apply grid gap-1 text-xs font-semibold text-[#111827];
+  }
+  .client-filter-control {
+    @apply h-8 rounded-none border border-[#c8cdd3] bg-white px-2.5 text-sm text-[#111827] outline-none transition placeholder:text-[#8a94a6] focus:border-[#2f73b7] focus:ring-1 focus:ring-[#2f73b7];
+  }
+  .client-filter-actions {
+    @apply flex items-end gap-2;
+  }
+  .client-filter-primary,
+  .client-filter-secondary {
+    @apply inline-flex h-8 items-center justify-center rounded-sm px-3 text-xs font-semibold transition;
+  }
+  .client-filter-primary {
+    @apply bg-[#026beb] text-white hover:bg-[#0258c4];
+  }
+  .client-filter-secondary {
+    @apply border border-[#c8cdd3] bg-white text-[#111827] hover:bg-[#eef2f7];
+  }
+  .client-list-meta {
+    @apply flex flex-col gap-2 px-3 py-3 text-sm text-[#111827] sm:flex-row sm:items-center sm:justify-between;
+  }
+  .client-empty-state {
+    @apply mx-3 mb-3 rounded-md border border-[#d9dee6] bg-white p-5;
+  }
+  .client-table-wrap {
+    @apply overflow-x-auto border-t border-[#d9dee6];
+  }
+  .client-table {
+    @apply w-full min-w-[980px] border-collapse text-sm text-[#071a33];
+  }
+  .client-table thead th {
+    @apply border-e border-white/25 bg-[#026beb] px-3 py-2.5 text-start text-xs font-semibold text-white;
+  }
+  .client-table thead th:last-child {
+    @apply border-e-0;
+  }
+  .client-table tbody tr {
+    @apply border-b border-[#e3e7ed] transition hover:bg-[#eef3fb];
+  }
+  .client-table tbody td {
+    @apply px-2.5 py-1.5 align-middle;
+  }
+  .client-table-id,
+  .client-email-link {
+    @apply text-[#026beb];
+  }
+  .client-email-link:hover {
+    @apply underline;
+  }
+  .client-status-pill {
+    @apply inline-flex rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none;
+  }
+  .client-status-active {
+    @apply bg-[#2faa3b] text-white;
+  }
+  .client-status-inactive {
+    @apply bg-[#6b7280] text-white;
+  }
+  .client-status-lead {
+    @apply bg-[#026beb] text-white;
+  }
+  .client-row-actions {
+    @apply flex justify-end gap-1.5;
+  }
+  .client-row-action {
+    @apply inline-flex h-7 items-center rounded-md border border-[#c8cdd3] bg-white px-2 text-xs font-semibold text-[#026beb] transition hover:border-[#026beb] hover:bg-[#eef5ff];
+  }
+  .client-pagination {
+    @apply flex items-center justify-center gap-0 py-5 text-sm;
+  }
+  .client-page-link,
+  .client-page-current {
+    @apply inline-flex h-9 items-center border border-[#d9dee6] px-3;
+  }
+  .client-page-link {
+    @apply bg-white text-[#6b7280] transition hover:bg-[#eef5ff] hover:text-[#026beb];
+  }
+  .client-page-link[aria-disabled="true"] {
+    @apply pointer-events-none opacity-60;
+  }
+  .client-page-current {
+    @apply border-[#026beb] bg-[#026beb] font-semibold text-white;
+  }
+
   .tenant-count-pill {
     @apply rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#123055];
   }
@@ -1089,6 +1203,53 @@ button {
     background: rgba(255,255,255,0.05) !important;
     border-color: rgba(148,163,184,0.2) !important;
     color: #e5e7eb !important;
+  }
+  .dashboard-dark .client-list-panel,
+  .dashboard-dark .client-empty-state,
+  .dashboard-dark .client-filter-secondary,
+  .dashboard-dark .client-row-action,
+  .dashboard-dark .client-page-link {
+    background: #101827 !important;
+    border-color: rgba(148,163,184,0.2) !important;
+    color: #e5e7eb !important;
+  }
+  .dashboard-dark .client-search-bar {
+    background: #0f172a !important;
+    border-color: rgba(255,255,255,0.07) !important;
+  }
+  .dashboard-dark .client-filter-field,
+  .dashboard-dark .client-list-meta,
+  .dashboard-dark .client-table {
+    color: #e5e7eb !important;
+  }
+  .dashboard-dark .client-filter-control {
+    background: #1a2540 !important;
+    border-color: rgba(148,163,184,0.2) !important;
+    color: #e5e7eb !important;
+  }
+  .dashboard-dark .client-filter-control::placeholder {
+    color: #64748b !important;
+  }
+  .dashboard-dark .client-table-wrap {
+    border-color: rgba(255,255,255,0.07) !important;
+  }
+  .dashboard-dark .client-table thead th {
+    background: #173f69 !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #f8fafc !important;
+  }
+  .dashboard-dark .client-table tbody tr {
+    border-color: rgba(255,255,255,0.06) !important;
+  }
+  .dashboard-dark .client-table tbody tr:hover,
+  .dashboard-dark .client-filter-secondary:hover,
+  .dashboard-dark .client-row-action:hover,
+  .dashboard-dark .client-page-link:hover {
+    background: rgba(255,255,255,0.06) !important;
+  }
+  .dashboard-dark .client-table-id,
+  .dashboard-dark .client-email-link {
+    color: #93c5fd !important;
   }
   .dashboard-dark .tenant-count-pill,
   .dashboard-dark .tenant-table thead th,

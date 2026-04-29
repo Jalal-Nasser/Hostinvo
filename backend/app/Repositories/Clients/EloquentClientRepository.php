@@ -20,7 +20,7 @@ class EloquentClientRepository implements ClientRepositoryInterface
 
         return Client::query()
             ->with('owner')
-            ->withCount(['contacts', 'addresses'])
+            ->withCount(['contacts', 'addresses', 'services'])
             ->when(
                 filled($filters['search'] ?? null),
                 fn (Builder $query) => $query->where(function (Builder $builder) use ($filters): void {

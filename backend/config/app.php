@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost:8080'),
 
+    'installation_id' => env('APP_INSTALLATION_ID'),
+
     'frontend_url' => env('FRONTEND_URL', env('PORTAL_URL', 'http://localhost:3000')),
 
     'marketing_url' => env('MARKETING_URL', env('FRONTEND_URL', 'http://localhost:3000')),

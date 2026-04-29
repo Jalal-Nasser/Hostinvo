@@ -38,6 +38,7 @@ Route::middleware(['api'])
             ->middleware(['auth:sanctum', 'resolve.tenant', 'tenant.context'])
             ->group(function (): void {
                 Route::get('whmcs/import', [WhmcsImportController::class, 'index'])->name('whmcs.import.show');
+                Route::post('whmcs/import/test', [WhmcsImportController::class, 'test'])->name('whmcs.import.test');
                 Route::post('whmcs/import', [WhmcsImportController::class, 'store'])->name('whmcs.import.store');
             });
 

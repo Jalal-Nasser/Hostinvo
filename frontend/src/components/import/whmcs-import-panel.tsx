@@ -61,8 +61,10 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [latestImport, setLatestImport] = useState<WhmcsImportRecord | null>(initialImport);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [configurationMessage, setConfigurationMessage] = useState<string | null>(null);
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
 
   const isRunning = latestImport ? runningStatuses.includes(latestImport.status) : false;
 
@@ -153,13 +155,65 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
 
       setConfigurationMessage(
         hostForDocker !== parsedHost
-          ? "configuration.php imported. Host was changed from localhost to host.docker.internal for Docker Desktop."
+          ? "configuration.php imported. Host was changed from localhost to host.docker.internal. This is correct only when the WHMCS MySQL server runs on this Windows machine. If the file came from remote hosting, replace the host with the remote MySQL hostname/IP or use an SSH tunnel."
           : "configuration.php imported. Review the values, then start the import.",
       );
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Unable to read configuration.php.");
     } finally {
       event.target.value = "";
+    }
+  }
+
+  async function submitCredentials(endpoint: string, formData: FormData) {
+    await ensureCsrfCookie();
+
+    const xsrfToken = readBrowserCookie("XSRF-TOKEN");
+
+    return fetch(`${apiBaseUrl}${endpoint}`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
+      },
+      body: JSON.stringify({
+        host: formData.get("host"),
+        port: Number(formData.get("port") || 3306),
+        database: formData.get("database"),
+        username: formData.get("username"),
+        password: formData.get("password"),
+      }),
+    });
+  }
+
+  async function handleTestConnection() {
+    if (!formRef.current) {
+      return;
+    }
+
+    setError(null);
+    setConnectionMessage(null);
+    setIsTesting(true);
+
+    try {
+      const response = await submitCredentials("/admin/whmcs/import/test", new FormData(formRef.current));
+      const payload = (await response.json()) as {
+        data?: { message?: string };
+        errors?: Array<{ message?: string }>;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.errors?.[0]?.message ?? "Unable to connect to WHMCS MySQL.");
+      }
+
+      setConnectionMessage(payload.data?.message ?? "Connection successful.");
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Unable to connect to WHMCS MySQL.");
+    } finally {
+      setIsTesting(false);
     }
   }
 
@@ -170,30 +224,11 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
     const formData = new FormData(form);
 
     setError(null);
+    setConnectionMessage(null);
     setIsSubmitting(true);
 
     try {
-      await ensureCsrfCookie();
-
-      const xsrfToken = readBrowserCookie("XSRF-TOKEN");
-      const response = await fetch(`${apiBaseUrl}/admin/whmcs/import`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-          ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
-        },
-        body: JSON.stringify({
-          host: formData.get("host"),
-          port: Number(formData.get("port") || 3306),
-          database: formData.get("database"),
-          username: formData.get("username"),
-          password: formData.get("password"),
-        }),
-      });
-
+      const response = await submitCredentials("/admin/whmcs/import", formData);
       const payload = (await response.json()) as {
         data?: { import?: WhmcsImportRecord; message?: string };
         errors?: Array<{ message?: string }>;
@@ -306,10 +341,30 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
             </p>
           ) : null}
 
-          <div>
+          {connectionMessage ? (
+            <p className="rounded-lg border border-emerald-300 bg-background px-3 py-2 text-sm font-medium text-emerald-600">
+              {connectionMessage}
+            </p>
+          ) : null}
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="btn-secondary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isTesting || isSubmitting || isRunning}
+              onClick={handleTestConnection}
+              type="button"
+            >
+              {isTesting ? (
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"
+                />
+              ) : null}
+              {isTesting ? "Testing" : "Test connection"}
+            </button>
             <button
               className="btn-primary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isSubmitting || isRunning}
+              disabled={isSubmitting || isTesting || isRunning}
               type="submit"
             >
               {isSubmitting || isRunning ? (

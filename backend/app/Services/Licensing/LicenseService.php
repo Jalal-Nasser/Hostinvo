@@ -616,7 +616,11 @@ class LicenseService
     {
         $connection = (string) config('database.default');
         $database = (string) config("database.connections.{$connection}.database");
-        $host = php_uname('n') ?: gethostname() ?: 'hostinvo';
+        $configuredInstallation = (string) config('app.installation_id', '');
+        $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+        $host = filled($configuredInstallation)
+            ? $configuredInstallation
+            : ($appHost ?: $this->normalizeDomain($domain) ?: 'hostinvo');
 
         return substr(hash('sha256', implode('|', array_filter([
             (string) config('app.key'),
