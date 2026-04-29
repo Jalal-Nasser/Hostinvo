@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\PlanCatalogController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\Admin\DemoTenantContextController;
 use App\Http\Controllers\Api\V1\Admin\TenantContextController;
+use App\Http\Controllers\Api\V1\Admin\WhmcsImportController;
 use App\Http\Controllers\Api\V1\Platform\PlatformNotificationTemplateController;
 use App\Http\Controllers\Api\V1\Platform\PlatformTurnstileController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,14 @@ Route::middleware(['api'])
                 Route::post('demo-tenant/switch', [DemoTenantContextController::class, 'store'])->name('demo-tenant.switch');
                 Route::post('tenants/{tenant}/switch', [TenantContextController::class, 'switchTenant'])->name('tenants.switch');
                 Route::post('tenant-context/clear', [TenantContextController::class, 'clear'])->name('tenant-context.clear');
+            });
+
+        Route::prefix('admin')
+            ->name('admin.')
+            ->middleware(['auth:sanctum', 'resolve.tenant', 'tenant.context'])
+            ->group(function (): void {
+                Route::get('whmcs/import', [WhmcsImportController::class, 'index'])->name('whmcs.import.show');
+                Route::post('whmcs/import', [WhmcsImportController::class, 'store'])->name('whmcs.import.store');
             });
 
         Route::prefix('admin')

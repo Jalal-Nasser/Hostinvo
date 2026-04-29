@@ -3,6 +3,7 @@ FROM php:8.3-fpm-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
+        procps \
         unzip \
         libicu-dev \
         libpq-dev \
@@ -11,6 +12,7 @@ RUN apt-get update \
         bcmath \
         intl \
         pcntl \
+        pdo_mysql \
         pdo_pgsql \
         zip \
     && pecl install redis \

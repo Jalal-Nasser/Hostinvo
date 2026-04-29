@@ -56,9 +56,11 @@ class RunWhmcsImportJob implements ShouldQueue, ShouldBeEncrypted
                 'summary' => $summary,
             ]);
         } catch (Throwable $exception) {
+            $message = $this->failureMessage($exception);
+
             $import->update([
                 'status' => WhmcsImport::STATUS_FAILED,
-                'message' => $exception->getMessage(),
+                'message' => $message,
             ]);
 
             Log::error('WHMCS import failed.', [
@@ -77,7 +79,18 @@ class RunWhmcsImportJob implements ShouldQueue, ShouldBeEncrypted
             ->whereKey($this->whmcsImportId)
             ->update([
                 'status' => WhmcsImport::STATUS_FAILED,
-                'message' => $exception->getMessage(),
+                'message' => $this->failureMessage($exception),
             ]);
+    }
+
+    private function failureMessage(Throwable $exception): string
+    {
+        $message = $exception->getMessage();
+
+        if (str_contains($message, 'SQLSTATE[HY000] [2002] No such file or directory')) {
+            return 'Unable to connect to the WHMCS MySQL host. If WHMCS uses localhost, Docker Desktop must use host.docker.internal, or use the MySQL container/service hostname.';
+        }
+
+        return $message;
     }
 }

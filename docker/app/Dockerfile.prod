@@ -27,6 +27,7 @@ RUN apk add --no-cache \
         intl \
         opcache \
         pcntl \
+        pdo_mysql \
         pdo_pgsql \
         zip \
     && pecl install redis \

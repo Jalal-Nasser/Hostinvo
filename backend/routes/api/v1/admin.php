@@ -45,7 +45,6 @@ use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\TicketDepartmentController;
 use App\Http\Controllers\Api\V1\Admin\TicketReplyController;
 use App\Http\Controllers\Api\V1\Admin\TicketStatusController;
-use App\Http\Controllers\Api\V1\Admin\WhmcsImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('announcements', AnnouncementController::class)
@@ -150,12 +149,6 @@ Route::get('settings/portal-surface', [PortalSurfaceController::class, 'show'])
 Route::put('settings/portal-surface', [PortalSurfaceController::class, 'update'])
     ->middleware('tenant.context')
     ->name('settings.portal-surface.update');
-Route::get('whmcs/import', [WhmcsImportController::class, 'index'])
-    ->middleware('tenant.context')
-    ->name('whmcs.import.show');
-Route::post('whmcs/import', [WhmcsImportController::class, 'store'])
-    ->middleware('tenant.context')
-    ->name('whmcs.import.store');
 Route::get('support/overview', SupportOverviewController::class)->name('support.overview.show');
 Route::get('ticket-statuses', [TicketStatusController::class, 'index'])->name('ticket-statuses.index');
 Route::post('tickets/{ticket}/replies', [TicketReplyController::class, 'store'])

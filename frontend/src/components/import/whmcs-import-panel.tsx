@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { apiBaseUrl, ensureCsrfCookie, readBrowserCookie } from "@/lib/auth";
 
@@ -25,6 +25,18 @@ function statusLabel(status: WhmcsImportStatus) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function phpConfigValue(content: string, key: string) {
+  const quotedMatch = content.match(new RegExp(`\\$${key}\\s*=\\s*(['"])((?:\\\\.|(?!\\1).)*)\\1\\s*;`));
+
+  if (quotedMatch?.[2] !== undefined) {
+    return quotedMatch[2].replace(/\\(['"\\])/g, "$1").trim();
+  }
+
+  const numericMatch = content.match(new RegExp(`\\$${key}\\s*=\\s*([0-9]+)\\s*;`));
+
+  return numericMatch?.[1]?.trim() ?? "";
+}
+
 async function fetchLatestImport() {
   const response = await fetch(`${apiBaseUrl}/admin/whmcs/import`, {
     credentials: "include",
@@ -46,9 +58,11 @@ async function fetchLatestImport() {
 }
 
 export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [latestImport, setLatestImport] = useState<WhmcsImportRecord | null>(initialImport);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [configurationMessage, setConfigurationMessage] = useState<string | null>(null);
 
   const isRunning = latestImport ? runningStatuses.includes(latestImport.status) : false;
 
@@ -95,6 +109,59 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
 
     return () => window.clearInterval(interval);
   }, [isRunning]);
+
+  function setFormValue(name: string, value: string) {
+    const field = formRef.current?.elements.namedItem(name);
+
+    if (field instanceof HTMLInputElement) {
+      field.value = value;
+    }
+  }
+
+  async function handleConfigurationFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setError(null);
+    setConfigurationMessage(null);
+
+    try {
+      const content = await file.text();
+      const parsedHost = phpConfigValue(content, "db_host");
+      const parsedDatabase = phpConfigValue(content, "db_name");
+      const parsedUsername = phpConfigValue(content, "db_username");
+      const parsedPassword = phpConfigValue(content, "db_password");
+      const parsedPort = phpConfigValue(content, "db_port") || "3306";
+
+      if (!parsedHost || !parsedDatabase || !parsedUsername) {
+        throw new Error("This file does not look like a valid WHMCS configuration.php file.");
+      }
+
+      const hostForDocker =
+        parsedHost === "localhost" || parsedHost === "127.0.0.1"
+          ? "host.docker.internal"
+          : parsedHost;
+
+      setFormValue("host", hostForDocker);
+      setFormValue("port", parsedPort);
+      setFormValue("database", parsedDatabase);
+      setFormValue("username", parsedUsername);
+      setFormValue("password", parsedPassword);
+
+      setConfigurationMessage(
+        hostForDocker !== parsedHost
+          ? "configuration.php imported. Host was changed from localhost to host.docker.internal for Docker Desktop."
+          : "configuration.php imported. Review the values, then start the import.",
+      );
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Unable to read configuration.php.");
+    } finally {
+      event.target.value = "";
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -156,14 +223,34 @@ export function WhmcsImportPanel({ initialImport }: WhmcsImportPanelProps) {
           </p>
         </div>
 
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <div className="mb-4 rounded-xl border border-border bg-background p-4">
+          <label className="grid gap-2 text-sm font-medium text-foreground">
+            Import WHMCS configuration.php
+            <input
+              accept=".php,text/plain"
+              className="block w-full cursor-pointer rounded-lg border border-border bg-background text-sm text-foreground file:mr-4 file:h-9 file:border-0 file:bg-[#036deb] file:px-4 file:text-sm file:font-semibold file:text-white"
+              onChange={handleConfigurationFile}
+              type="file"
+            />
+          </label>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            The file is read in your browser to fill the fields. It is not uploaded or stored separately.
+          </p>
+          {configurationMessage ? (
+            <p className="mt-3 rounded-lg border border-blue-300 bg-background px-3 py-2 text-sm font-medium text-foreground">
+              {configurationMessage}
+            </p>
+          ) : null}
+        </div>
+
+        <form ref={formRef} className="grid gap-4" onSubmit={handleSubmit}>
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_120px]">
             <label className="grid gap-1.5 text-sm font-medium text-foreground">
               DB host
               <input
                 className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-[#036deb] focus:ring-2 focus:ring-[#036deb]/15"
                 name="host"
-                placeholder="127.0.0.1"
+                placeholder="host.docker.internal"
                 required
                 type="text"
               />
