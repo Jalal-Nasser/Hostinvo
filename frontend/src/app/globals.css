@@ -376,7 +376,7 @@ button {
     @apply w-full border-collapse text-sm;
   }
   .tenant-table thead th {
-    @apply border-b border-[#e5e7eb] bg-[#f8fafc] px-3 py-2 text-start text-[11px] font-semibold uppercase tracking-[0.12em] text-[#64748b];
+    @apply border-b border-[#e5e7eb] bg-[#f8fafc] px-5 py-4 text-start text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748b];
   }
   .tenant-table tbody tr {
     @apply transition hover:bg-[#f8fafc];
@@ -385,7 +385,13 @@ button {
     @apply border-t border-[#eef0f4];
   }
   .tenant-table tbody td {
-    @apply px-3 py-2.5 align-middle;
+    @apply px-5 py-5 align-middle;
+  }
+  .tenant-identity {
+    @apply flex items-center gap-4;
+  }
+  .tenant-avatar {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eff6ff] text-[#036deb];
   }
   .tenant-cell-main {
     @apply min-w-0;
@@ -398,7 +404,7 @@ button {
     @apply block max-w-[18rem] truncate text-sm font-semibold text-[#0f172a] transition hover:text-[#036deb];
   }
   .tenant-status-pill {
-    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em];
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em];
   }
   .tenant-status-active {
     @apply border-[#bbf7d0] bg-[#dcfce7] text-[#166534];
@@ -412,15 +418,35 @@ button {
   .tenant-row-action-buttons {
     @apply flex items-center justify-end gap-2;
   }
-  .tenant-row-primary,
-  .tenant-row-secondary {
-    @apply inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-semibold transition disabled:pointer-events-none disabled:opacity-50;
+  .tenant-owner-stack,
+  .tenant-plan-stack,
+  .tenant-license-stack {
+    @apply grid gap-1 text-sm text-[#0f172a];
   }
-  .tenant-row-primary {
-    @apply bg-[#036deb] text-white hover:bg-[#0255b6];
+  .tenant-owner-stack span,
+  .tenant-plan-stack span,
+  .tenant-license-stack span {
+    @apply font-medium;
   }
-  .tenant-row-secondary {
-    @apply border border-[#d0d5dd] bg-white text-[#1f2937] hover:bg-[#f8fafc];
+  .tenant-owner-stack p,
+  .tenant-plan-stack p,
+  .tenant-license-stack p {
+    @apply text-xs text-[#64748b];
+  }
+  .tenant-plan-stack p {
+    @apply inline-flex w-fit rounded-full bg-[#eff6ff] px-2.5 py-0.5 text-xs font-medium text-[#64748b];
+  }
+  .tenant-license-stack span {
+    @apply inline-flex items-center gap-2;
+  }
+  .tenant-license-stack i {
+    @apply block h-1.5 w-1.5 rounded-full bg-[#10b981];
+  }
+  .tenant-created-text {
+    @apply text-sm font-medium text-[#0f172a];
+  }
+  .tenant-row-icon-button {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8dee8] bg-white text-[#334155] transition hover:bg-[#f8fafc] hover:text-[#036deb] disabled:pointer-events-none disabled:opacity-50;
   }
   .tenant-row-menu {
     @apply relative;
@@ -437,6 +463,54 @@ button {
   .tenant-row-menu-panel a,
   .tenant-row-menu-panel button {
     @apply block w-full px-3 py-2 text-start text-xs font-semibold text-[#334155] transition hover:bg-[#f8fafc] disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .server-widget-card {
+    @apply flex items-center justify-between gap-5 rounded-xl border border-[#d8dee8] bg-white px-6 py-8 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_28px_rgba(15,23,42,0.04)];
+  }
+  .server-widget-main {
+    @apply flex min-w-0 items-center gap-6;
+  }
+  .server-widget-icon {
+    @apply flex h-[6.25rem] w-[6.25rem] shrink-0 items-center justify-center rounded-2xl bg-[#eff6ff] text-[#1d5fbf];
+  }
+  .server-widget-title {
+    @apply flex min-w-0 flex-wrap items-center gap-4;
+  }
+  .server-widget-title h2 {
+    @apply text-2xl font-semibold tracking-[-0.02em] text-[#0f172a];
+  }
+  .server-widget-badges {
+    @apply flex flex-wrap items-center gap-3;
+  }
+  .server-status-pill {
+    @apply inline-flex items-center rounded-full bg-[#dcfce7] px-3 py-1 text-sm font-semibold text-[#15803d];
+  }
+  .server-panel-pill {
+    @apply inline-flex items-center rounded-full bg-[#eff6ff] px-3 py-1 text-sm font-semibold text-[#036deb];
+  }
+  .server-widget-actions {
+    @apply grid w-full max-w-[196px] shrink-0 gap-3;
+  }
+  .server-widget-action {
+    @apply inline-flex h-[3.25rem] w-full items-center justify-center gap-3 rounded-xl border border-[#d8dee8] bg-white px-4 text-sm font-semibold text-[#1f2937] transition hover:bg-[#f8fafc] disabled:pointer-events-none disabled:opacity-60;
+  }
+  @media (max-width: 767px) {
+    .server-widget-card {
+      @apply flex-col items-stretch px-4 py-5;
+    }
+    .server-widget-main {
+      @apply gap-4;
+    }
+    .server-widget-icon {
+      @apply h-16 w-16 rounded-xl;
+    }
+    .server-widget-title h2 {
+      @apply text-xl;
+    }
+    .server-widget-actions {
+      @apply max-w-none;
+    }
   }
 
   .dashboard-sidebar-section-label {
@@ -1018,9 +1092,12 @@ button {
   }
   .dashboard-dark .tenant-count-pill,
   .dashboard-dark .tenant-table thead th,
-  .dashboard-dark .tenant-row-secondary,
+  .dashboard-dark .tenant-avatar,
+  .dashboard-dark .tenant-row-icon-button,
   .dashboard-dark .tenant-row-menu summary,
-  .dashboard-dark .tenant-row-menu-panel {
+  .dashboard-dark .tenant-row-menu-panel,
+  .dashboard-dark .server-widget-card,
+  .dashboard-dark .server-widget-action {
     background: #101827 !important;
     border-color: rgba(148,163,184,0.2) !important;
     color: #e5e7eb !important;
@@ -1041,9 +1118,36 @@ button {
   .dashboard-dark .tenant-name-link {
     color: #f8fafc !important;
   }
+  .dashboard-dark .tenant-owner-stack,
+  .dashboard-dark .tenant-plan-stack,
+  .dashboard-dark .tenant-license-stack,
+  .dashboard-dark .tenant-created-text,
+  .dashboard-dark .server-widget-title h2 {
+    color: #f8fafc !important;
+  }
   .dashboard-dark .tenant-cell-main p,
-  .dashboard-dark .tenant-owner-text {
+  .dashboard-dark .tenant-owner-text,
+  .dashboard-dark .tenant-owner-stack p,
+  .dashboard-dark .tenant-plan-stack p,
+  .dashboard-dark .tenant-license-stack p {
     color: #9ca3af !important;
+  }
+  .dashboard-dark .tenant-plan-stack p,
+  .dashboard-dark .server-widget-icon,
+  .dashboard-dark .server-panel-pill {
+    background: rgba(59,130,246,0.14) !important;
+    color: #93c5fd !important;
+  }
+  .dashboard-dark .server-status-pill {
+    background: rgba(34,197,94,0.14) !important;
+    color: #86efac !important;
+  }
+  .dashboard-dark .server-widget-card {
+    box-shadow: none !important;
+  }
+  .dashboard-dark .server-widget-action:hover,
+  .dashboard-dark .tenant-row-icon-button:hover {
+    background: rgba(255,255,255,0.06) !important;
   }
   .dashboard-dark .tenant-row-menu-panel a,
   .dashboard-dark .tenant-row-menu-panel button {

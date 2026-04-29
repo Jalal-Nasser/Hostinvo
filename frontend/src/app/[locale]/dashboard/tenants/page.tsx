@@ -133,8 +133,10 @@ export default async function TenantsPage({
               <thead>
                 <tr>
                   <th>{t("tenantColumnLabel")}</th>
-                  <th>{t("statusColumnLabel")}</th>
                   <th>{t("ownerColumnLabel")}</th>
+                  <th>{t("planLabel")}</th>
+                  <th>{t("licenseStatusLabel")}</th>
+                  <th>{t("createdAtLabel")}</th>
                   <th className="text-end">{t("actionsColumnLabel")}</th>
                 </tr>
               </thead>
@@ -146,38 +148,79 @@ export default async function TenantsPage({
                   return (
                     <tr key={tenant.id}>
                       <td>
-                        <div className="tenant-cell-main">
-                          <Link
-                            className="tenant-name-link"
-                            href={localePath(params.locale, `/dashboard/tenants/${tenant.id}`)}
-                          >
-                            {tenant.name}
-                          </Link>
-                          <p>{subtitle}</p>
+                        <div className="tenant-identity">
+                          <span className="tenant-avatar" aria-hidden="true">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path d="M5 20V5.5A1.5 1.5 0 016.5 4h7A1.5 1.5 0 0115 5.5V20m-7-9h2m-2 4h2m4-4h2m-2 4h2m-9 5h12m-4 0v-5.5A1.5 1.5 0 0116.5 13h1A1.5 1.5 0 0119 14.5V20" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                            </svg>
+                          </span>
+                          <div className="tenant-cell-main">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Link
+                                className="tenant-name-link"
+                                href={localePath(params.locale, `/dashboard/tenants/${tenant.id}`)}
+                              >
+                                {tenant.name}
+                              </Link>
+                              <span
+                                className={[
+                                  "tenant-status-pill",
+                                  tenant.status === "active"
+                                    ? "tenant-status-active"
+                                    : "tenant-status-suspended",
+                                ].join(" ")}
+                              >
+                                {tenant.status === "active" ? t("statusActive") : t("statusSuspended")}
+                              </span>
+                            </div>
+                            <p>{subtitle}</p>
+                          </div>
                         </div>
                       </td>
                       <td>
-                        <span
-                          className={[
-                            "tenant-status-pill",
-                            tenant.status === "active"
-                              ? "tenant-status-active"
-                              : "tenant-status-suspended",
-                          ].join(" ")}
-                        >
-                          {tenant.status === "active" ? t("statusActive") : t("statusSuspended")}
-                        </span>
+                        <div className="tenant-owner-stack">
+                          <span>{tenant.owner?.name ?? t("noOwnerAssigned")}</span>
+                          <p>{tenant.owner?.email ?? t("notAvailable")}</p>
+                        </div>
                       </td>
                       <td>
-                        <span className="tenant-owner-text">
-                          {tenant.owner?.email ?? tenant.owner?.name ?? t("noOwnerAssigned")}
+                        <div className="tenant-plan-stack">
+                          <span>{tenant.license_summary?.plan ?? tenant.plan}</span>
+                          {tenant.license_summary?.is_trial ? <p>Trial</p> : null}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="tenant-license-stack">
+                          <span>
+                            <i aria-hidden="true" />
+                            {tenant.license_summary?.status ?? t("licenseUnavailable")}
+                          </span>
+                          <p>
+                            {tenant.license_summary?.expires_at
+                              ? new Date(tenant.license_summary.expires_at).toLocaleDateString(params.locale, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : t("notAvailable")}
+                          </p>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="tenant-created-text">
+                          {tenant.created_at
+                            ? new Date(tenant.created_at).toLocaleDateString(params.locale, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : t("notAvailable")}
                         </span>
                       </td>
                       <td>
                         <TenantRowActions
                           tenantId={tenant.id}
                           locale={params.locale}
-                          status={tenant.status}
                         />
                       </td>
                     </tr>

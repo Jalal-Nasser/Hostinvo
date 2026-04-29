@@ -12,6 +12,7 @@ type ServerConnectionTesterProps = {
   runningLabel: string;
   successLabel: string;
   errorLabel: string;
+  variant?: "default" | "server-widget";
 };
 
 export function ServerConnectionTester({
@@ -20,6 +21,7 @@ export function ServerConnectionTester({
   runningLabel,
   successLabel,
   errorLabel,
+  variant = "default",
 }: ServerConnectionTesterProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -69,14 +71,25 @@ export function ServerConnectionTester({
     });
   }
 
+  const isServerWidget = variant === "server-widget";
+
   return (
-    <div className="grid gap-3">
+    <div className={isServerWidget ? "grid gap-2" : "grid gap-3"}>
       <button
-        className="rounded-full border border-line bg-[#faf9f5]/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+        className={
+          isServerWidget
+            ? "server-widget-action"
+            : "rounded-full border border-line bg-[#faf9f5]/85 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+        }
         disabled={isPending}
         onClick={handleTest}
         type="button"
       >
+        {isServerWidget ? (
+          <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M7 17l-2 2m12-2l2 2M8.5 9.5l-3-3m10 3l3-3M12 6v3m-4 5a4 4 0 018 0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          </svg>
+        ) : null}
         {isPending ? runningLabel : buttonLabel}
       </button>
 

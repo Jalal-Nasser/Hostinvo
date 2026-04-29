@@ -124,15 +124,20 @@ export default async function ServersPage({
       ) : (
         <section className="grid gap-4">
           {servers.map((server) => (
-            <article key={server.id} className="glass-card p-6 md:p-8">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-foreground">{server.name}</h2>
-                    <span className="rounded-full border border-line bg-[#faf9f5]/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+            <article key={server.id} className="server-widget-card">
+              <div className="server-widget-main">
+                <span className="server-widget-icon" aria-hidden="true">
+                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M5.5 5.5h13A1.5 1.5 0 0120 7v3.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 10.5V7a1.5 1.5 0 011.5-1.5zm0 6.5h13A1.5 1.5 0 0120 13.5V17a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17v-3.5A1.5 1.5 0 015.5 12zM8 8.75h.01M8 15.25h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                  </svg>
+                </span>
+                <div className="server-widget-title">
+                  <h2>{server.name}</h2>
+                  <div className="server-widget-badges">
+                    <span className="server-status-pill">
                       {t(`serverStatus${server.status.charAt(0).toUpperCase()}${server.status.slice(1)}`)}
                     </span>
-                    <span className="rounded-full border border-line bg-[#fffdf8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    <span className="server-panel-pill">
                       {server.panel_type === "cpanel"
                         ? t("panelTypeCpanel")
                         : server.panel_type === "plesk"
@@ -142,23 +147,18 @@ export default async function ServersPage({
                             : t("panelTypeCustom")}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm text-muted">{server.hostname}</p>
-                  <p className="mt-2 text-sm text-muted">
-                    {t("serverLoadSummary", {
-                      current: server.current_accounts,
-                      max: server.max_accounts ?? 0,
-                    })}
-                  </p>
-                  <p className="mt-2 text-sm text-muted">
-                    {server.last_tested_at ?? t("neverTestedLabel")}
-                  </p>
                 </div>
+              </div>
 
-                <div className="grid gap-3">
+              <div className="server-widget-actions">
                   <Link
-                    className="rounded-full border border-line bg-[#faf9f5]/80 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accentSoft"
+                    className="server-widget-action"
                     href={localePath(params.locale, `/dashboard/servers/${server.id}`)}
                   >
+                    <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                    </svg>
                     {t("viewServerButton")}
                   </Link>
 
@@ -168,8 +168,8 @@ export default async function ServersPage({
                     runningLabel={t("testingConnection")}
                     successLabel={t("testConnectionSuccess")}
                     errorLabel={t("testConnectionError")}
+                    variant="server-widget"
                   />
-                </div>
               </div>
             </article>
           ))}
