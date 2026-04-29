@@ -26,7 +26,7 @@ export default async function EditClientPage({
       currentPath={`/dashboard/clients/${client.id}/edit`}
       description={t("editDescription", { name: client.display_name })}
       locale={params.locale as AppLocale}
-      title={t("editTitle")}
+      title={`#${client.id.slice(0, 8).toUpperCase()} - ${client.display_name}`}
     >
       <ClientForm initialClient={client} mode="edit" />
     </DashboardShell>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -6,8 +7,9 @@ import { notFound } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { type AppLocale } from "@/i18n/routing";
 import { localePath } from "@/lib/auth";
-import { formatMinorCurrency } from "@/lib/billing";
+import { formatMinorCurrency, type InvoiceRecord } from "@/lib/billing";
 import { fetchClientFromCookies } from "@/lib/clients";
+import { type ServiceRecord } from "@/lib/provisioning";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,20 @@ export default async function ClientDetailsPage({
     notFound();
   }
 
+  const services = client.services ?? [];
+  const invoices = client.invoices ?? [];
+  const activeServices = services.filter((service) => service.status === "active");
+  const suspendedServices = services.filter((service) => service.status === "suspended");
+  const paidInvoices = invoices.filter((invoice) => invoice.status === "paid");
+  const unpaidInvoices = invoices.filter((invoice) => ["unpaid", "overdue"].includes(invoice.status));
+  const draftInvoices = invoices.filter((invoice) => invoice.status === "draft");
+  const cancelledInvoices = invoices.filter((invoice) => invoice.status === "cancelled");
+  const refundedInvoices = invoices.filter((invoice) => invoice.status === "refunded");
+  const invoiceCurrency = invoices[0]?.currency ?? client.currency;
+  const invoiceTotal = invoices.reduce((total, invoice) => total + invoice.total_minor, 0);
+  const invoiceBalance = invoices.reduce((total, invoice) => total + invoice.balance_due_minor, 0);
+  const gravatarUrl = getGravatarUrl(client.email);
+
   return (
     <DashboardShell
       actions={
@@ -38,243 +54,365 @@ export default async function ClientDetailsPage({
       currentPath={`/dashboard/clients/${client.id}`}
       description={t("detailsDescription")}
       locale={params.locale as AppLocale}
-      title={client.display_name}
+      title={`#${client.id.slice(0, 8).toUpperCase()} - ${client.display_name}`}
     >
-      <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <article className="glass-card p-6 md:p-8">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("emailLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.email}</p>
+      <div className="client-profile-page">
+        <div className="client-profile-header">
+          <nav className="client-profile-tabs" aria-label="Client profile sections">
+            <span aria-current="page">Summary</span>
+            <Link href={localePath(params.locale, `/dashboard/clients/${client.id}/edit`)}>Profile</Link>
+            <a href="#client-contacts">{t("contactsSection")}</a>
+            <a href="#client-services">{t("servicesSection")}</a>
+            <a href="#client-invoices">{t("invoicesSection")}</a>
+            <a href="#client-activity">{t("activitySection")}</a>
+          </nav>
+
+          <div className="client-profile-strip">
+            <div className="client-profile-avatar-block">
+              <span
+                aria-label={`${client.display_name} Gravatar`}
+                className="client-profile-avatar"
+                role="img"
+                style={{ backgroundImage: `url("${gravatarUrl}")` }}
+              />
+              <span>
+                <strong>{client.display_name}</strong>
+                <small>{client.email}</small>
+              </span>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("phoneLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.phone ?? t("notAvailable")}</p>
+            <span>
+              {t("statusLabel")}: <strong>{clientStatusLabel(client.status, t)}</strong>
+            </span>
+            <span>
+              {t("portalAccessTitle")}:{" "}
+              <strong>{client.owner ? t("portalAccessEnabledLabel") : t("portalAccessDisabledLabel")}</strong>
+            </span>
+            <span>
+              {t("currencyLabel")}: <strong>{client.currency}</strong>
+            </span>
+            <span>
+              {t("createdAtLabel")}: <strong>{formatDate(client.created_at, params.locale)}</strong>
+            </span>
+          </div>
+        </div>
+
+        {client.owner && !client.owner.email_verified_at ? (
+          <div className="client-profile-alert">
+            The owner account has not verified the email address.
+          </div>
+        ) : null}
+
+        <section className="client-profile-grid">
+          <article className="client-profile-card">
+            <h2>Client Information</h2>
+            <ProfileRows
+              rows={[
+                [t("firstNameLabel"), client.first_name ?? t("notAvailable")],
+                [t("lastNameLabel"), client.last_name ?? t("notAvailable")],
+                [t("companyNameLabel"), client.company_name ?? t("notAvailable")],
+                [t("emailLabel"), client.email],
+                [t("phoneLabel"), client.phone ?? t("notAvailable")],
+                [t("countryLabel"), client.country],
+                [t("typeLabel"), t(client.client_type === "company" ? "typeCompany" : "typeIndividual")],
+                [t("statusLabel"), clientStatusLabel(client.status, t)],
+              ]}
+            />
+          </article>
+
+          <article className="client-profile-card">
+            <h2>Invoices/Billing</h2>
+            <ProfileRows
+              rows={[
+                ["Paid", `${paidInvoices.length} (${formatMinorCurrency(sumInvoices(paidInvoices), invoiceCurrency, params.locale)})`],
+                ["Draft", `${draftInvoices.length} (${formatMinorCurrency(sumInvoices(draftInvoices), invoiceCurrency, params.locale)})`],
+                ["Unpaid/Due", `${unpaidInvoices.length} (${formatMinorCurrency(sumInvoices(unpaidInvoices), invoiceCurrency, params.locale)})`],
+                ["Cancelled", `${cancelledInvoices.length} (${formatMinorCurrency(sumInvoices(cancelledInvoices), invoiceCurrency, params.locale)})`],
+                ["Refunded", `${refundedInvoices.length} (${formatMinorCurrency(sumInvoices(refundedInvoices), invoiceCurrency, params.locale)})`],
+                ["Gross Revenue", formatMinorCurrency(invoiceTotal, invoiceCurrency, params.locale)],
+                ["Balance Due", formatMinorCurrency(invoiceBalance, invoiceCurrency, params.locale)],
+              ]}
+            />
+            <div className="client-profile-links">
+              <Link href={localePath(params.locale, "/dashboard/invoices/new")}>Create invoice</Link>
+              <Link href={localePath(params.locale, "/dashboard/invoices")}>View invoices</Link>
             </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("statusLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {t(
-                  client.status === "active"
-                    ? "statusActive"
-                    : client.status === "inactive"
-                      ? "statusInactive"
-                      : "statusLead",
+          </article>
+
+          <article className="client-profile-card">
+            <h2>Products/Services</h2>
+            <ProfileRows
+              rows={[
+                ["Hosting services", `${services.length} (${services.length} total)`],
+                ["Active services", `${activeServices.length} (${services.length} total)`],
+                ["Suspended services", `${suspendedServices.length} (${services.length} total)`],
+                ["Domains", `${services.filter((service) => service.domain).length} (${services.length} total)`],
+                ["Products", `${new Set(services.map((service) => service.product?.id).filter(Boolean)).size}`],
+              ]}
+            />
+            <div className="client-profile-links">
+              <Link href={localePath(params.locale, "/dashboard/orders")}>View orders</Link>
+              <Link href={localePath(params.locale, "/dashboard/services/new")}>Add service</Link>
+            </div>
+          </article>
+
+          <aside className="client-profile-card">
+            <h2>Other Actions</h2>
+            <div className="client-profile-actions">
+              <Link href={localePath(params.locale, `/dashboard/clients/${client.id}/edit`)}>Edit profile</Link>
+              <Link href={localePath(params.locale, "/dashboard/tickets/new")}>Open support ticket</Link>
+              <Link href={localePath(params.locale, "/dashboard/orders/new")}>Create order</Link>
+              <Link href={localePath(params.locale, "/dashboard/invoices/new")}>Create invoice</Link>
+            </div>
+          </aside>
+
+          <article id="client-contacts" className="client-profile-card">
+            <h2>{t("contactsSection")}</h2>
+            {client.contacts && client.contacts.length > 0 ? (
+              <ProfileRows
+                rows={client.contacts.map((contact) => [
+                  `${contact.first_name} ${contact.last_name}`,
+                  `${contact.email}${contact.is_primary ? " - Primary" : ""}`,
+                ])}
+              />
+            ) : (
+              <p className="client-profile-empty">{t("noContacts")}</p>
+            )}
+          </article>
+
+          <article className="client-profile-card">
+            <h2>{t("addressesSection")}</h2>
+            {client.addresses && client.addresses.length > 0 ? (
+              <ProfileRows
+                rows={client.addresses.map((address) => [
+                  titleCase(address.type),
+                  `${address.line_1}, ${address.city}${address.state ? `, ${address.state}` : ""}`,
+                ])}
+              />
+            ) : (
+              <p className="client-profile-empty">{t("noAddresses")}</p>
+            )}
+          </article>
+
+          <article className="client-profile-card">
+            <h2>Other Information</h2>
+            <ProfileRows
+              rows={[
+                [t("localeLabel"), client.preferred_locale],
+                [t("currencyLabel"), client.currency],
+                [t("ownerLabel"), client.owner?.name ?? t("notAvailable")],
+                ["Owner email verified", client.owner?.email_verified_at ? "Yes" : "No"],
+                [t("createdAtLabel"), formatDateTime(client.created_at, params.locale)],
+              ]}
+            />
+          </article>
+
+          <article className="client-profile-card">
+            <h2>{t("notesLabel")}</h2>
+            <p className="client-profile-note">{client.notes || t("notAvailable")}</p>
+          </article>
+        </section>
+
+        <section id="client-services" className="client-profile-table-section">
+          <h2>{t("servicesSection")}</h2>
+          <div className="client-table-wrap">
+            <table className="client-table client-profile-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Product/Service</th>
+                  <th>Amount</th>
+                  <th>Billing Cycle</th>
+                  <th>Signup Date</th>
+                  <th>Next Due Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {services.length > 0 ? (
+                  services.map((service, index) => (
+                    <tr key={service.id}>
+                      <td>{index + 1}</td>
+                      <td>
+                        <Link className="client-email-link" href={localePath(params.locale, `/dashboard/services/${service.id}`)}>
+                          {service.product?.name ?? service.reference_number}
+                        </Link>
+                        {service.domain ? <span className="client-profile-subline">{service.domain}</span> : null}
+                      </td>
+                      <td>{formatServiceAmount(service, params.locale)}</td>
+                      <td>{titleCase(service.billing_cycle)}</td>
+                      <td>{formatOptionalDate(service.registration_date, params.locale)}</td>
+                      <td>{formatOptionalDate(service.next_due_date, params.locale)}</td>
+                      <td>{titleCase(service.status)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center">{t("noServices")}</td>
+                  </tr>
                 )}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("typeLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {t(client.client_type === "company" ? "typeCompany" : "typeIndividual")}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("countryLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.country}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("currencyLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.currency}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("localeLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.preferred_locale}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("ownerLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.owner?.name ?? t("notAvailable")}</p>
-            </div>
+              </tbody>
+            </table>
           </div>
+        </section>
 
-          {client.notes ? (
-            <div className="mt-6 rounded-[1.5rem] border border-line bg-[#fffdf8] p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("notesLabel")}</p>
-              <p className="mt-3 text-sm leading-7 text-foreground">{client.notes}</p>
-            </div>
-          ) : null}
-        </article>
-
-        <aside className="glass-card p-6 md:p-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("createdAtLabel")}</p>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            {new Intl.DateTimeFormat(params.locale, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            }).format(new Date(client.created_at))}
-          </p>
-
-          <div className="mt-6 grid gap-4">
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("contactsCountLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{client.contacts_count ?? client.contacts?.length ?? 0}</p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("addressesCountLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {client.addresses_count ?? client.addresses?.length ?? 0}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("servicesCountLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {client.services_count ?? client.services?.length ?? 0}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("invoicesCountLabel")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {client.invoices_count ?? client.invoices?.length ?? 0}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted">{t("portalAccessTitle")}</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {client.owner ? t("portalAccessEnabledLabel") : t("portalAccessDisabledLabel")}
-              </p>
-            </div>
+        <section id="client-invoices" className="client-profile-table-section">
+          <h2>{t("invoicesSection")}</h2>
+          <div className="client-table-wrap">
+            <table className="client-table client-profile-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Invoice</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.length > 0 ? (
+                  invoices.map((invoice, index) => (
+                    <tr key={invoice.id}>
+                      <td>{index + 1}</td>
+                      <td>
+                        <Link className="client-email-link" href={localePath(params.locale, `/dashboard/invoices/${invoice.id}`)}>
+                          {invoice.reference_number}
+                        </Link>
+                      </td>
+                      <td>{formatOptionalDate(invoice.issue_date, params.locale)}</td>
+                      <td>{formatOptionalDate(invoice.due_date, params.locale)}</td>
+                      <td>{formatMinorCurrency(invoice.total_minor, invoice.currency, params.locale)}</td>
+                      <td>{formatMinorCurrency(invoice.balance_due_minor, invoice.currency, params.locale)}</td>
+                      <td>{titleCase(invoice.status)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center">{t("noInvoices")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        </aside>
-      </section>
+        </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <article className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("servicesSection")}</h2>
-          {client.services && client.services.length > 0 ? (
-            <div className="mt-6 grid gap-4">
-              {client.services.map((service) => (
-                <div key={service.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-foreground">{service.reference_number}</p>
-                    <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
-                      {service.status}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-muted">{service.product?.name ?? t("notAvailable")}</p>
-                  <p className="mt-2 text-sm text-muted">{service.domain ?? t("notAvailable")}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted">{t("noServices")}</p>
-          )}
-        </article>
-
-        <article className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("invoicesSection")}</h2>
-          {client.invoices && client.invoices.length > 0 ? (
-            <div className="mt-6 grid gap-4">
-              {client.invoices.map((invoice) => (
-                <div key={invoice.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-foreground">{invoice.reference_number}</p>
-                    <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
-                      {invoice.status}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-muted">
-                    {formatMinorCurrency(invoice.total_minor, invoice.currency, params.locale)}
-                  </p>
-                  <p className="mt-2 text-sm text-muted">{invoice.due_date ?? t("notAvailable")}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted">{t("noInvoices")}</p>
-          )}
-        </article>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <article className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("contactsSection")}</h2>
-          {client.contacts && client.contacts.length > 0 ? (
-            <div className="mt-6 grid gap-4">
-              {client.contacts.map((contact) => (
-                <div key={contact.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      {contact.first_name} {contact.last_name}
-                    </p>
-                    {contact.is_primary ? (
-                      <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
-                        {t("primaryLabel")}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-3 text-sm text-muted">{contact.email}</p>
-                  <p className="mt-2 text-sm text-muted">{contact.phone ?? t("notAvailable")}</p>
-                  <p className="mt-2 text-sm text-muted">{contact.job_title ?? t("notAvailable")}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted">{t("noContacts")}</p>
-          )}
-        </article>
-
-        <article className="glass-card p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-foreground">{t("addressesSection")}</h2>
-          {client.addresses && client.addresses.length > 0 ? (
-            <div className="mt-6 grid gap-4">
-              {client.addresses.map((address) => (
-                <div key={address.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      {t(
-                        address.type === "billing"
-                          ? "addressTypeBilling"
-                          : address.type === "mailing"
-                            ? "addressTypeMailing"
-                            : "addressTypeService",
-                      )}
-                    </p>
-                    {address.is_primary ? (
-                      <span className="rounded-full border border-line bg-accentSoft px-3 py-1 text-xs font-semibold text-foreground">
-                        {t("primaryLabel")}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-3 text-sm text-muted">{address.line_1}</p>
-                  {address.line_2 ? <p className="mt-2 text-sm text-muted">{address.line_2}</p> : null}
-                  <p className="mt-2 text-sm text-muted">
-                    {address.city}
-                    {address.state ? `, ${address.state}` : ""} {address.postal_code ?? ""}
-                  </p>
-                  <p className="mt-2 text-sm text-muted">{address.country}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted">{t("noAddresses")}</p>
-          )}
-        </article>
-      </section>
-
-      <section className="glass-card p-6 md:p-8">
-        <h2 className="text-2xl font-semibold text-foreground">{t("activitySection")}</h2>
-        {client.activity_logs && client.activity_logs.length > 0 ? (
-          <div className="mt-6 grid gap-4">
-            {client.activity_logs.map((activity) => (
-              <div key={activity.id} className="rounded-[1.5rem] border border-line bg-[#faf9f5]/80 p-5">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <p className="text-sm font-semibold text-foreground">{activity.description}</p>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted">{activity.action}</p>
-                </div>
-                <p className="mt-3 text-sm text-muted">
-                  {activity.user?.name ?? t("systemActor")} ·{" "}
-                  {new Intl.DateTimeFormat(params.locale, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(new Date(activity.created_at))}
-                </p>
-              </div>
-            ))}
+        <section id="client-activity" className="client-profile-table-section">
+          <h2>{t("activitySection")}</h2>
+          <div className="client-table-wrap">
+            <table className="client-table client-profile-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Description</th>
+                  <th>User</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {client.activity_logs && client.activity_logs.length > 0 ? (
+                  client.activity_logs.map((activity) => (
+                    <tr key={activity.id}>
+                      <td>{titleCase(activity.action)}</td>
+                      <td>{activity.description}</td>
+                      <td>{activity.user?.name ?? t("systemActor")}</td>
+                      <td>{formatDateTime(activity.created_at, params.locale)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center">{t("noActivity")}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        ) : (
-          <p className="mt-6 text-sm text-muted">{t("noActivity")}</p>
-        )}
-      </section>
+        </section>
+      </div>
     </DashboardShell>
   );
+}
+
+function ProfileRows({ rows }: Readonly<{ rows: Array<[string, string]> }>) {
+  return (
+    <dl className="client-profile-rows">
+      {rows.map(([label, value]) => (
+        <div key={`${label}-${value}`}>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function clientStatusLabel(status: string, t: Awaited<ReturnType<typeof getTranslations<"Clients">>>) {
+  if (status === "active") {
+    return t("statusActive");
+  }
+
+  if (status === "inactive") {
+    return t("statusInactive");
+  }
+
+  return t("statusLead");
+}
+
+function sumInvoices(invoices: InvoiceRecord[]) {
+  return invoices.reduce((total, invoice) => total + invoice.total_minor, 0);
+}
+
+function formatServiceAmount(service: ServiceRecord, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    currency: service.currency,
+    style: "currency",
+  }).format(service.price);
+}
+
+function formatDate(value: string, locale: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatDateTime(value: string, locale: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function formatOptionalDate(value: string | null, locale: string) {
+  return value ? formatDate(value, locale) : "-";
+}
+
+function titleCase(value: string) {
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getGravatarUrl(email: string) {
+  const hash = createHash("md5").update(email.trim().toLowerCase()).digest("hex");
+  const params = new URLSearchParams({
+    d: "identicon",
+    r: "g",
+    s: "96",
+  });
+
+  return `https://www.gravatar.com/avatar/${hash}?${params.toString()}`;
 }

@@ -307,8 +307,44 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
       : localePath(locale, `/dashboard/clients/${initialClient?.id}`);
 
   return (
-    <div className="grid gap-6">
-      <section className="glass-card p-6 md:p-8">
+    <div className="client-edit-form">
+      {mode === "edit" && initialClient ? (
+        <div className="client-profile-header">
+          <nav className="client-profile-tabs" aria-label="Client profile sections">
+            <Link href={localePath(locale, `/dashboard/clients/${initialClient.id}`)}>Summary</Link>
+            <span aria-current="page">Profile</span>
+            <a href="#client-contacts">{t("contactsSection")}</a>
+            <a href="#client-addresses">{t("addressesSection")}</a>
+            <Link href={localePath(locale, `/dashboard/clients/${initialClient.id}#client-services`)}>
+              {t("servicesSection")}
+            </Link>
+            <Link href={localePath(locale, `/dashboard/clients/${initialClient.id}#client-invoices`)}>
+              {t("invoicesSection")}
+            </Link>
+            <Link href={localePath(locale, `/dashboard/clients/${initialClient.id}#client-activity`)}>
+              {t("activitySection")}
+            </Link>
+          </nav>
+
+          <div className="client-profile-strip">
+            <span>
+              {t("statusLabel")}: <strong>{statusLabels[status]}</strong>
+            </span>
+            <span>
+              {t("typeLabel")}: <strong>{typeLabels[clientType]}</strong>
+            </span>
+            <span>
+              {t("portalAccessTitle")}:{" "}
+              <strong>
+                {portalAccessEnabled ? t("portalAccessEnabledLabel") : t("portalAccessDisabledLabel")}
+              </strong>
+            </span>
+          </div>
+        </div>
+      ) : null}
+
+      <section id="client-profile" className="glass-card p-6 md:p-8">
+        <div className="client-form-panel-title">{t("editTitle")}</div>
         <div className="grid gap-6 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium text-foreground">
             <span>{t("typeLabel")}</span>
@@ -475,7 +511,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
         </div>
       </section>
 
-      <section className="glass-card p-6 md:p-8">
+      <section id="client-contacts" className="glass-card p-6 md:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-foreground">{t("contactsSection")}</h2>
@@ -578,7 +614,7 @@ export function ClientForm({ mode, initialClient }: ClientFormProps) {
         )}
       </section>
 
-      <section className="glass-card p-6 md:p-8">
+      <section id="client-addresses" className="glass-card p-6 md:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-foreground">{t("addressesSection")}</h2>
