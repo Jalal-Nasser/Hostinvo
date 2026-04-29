@@ -16,6 +16,14 @@ import { fetchTenantsFromCookies } from "@/lib/tenants";
 
 export const dynamic = "force-dynamic";
 
+function capitalizeDisplayValue(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export default async function TenantsPage({
   params,
   searchParams,
@@ -185,7 +193,7 @@ export default async function TenantsPage({
                       </td>
                       <td>
                         <div className="tenant-plan-stack">
-                          <span>{tenant.license_summary?.plan ?? tenant.plan}</span>
+                          <span>{capitalizeDisplayValue(tenant.license_summary?.plan ?? tenant.plan)}</span>
                           {tenant.license_summary?.is_trial ? <p>Trial</p> : null}
                         </div>
                       </td>
@@ -193,7 +201,7 @@ export default async function TenantsPage({
                         <div className="tenant-license-stack">
                           <span>
                             <i aria-hidden="true" />
-                            {tenant.license_summary?.status ?? t("licenseUnavailable")}
+                            {capitalizeDisplayValue(tenant.license_summary?.status) ?? t("licenseUnavailable")}
                           </span>
                           <p>
                             {tenant.license_summary?.expires_at
