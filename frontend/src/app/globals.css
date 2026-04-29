@@ -214,10 +214,69 @@ button {
     box-shadow: var(--shadow-sm);
   }
 
-  .dashboard-header-stat {
-    @apply rounded-lg border border-[#dbeafe] px-3.5 py-3;
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(4px);
+  .dashboard-header-surface::before {
+    content: none;
+  }
+
+  .dashboard-header-surface h1,
+  .dashboard-header-surface h2 {
+    color: #0a1628 !important;
+    text-shadow: none;
+  }
+
+  .dashboard-header-surface p,
+  .dashboard-header-surface span,
+  .dashboard-header-surface .dashboard-kicker {
+    color: #475467 !important;
+    font-weight: 500 !important;
+    text-shadow: none !important;
+  }
+
+  .dashboard-header-surface .breadcrumb,
+  .dashboard-header-surface .breadcrumb span,
+  .dashboard-header-surface .breadcrumb a {
+    color: #bfdbfe !important;
+  }
+
+  .dashboard-header-surface .btn-primary,
+  .dashboard-header-surface .btn-secondary {
+    border-radius: 2rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.15);
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    min-width: 120px;
+    min-height: 44px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 1rem;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  }
+
+  .dashboard-header-surface .btn-primary {
+    background: #ffffff !important;
+    color: #036deb !important;
+    border: none !important;
+  }
+
+  .dashboard-header-surface .btn-primary:hover {
+    background: #e0e7ff !important;
+    color: #036deb !important;
+  }
+
+  .dashboard-header-surface .btn-secondary {
+    background: rgba(255,255,255,0.2) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+  }
+
+  .dashboard-header-surface .btn-secondary:hover {
+    background: rgba(255,255,255,0.35) !important;
+    color: #ffffff !important;
   }
 
   .dashboard-subtle-card {

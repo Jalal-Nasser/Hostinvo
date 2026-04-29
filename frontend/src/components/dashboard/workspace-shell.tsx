@@ -691,28 +691,28 @@ export async function WorkspaceShell({
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
                     {/* Breadcrumb / kicker row */}
-                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#4b5563]">
-                      <span className="font-semibold uppercase tracking-[0.18em] text-[#3b82f6]">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-blue-200">
+                      <span className="font-semibold uppercase tracking-[0.18em] text-blue-300">
                         {workspaceBadge}
                       </span>
-                      <span className="text-[#374151]">/</span>
-                      <span className="font-medium text-[#6b7280]">
+                      <span className="text-blue-300">/</span>
+                      <span className="font-medium text-blue-200">
                         {activeTenant?.name ?? workspaceT("adminBadge")}
                       </span>
                       {user.roles.slice(0, 1).map((role) => (
                         <span
                           key={role.id}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9ca3af]"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-blue-200"
                         >
                           {role.display_name}
                         </span>
                       ))}
                     </div>
 
-                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-[#f1f5fb] md:text-[2rem]">
+                    <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.035em] text-white md:text-[2rem]">
                       {title}
                     </h1>
-                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-[#6b7280]">
+                    <p className="mt-2 max-w-3xl text-[13.5px] leading-6 text-blue-100">
                       {description}
                     </p>
 
